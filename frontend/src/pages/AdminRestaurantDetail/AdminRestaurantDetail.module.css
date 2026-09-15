@@ -1,0 +1,248 @@
+/* Task 8.3c — verified at all 4 breakpoints (320/768/1024/1280px). No
+   changes needed. Same `max-width: 640px; margin: 0 auto` `.page` shell
+   and same deferred-320px-sidebar caveat `AdminRestaurants.module.css`'s
+   own 8.3c comment documents in full (see that file, or 8.3b's original,
+   for the complete reasoning) — not repeated here.
+
+   This screen's own layout was already careful before this session, not
+   requiring the fixes some other screens in this pass needed:
+   - `.header` (fixed 56px `.logoThumbnail`, `flex-shrink: 0`, beside
+     `.headerText`) already sets `min-width: 0` on `.headerText` — the
+     wrap-based shrinking pattern (unlike `.name`'s nowrap-ellipsis
+     approach on the *list* screen, `AdminRestaurants.jsx`) this
+     screen's own `.name` needs, since it has no `overflow`/`nowrap`/
+     `ellipsis` rule at all here and instead wraps normally onto
+     multiple lines for a long restaurant name — the right call for a
+     detail-page heading (unlike a scannable list row, where truncating
+     to one line matters more than showing the whole name).
+   - `.badges` already has `flex-wrap: wrap` (unlike the list screen's
+     `.badges`, which doesn't need it since it's paired with an
+     already-shrinking `.name` there) — belt-and-suspenders here since
+     `.headerText`'s column layout gives `.badges` its own full-width
+     row to wrap within regardless.
+   - `.coverThumbnail`'s full-bleed negative-margin technique stays
+     contained by `.card`'s own `overflow: hidden`, so it can never
+     cause the page itself to scroll horizontally at any width.
+   - `.actionRow`/`.actionButton` (`flex: 1`) only ever renders one
+     button at a time (Suspend XOR Reactivate, never both) — a lone
+     `flex: 1` item can't overflow its own row, same reasoning
+     `OrderDetail.jsx`'s Accepted-order `Complete`-alone case already
+     established (Task 8.2c-ii).
+   - `.detailList`'s `dt`/`dd` pairs are a plain `flex-direction: column`
+     stack, wrapping normally like every other plain-paragraph field in
+     this pass.
+   - `ImageViewer` (Task 2.6, this screen's first *admin*-context use)
+     is the same shared, already-verified component — nothing
+     screen-specific about `.coverThumbnail`/`.logoThumbnail`'s own
+     fixed dimensions changes that. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.backButton {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.status {
+  padding: var(--space-xl) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  overflow: hidden;
+}
+
+/* Full-bleed within `.card`'s own padding — pulled back out to the
+   card's edge (negative margin matching `.card`'s `padding`) so the
+   cover photo reads as a banner rather than an inset thumbnail, same
+   "the image is the subject at the top of the card" treatment
+   FoodDetails.jsx's own full-width `.image` uses, just scoped to this
+   card's own bounds rather than the whole page. */
+.coverThumbnail {
+  width: calc(100% + 2 * var(--space-lg));
+  height: 160px;
+  object-fit: cover;
+  margin: calc(var(--space-lg) * -1) calc(var(--space-lg) * -1) 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+/* Deliberately smaller and never full-screen-worthy on its own the way
+   the cover photo is — same "small thumbnail, ImageViewer's overlay is
+   what lets it actually be inspected" sizing OrderDetail.module.css's
+   own `.screenshotThumbnail` already establishes, just round to read
+   as a logo rather than a document. */
+.logoThumbnail {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.description {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.detailList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+}
+
+.detailList dt {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.detailList dd {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-text-primary);
+}
+
+/* Suspend/Reactivate — Task 6.8. Identical shape to
+   AdminLiveRequestDetail.module.css's own `.actionRow`/`.actionButton`/
+   `.approveButton`/`.rejectButton`/`.actionError` (Approve/Reject, Task
+   6.7d), itself copied from OrderDetail.module.css's own Accept/Reject —
+   duplicated rather than imported for the same no-shared-util precedent
+   every other copy of this shape in this codebase already follows.
+   `.suspendButton` takes the `.rejectButton` --color-error treatment (a
+   suspension is the destructive, restaurant-losing-visibility action);
+   `.reactivateButton` takes the `.approveButton`/`.acceptButton`
+   --color-primary treatment (undoing it, back to the normal state) —
+   same "the button's color previews the state it leads to" reasoning
+   those two files' own comments already give. */
+.actionRow {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.actionButton {
+  flex: 1;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.suspendButton {
+  composes: actionButton;
+  color: var(--color-text-on-primary);
+  background: var(--color-error);
+}
+
+.reactivateButton {
+  composes: actionButton;
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+}
+
+.reactivateButton:active:not(:disabled) {
+  background: var(--color-primary-pressed);
+}
+
+.actionError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+}

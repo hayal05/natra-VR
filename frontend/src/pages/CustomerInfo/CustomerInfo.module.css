@@ -1,0 +1,48 @@
+/* Task 8.1e — same 640px reading-width column OrderBuilder.jsx's own
+   `.page` (Task 8.1d) and every other capped single-column screen in
+   this codebase already use. `FormField`'s inputs (Task 2.15, used
+   inside `.form`) are full-width by design — capping `.page` itself is
+   what keeps them from stretching edge-to-edge on a wide screen, same
+   reasoning OrderBuilder's own comment gives. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.primaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  width: 100%;
+}
+
+.primaryButton:active {
+  background: var(--color-primary-pressed);
+}

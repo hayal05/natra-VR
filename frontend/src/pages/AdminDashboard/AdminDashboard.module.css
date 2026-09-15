@@ -1,0 +1,206 @@
+/* Task 8.3b — verified at all 4 breakpoints (320/768/1024/1280px). No
+   content-layout changes needed, but one real, out-of-scope-for-this-
+   screen finding recorded below rather than silently worked around.
+
+   `.page`'s `max-width: 640px; margin: 0 auto` is the exact shell
+   `OwnerDashboard.module.css` (Task 5.18a's own 8.2b-i comment) already
+   names *this* file as the original convention-setter for — so the
+   page-shell question itself was already settled before this session;
+   what hadn't happened yet was actually running the verification pass
+   against it, which is this task's real job.
+
+   **The 320px ("mobile") breakpoint is not usable on this screen today,
+   and that's not this screen's own CSS to fix.** `RoleShell.jsx`'s own
+   header comment is explicit that the admin sidebar (Task 2.19) is
+   deliberately single-breakpoint — fixed `--roleshell-sidebar-width:
+   220px`, always visible, no collapse/hamburger — with `docs/TASKS.md`'s
+   own Task 8.3 (this phase) named as where that gets addressed. At a
+   320px viewport, `.contentSidebar`'s `margin-left: 220px` leaves only
+   ~100px for this page's own content — `.page`'s `max-width: 640px`
+   cap never even becomes the binding constraint there, since the
+   sidebar's fixed offset already leaves far less room than that. This
+   is a shared-shell problem (`RoleShell`'s own sidebar geometry), not a
+   totals-grid or activity-feed problem this file's own CSS could
+   meaningfully patch around on its own — same "the shared chrome, not
+   any one caller" scoping 8.2h already used for the *owner* nav's own
+   closing check. Task 8.3g (this pass's own closing task, mirroring
+   8.1i/8.2h's position at the end of their own passes) is where the
+   sidebar's actual mobile treatment gets decided; **this session's
+   768/1024/1280px checks below assume 8.3g resolves the sub-768px case
+   for every admin screen at once**, the same way 8.3a through 8.3f
+   don't each separately need to.
+
+   At 768px (this screen's first genuinely usable width): content area
+   is 768 - 220 (sidebar) = 548px, well inside `.page`'s 640px cap, so
+   `.page` renders at 548px there — still comfortably wide for every
+   element below. At 1024px/1280px the content area only grows.
+
+   Within that 548px+ content area:
+   - `.totalsGrid`'s own `@media (min-width: 480px)` 2-col→4-col switch
+     is a *viewport*-width query (no container queries used anywhere in
+     this codebase), so it fires correctly at 768px+ regardless of the
+     sidebar's own offset — 4 short stat columns (a 2-3 digit number +
+     a one-word label like "Restaurants") fit easily inside 548px+.
+   - `.activityRow`'s `.activityMain` (`min-width: 0`, same
+     shrink-to-ellipsis pattern `.foodInfo`/`.paymentMethodInfo`
+     established for the owner pass) correctly reserves space for
+     `.activityTime` (`flex-shrink: 0`, `white-space: nowrap`) via a
+     deliberate `text-overflow: ellipsis` truncation on
+     `.activityDescription` — a genuinely different defensive choice
+     from the "let it wrap onto 2-3 lines" pattern most other rows in
+     this whole responsive pass use, but the right one here: this is a
+     single-line list row (unlike a card's free-standing paragraph), so
+     wrapping would grow every row's height unpredictably as the feed
+     mixes short and long restaurant names, where ellipsis keeps the
+     list visually uniform instead.
+   - `.countsError` repeats the same button+text row shape already
+     verified for `OwnerDashboard.jsx`'s identical class (Task
+     8.2b-iii) — the min-content/wrap reasoning there carries over
+     unchanged. */
+.page {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-xl);
+}
+
+/* Same .card/.cardTitle/.cardBody/.countsError/.retryButtonInline shell
+   OwnerDashboard.module.css already established (Task 5.17) — kept
+   identical rather than a shared stylesheet, same "no shared-code
+   mechanism across screens" precedent every duplicated helper function
+   in this codebase already sets for itself. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.cardTitle {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.cardBody {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.countsError {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.retryButtonInline {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Totals — a plain 4-up stat grid, per AdminDashboard.jsx's own header
+   comment on why this isn't a dedicated KPI-card component. Two
+   columns on narrow viewports (RoleShell's admin sidebar still leaves
+   less room than a bare page would), four across once there's space. */
+.totalsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+
+@media (min-width: 480px) {
+  .totalsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.totalItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.totalValue {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.totalLabel {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Recent activity feed */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.activityRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activityMain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.activityDescription {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityTime {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}

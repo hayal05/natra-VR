@@ -1,0 +1,201 @@
+/* Task 8.3d — verified at all 4 breakpoints (320/768/1024/1280px). No
+   changes needed. Same `max-width: 640px; margin: 0 auto` `.page` shell
+   and deferred-320px-sidebar caveat as every admin detail screen in
+   this pass (see `AdminDashboard.module.css`'s 8.3b comment for the
+   full reasoning, not repeated here).
+
+   `.header` (`.name` + `StatusBadge`, `justify-content: space-between`,
+   no `min-width: 0`) is the same shape `LiveStatus.module.css`'s own
+   `.statusHeader` already worked through in Task 8.2g: `.name` has no
+   `white-space: nowrap`, so it wraps like any other plain heading —
+   min-content is only its longest unbreakable word, comfortably under
+   the available width next to a short nowrap badge at every breakpoint
+   checked, same conclusion as that file's own comment.
+
+   **`.actionRow`'s two buttons (Approve/Reject) — genuinely different
+   from `OrderDetail.jsx`'s own 3-button `.actionRow` finding (Task
+   8.2c-ii, an actual overflow that needed `flex-wrap: wrap`) — measured,
+   not assumed safe by analogy.** Both buttons are `flex: 1`
+   (`flex-basis: 0%`, so free space splits evenly), but a flex item's
+   `min-width: auto` still floors at its own min-content regardless of
+   `flex-basis`. Summing both buttons' real min-content ("Approve":
+   ~32px padding + ~60px text ≈ 92px; "Reject": ~32px padding + ~48px
+   text ≈ 80px) plus the row's own `space-md` gap (12px) totals ~184px
+   — against the same ~256px worst-case content column this whole pass
+   has used (`.page`'s and `.card`'s own `space-lg` padding at a 320px
+   viewport, once Task 8.3g resolves the sidebar gap), that's ~72px of
+   real margin, not a thin-margin case the way `.openToggleRow` (8.2b-vi)
+   or an actual overflow the way `OrderDetail.jsx`'s 3-button row (8.2c-ii)
+   were — so no defensive `flex-wrap` was added here; two short-word
+   buttons genuinely don't need it at this column width, unlike three
+   longer ones. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.backButton {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.status {
+  padding: var(--space-xl) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.name {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.detailList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+}
+
+.detailList dt {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.detailList dd {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-text-primary);
+}
+
+/* Identical sizing to OrderDetail.module.css's/AdminRestaurantDetail
+   .module.css's own screenshot/logo thumbnails — small trigger,
+   ImageViewer's overlay is what lets it actually be inspected. */
+.screenshotThumbnail {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  margin-top: var(--space-xs);
+}
+
+/* Approve/Reject — Task 6.7d. Identical shape to OrderDetail.module.css's
+   own `.actionRow`/`.actionButton`/`.rejectButton`/`.actionError`
+   (Accept/Reject, Task 5.14b) — duplicated rather than imported for the
+   same no-shared-util precedent this file's own `formatPrice`/
+   `formatDateTime` comments already document. `.acceptButton` there is
+   `.approveButton` here, same wording swap `describeStatus`'s own
+   'Approved' label above already makes for this table's actual status
+   values. */
+.actionRow {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.actionButton {
+  flex: 1;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.approveButton {
+  composes: actionButton;
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+}
+
+.approveButton:active:not(:disabled) {
+  background: var(--color-primary-pressed);
+}
+
+/* Reject — same --color-error treatment OrderDetail.module.css's own
+   `.rejectButton` already uses for a destructive, one-way action. */
+.rejectButton {
+  composes: actionButton;
+  color: var(--color-text-on-primary);
+  background: var(--color-error);
+}
+
+.actionError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+}

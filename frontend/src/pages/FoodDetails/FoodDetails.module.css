@@ -1,0 +1,124 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+  min-height: 100%;
+}
+
+.status {
+  padding: var(--space-xl) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+/* "Large food image" per docs/NATRA_MASTER_PROMPT.md's own wording —
+   noticeably taller than EntityCard's own card image (RestaurantProfile's
+   .cover is 200px for a full-width header; this is the single subject of
+   the whole screen, not one of several cards, so it gets more of the
+   viewport). Task 8.1c: deliberately stays full-bleed at every width,
+   same "photo block runs edge-to-edge, its content doesn't" pattern
+   `.info` below and RestaurantProfile's own cover (Task 8.1b) already
+   use — there's no overlapping logo here needing a centered positioning
+   box the way that screen's cover did, so no extra wrapper is needed. */
+.image {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+  background: var(--color-surface-muted);
+}
+
+/* Task 8.1c — same 640px reading-width column Home.jsx's `.headerInner`/
+   `.body` (Task 8.1a) and RestaurantProfile's `.info`/`.menuSection`
+   (Task 8.1b) already use, centered under the full-bleed image above —
+   without it, the name/description/price/stepper/Buy Now button would
+   all stretch edge-to-edge on a wide screen, which reads worse for a
+   single subject than it does for RestaurantProfile's list of cards. */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.name {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Restaurant name isn't in docs/NATRA_MASTER_PROMPT.md's own Food
+   Details list, but every other place a food is shown (Popular Foods
+   grid, search results — Task 3.5/3.6) already gives it as context via
+   EntityCard's `subtitle` slot; dropping it here, on the one screen
+   that's actually about a single food, would be a regression in context,
+   not a simplification. */
+.restaurantName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.description {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: var(--space-xs) 0 0;
+  white-space: pre-wrap;
+}
+
+.price {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: var(--space-sm) 0 0;
+}
+
+.quantityStepper {
+  margin-top: var(--space-sm);
+  align-self: flex-start;
+}
+
+.buyNowButton {
+  margin-top: var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  width: 100%;
+}
+
+.buyNowButton:active {
+  background: var(--color-primary-pressed);
+}

@@ -1,0 +1,150 @@
+/* Task 8.3a — verified at all 4 breakpoints (320/768/1024/1280px). No
+   changes needed: `.page` already centers a `width:100%; max-width:420px`
+   `.card`, and every child control (`FormField`'s inputs, the
+   `width:100%` `.primaryButton`) already fills that card — the exact
+   same "centered, capped single column, bordered card since this screen
+   sits outside RoleShell" shape Task 8.2a already verified for
+   `OwnerLogin.jsx` (and, before that, `OwnerRegistration.jsx`), same
+   420px cap and all. `FormField` itself is the same shared,
+   already-verified (8.1e) component — nothing screen-specific to
+   re-check there. At mobile widths the card fills out toward the
+   viewport edges via `.page`'s own `space-lg`/`space-xl` padding; above
+   420px it just stays centered, same "no reference/spec describes a
+   wider treatment for an auth-style screen" reasoning 8.2a's own
+   comment gives.
+
+   One thing worth flagging while here, though it's cleanup rather than
+   a responsive-pass finding: `.successBanner` and `.linkButton` below
+   are copy-pasted over from `OwnerLogin.module.css` (Task 4.2) but are
+   dead code in this file — `AdminLogin.jsx`'s own doc comment is
+   explicit that admin has no self-registration flow and therefore no
+   `justRegistered` banner state or a "register" link to render, unlike
+   `OwnerLogin.jsx` which genuinely uses both classes. Left in place
+   rather than removed: unused CSS isn't a layout bug this task's scope
+   covers, and deleting it is a one-line judgment call for whoever next
+   has reason to touch this file's actual markup, not something to fold
+   into a verification-only session. */
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background: var(--color-background);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.instructions {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.successBanner {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+  background: var(--color-success-subtle, var(--color-surface));
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+/* Task 8.7e — same neutral (not success-green, not error-red) banner
+   `OwnerLogin.module.css` gained, for "you were logged out, log back
+   in" — a genuinely different tone than either message type this
+   screen already showed. */
+.noticeBanner {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.formError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-error);
+}
+
+.primaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  width: 100%;
+}
+
+.primaryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.primaryButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+/* Task 8.9a2 — `min-height`/`display: inline-flex`/`align-items: center`
+   added on top of the original `padding: 0;` text-link styling: 8.9a's
+   own audit found this class's tap height was just the caption text's
+   own line height, well under the 44×44px minimum, despite this being a
+   real cross-link action. `align-self: center` is untouched (still
+   works on a flex/grid item regardless of its own display value); the
+   extra height is invisible padding around the same visually-unchanged
+   underlined text. */
+.linkButton {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}

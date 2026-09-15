@@ -1,0 +1,109 @@
+.page {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.backLink {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: var(--space-lg);
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-lg);
+}
+
+.status {
+  padding: var(--space-xl) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* Task 8.2e-ii — verified at all 4 `ResponsiveGrid` breakpoints (Task
+   2.7). No changes needed. Unlike every other screen checked so far in
+   this pass, this one has no custom multi-item row at all — it's a
+   single `ImageUploadField` (5.3, already verified 8.1f) followed by
+   four stacked `FormField`s (name/description/price/category-select,
+   8.1e-verified, including the `select.control` branch used here for
+   Category) and one `align-self: flex-start` submit button, all inside
+   one `flex-direction: column` `.form`. With no sibling elements ever
+   sharing a row, there's no min-content-sum/flex-wrap question to
+   analyze the way `.openToggleRow` (8.2d-i) or `.sectionHeader`/
+   `.listRowActions` (8.2d-ii/8.2e-i) needed — every control is already
+   `width: 100%` (or, for the submit button, sized to its own short
+   label) inside a `.page` that matches every other owner screen's
+   640px cap. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Task 8.7b — retry line for a failed category-options fetch
+   (`categoriesError`), shown right below the Category field. Pulled up
+   right after `.form` so it sits between the field it belongs to and
+   the ones that follow, rather than at the bottom of the file next to
+   unrelated rules. `.retryButtonInline` copied from `Home.module.css`'s
+   own Categories-row retry (same trio `AdminOrders.module.css`'s own
+   8.7b addition copies too) rather than imported — same "not worth a
+   cross-screen dependency for a few small rules" precedent this
+   codebase already sets elsewhere. */
+.categoryFieldFooter {
+  margin-top: calc(var(--space-sm) * -1);
+}
+
+.retryButtonInline {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.formError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-error);
+}
+
+.submitButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.submitButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.submitButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}

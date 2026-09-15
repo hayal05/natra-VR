@@ -1,0 +1,191 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.searchBar {
+  width: 100%;
+}
+
+/* Wraps 6.10b's own FilterBar (restaurant/status dropdowns) and the
+   date FormField together on one row that wraps onto a second line on
+   narrow viewports, rather than each sitting full-width stacked —
+   FilterBar's own `.bar` is a column flex internally (its dropdown
+   groups stack vertically inside it), so this wrapper is what actually
+   puts it side-by-side with the date field; FilterBar doesn't do that
+   itself. `align-items: flex-end` lines up the date field's control
+   with FilterBar's own dropdowns despite the date field also carrying
+   a visible label above its control (FilterBar's dropdown groups only
+   show a label when one is passed — both do here, so both stay
+   baseline-aligned at the control row instead of the labels).
+
+   Task 8.3e — responsive verification. Same deferred-320px-sidebar
+   caveat every admin screen in this pass carries (see
+   AdminDashboard.module.css's own 8.3b comment for the full reasoning,
+   not repeated per-screen) — this screen is genuinely usable starting
+   at 768px, where the sidebar leaves 548px+ of content area, well
+   inside `.page`'s own 640px cap.
+
+   Within that: `.filters` already wraps (`flex-wrap: wrap`), so at
+   768px+ FilterBar's own two stacked `<select>`s plus the date field
+   sit comfortably side by side with room to spare — no min-content-sum
+   risk the way multi-button `.actionRow`s elsewhere in this pass had,
+   since none of these three controls are unbreakable text forced onto
+   one line; a native `<select>`'s own width is intrinsic to its
+   options' text, not stretched to fill the row. `.row`'s own
+   `.rowHeader` (order_code + StatusBadge) and `.rowMeta` (date + total)
+   are the same fixed-format-content shapes `OwnerOrders.module.css`'s
+   own row already established as safe (8.2c-i) — `order_code` is the
+   same `NTR-#####` format, and formatted price/date strings are always
+   short. `.restaurantName`/`.customerName` are plain block-level divs
+   (not flex siblings sharing a row), so they simply wrap at any width
+   regardless of content length — `restaurants.name` is `VARCHAR2(80)`
+   and `orders.customer_name` is `VARCHAR2(120)` (docs/DB_SCHEMA.md),
+   but neither needs a cap-length check the way `OrderDetail.module.css`'s
+   own `.item` (8.2c-ii) did, since a block-level div has no
+   min-content-sum-with-a-sibling question a flex row does. No code
+   changes needed. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-md);
+}
+
+/* Caps the native date input's own width — full-width like every other
+   FormField usage (`.control`'s own `width: 100%`) would stretch it to
+   the whole row instead of sitting compactly next to the FilterBar
+   dropdowns. */
+.dateField {
+  width: auto;
+  min-width: 160px;
+}
+
+/* Task 8.7b — visible error+retry for a failed restaurant-filter-options
+   fetch (`restaurantsOptionsError`), replacing the silent
+   dropdown-just-isn't-there degrade `AdminOrders.jsx`'s own doc comment
+   used to (incorrectly) claim already matched `Home.jsx`'s Categories
+   row. Copied from that row's own `.categoriesError`/`.sectionStatus`/
+   `.retryButtonInline` trio (`Home.module.css`) rather than imported —
+   same "not worth a cross-screen dependency for a few small rules"
+   precedent this file's own `ORDER_STATUS_TONE`/`formatPrice`/
+   `formatDate` duplication comments already set. */
+.restaurantFilterError {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.sectionStatus {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.retryButtonInline {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Each row is one order in the list ListWithPagination renders — same
+   "renderItem output carries its own visual style, the list component
+   adds no chrome of its own" contract OwnerOrders.module.css's own
+   `.row` already documents. Structure matches that file's row almost
+   exactly, plus a `.restaurantName` line a platform-wide list (unlike
+   an owner looking at just their own restaurant's orders) actually
+   needs, to tell which restaurant each order belongs to.
+
+   `cursor: pointer` + `:focus-visible` (Task 6.11b) match
+   `AdminRestaurants.module.css`'s own `.row` (6.5b) — this row is now a
+   real `role="button"` tap target (6.11a's `GET /api/admin/orders/:id`
+   + the tap-through wired in `AdminOrders.jsx`), not a static card the
+   way it was before that task landed. */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  cursor: pointer;
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.orderCode {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.03em;
+}
+
+.restaurantName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.customerName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.rowTotal {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}

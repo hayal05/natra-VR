@@ -1,0 +1,209 @@
+.page {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.backLink {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  margin-bottom: var(--space-lg);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.addButton {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+/* Task 8.2e-i — verified at all 4 `ResponsiveGrid` breakpoints (Task
+   2.7). No changes needed — this file already has the defensive
+   patterns 8.2d-i/8.2d-ii had to add or confirm on `OwnerRestaurant.jsx`:
+   - `.page` already 640px-capped, matching every other owner screen.
+   - `.foodNameRow` (name + `StatusBadge`) already has `flex-wrap: wrap`
+     from whenever Task 5.9b built it — the same defensive wrap
+     `.openingHoursRow` already had and `.openToggleRow` was missing
+     (8.2d-i's fix).
+   - `.foodInfo` already sets `min-width: 0`, the same explicit shrink
+     allowance `.paymentMethodInfo` has, so it competes fairly against
+     `.listRowActions`' `flex-shrink: 0` floor rather than being pushed
+     off-column.
+   - `.listRowActions` here holds three short link-style actions
+     (Edit/Hide-Show/Delete) instead of two, but all three are
+     single-word text with no fixed-size non-text control like
+     `ToggleSwitch` — its min-content (~134px: three ~30-45px words
+     plus two `space-md` gaps) is close to but under the ~137px
+     `ToggleSwitch`+Edit floor 8.2d-ii already found safe within this
+     app's ~262px worst-case column at 320px, with `.foodInfo` still
+     free to shrink into the remainder.
+   - `.sectionHeader`'s heading/`.addButton` pairing is the same
+     wraps-freely shape 8.2d-ii verified, and shorter here ("Menu" +
+     "Add food" vs. "Payment methods" + "Add payment method") — an
+     easier case, not a new one.
+   - The delete-confirmation `Modal` (`size="sm"`) is the same
+     already-verified (8.2d-ii) shape.
+   Same standing no-npm-registry-access caveat as every verification
+   session since Task 2.10 — manual trace, not a rendered check. */
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.foodInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.foodNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.listRowName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.foodMeta {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.listRowActions {
+  display: flex;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+/* Task 8.9a2 — `min-height`/`display: inline-flex`/`align-items: center`
+   added on top of the original `padding: 0;` text-link styling: 8.9a's
+   own audit found this class's tap height was just the caption text's
+   own line height (~16-18px), well under the 44×44px minimum, despite
+   backing real Edit/Delete/Hide row actions. The extra height is
+   invisible padding around the same visually-unchanged underlined text
+   (font-size/color/text-decoration all untouched) — a taller click/tap
+   box, not a bigger-looking link. */
+.linkButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.linkButton:disabled {
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.linkButtonDanger {
+  composes: linkButton;
+  color: var(--color-error);
+}
+
+.secondaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.dangerButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-error);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.dangerButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.modalText {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-md);
+}
+
+.formError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-error);
+}

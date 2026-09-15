@@ -1,0 +1,172 @@
+/* Task 8.3f — responsive verification. Same `.page` 640px cap and
+   deferred-320px-sidebar caveat as every admin screen in this pass
+   (see AdminDashboard.module.css's own 8.3b comment for the full
+   reasoning, not repeated per-screen) — usable starting at 768px,
+   where the sidebar leaves 548px+ of content area, comfortably inside
+   this cap. `.form`'s FormFields (including the `as="select"` Timeout
+   field and the conditionally-rendered Custom-minutes field) are the
+   same shared, already-verified (8.1e) component stacked in a single
+   `flex-direction: column` — no sibling-row pairing to create a
+   min-content-sum question the way denser screens elsewhere in this
+   pass needed to work through.
+
+   `.toggleRow` (Notify-before-expiry label+hint vs. `ToggleSwitch`) is
+   the one custom row on this screen and superficially resembles the
+   `.openToggleRow` shape `OwnerDashboard.module.css` (8.2b-vi) and
+   `OwnerRestaurant.module.css` (8.2d-i) each needed a defensive
+   `flex-wrap: wrap` for — but this one was already built correctly and
+   needs no fix: `.toggleStatus` already carries `min-width: 0`
+   (present from this screen's own original build, not added by this
+   pass), which those two other rows' own status blocks were missing.
+   With `min-width: 0` set, `.toggleStatus` is free to shrink below its
+   own min-content and let its text (`.toggleLabel`/`.toggleHint`, both
+   plain non-nowrap spans) wrap internally, so the row's total width is
+   bounded by its container rather than by the sum of both children's
+   natural widths — the same root cause `.openToggleRow`'s fix
+   addressed via `flex-wrap: wrap` on the row instead, just solved one
+   level down, on the shrinking child itself, which works just as well
+   here since there's only the one flexible child to absorb the space
+   (`ToggleSwitch`'s own `.track` is `flex-shrink: 0`, correctly never
+   the side that gives). Checked against the real, longest hint copy
+   (\"Let the owner know shortly before an order is about to
+   automatically expire.\") at the narrowest realistic admin width
+   (768px, ~548px of content minus this row's own padding) — wraps onto
+   2 lines with room to spare, nowhere near forcing the row wider than
+   its container. No code changes needed. */
+.page {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-lg);
+}
+
+.status {
+  padding: var(--space-xl) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.sectionHeading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-xs);
+}
+
+.sectionBody {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-lg);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.sectionDivider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-md) 0;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.toggleStatus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.toggleLabel {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.toggleHint {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.formError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-error);
+}
+
+.successBanner {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+  background: var(--color-success-subtle, var(--color-surface));
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.submitButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.submitButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.submitButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}

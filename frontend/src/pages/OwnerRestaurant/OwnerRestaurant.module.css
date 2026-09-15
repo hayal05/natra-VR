@@ -1,0 +1,376 @@
+.page {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-lg);
+}
+
+.subheading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  margin: var(--space-xl) 0 0;
+}
+
+/* Task 8.2d-i — verified/adjusted at all 4 `ResponsiveGrid` breakpoints
+   (Task 2.7). This is the same `.openToggleStatus`/`.openToggleHint`-vs-
+   `ToggleSwitch` shape `OwnerDashboard.module.css`'s own `.openToggleRow`
+   already worked through in detail for Task 8.2b-vi, just measured
+   against this screen's own column instead of a `.card`'s:
+   - `.page` (this file) is 640px-capped with `space-lg` (16px) side
+     padding, so at the narrowest supported 320px viewport its inner
+     width is 288px.
+   - This row adds its own `space-md` (12px) side padding on top of
+     that (border + background, unlike `OwnerDashboard`'s version which
+     sits inside a `.card` that already provides that chrome) — 264px
+     left for the row's own content, close to but not the same 256px
+     `OwnerDashboard.module.css`'s comment measured for its `.card`
+     column.
+   - Same worst-case min-content sum 8.2b-vi's comment derives applies
+     here unchanged, since it's the same `StatusBadge`/`.openToggleHint`/
+     `ToggleSwitch` markup: `.openToggleStatus` ~145px (badge + gap +
+     "Customers") plus this row's own `space-lg` (16px) gap plus
+     `ToggleSwitch` ~95px (track + gap + "Open"/"Closed") ≈ 256px —
+     inside the 264px available here today, but by an even thinner
+     margin (~8px) than `OwnerDashboard`'s own ~0px-to-spare case, and
+     with the same "no fallback if a translation or fallback font
+     lengthens it" risk that row's comment gives.
+   Fix: added `flex-wrap: wrap` here too, same fix, same reasoning —
+   lets `ToggleSwitch` drop to its own line under the status block
+   rather than forcing the row wider than `.page`. No visual difference
+   at any of the 4 verified breakpoints' actual widths/copy, since none
+   trip it today — a safety margin, not a fix to an observed break. */
+.openToggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-md);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.openToggleStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.openToggleHint {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.imageFields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.status {
+  padding: var(--space-xl) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.formError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-error);
+}
+
+.successBanner {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+  background: var(--color-success-subtle, var(--color-surface));
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.submitButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.submitButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.submitButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.section {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Task 8.2d-ii — verified at all 4 `ResponsiveGrid` breakpoints (Task
+   2.7), covering this section header (shared by Categories/Service
+   areas/Payment methods) and, below, `.listRow`/`.listRowActions`,
+   `.openingHoursRow`, and the add/edit/delete `Modal`s. No changes
+   needed anywhere in this group, unlike `.openToggleRow` above
+   (8.2d-i) — the difference is that nothing here pairs unbreakable
+   text against a fixed-size non-text control the way that row paired
+   `.openToggleHint` against `ToggleSwitch`'s 44px track:
+   - `.sectionHeader`: `.sectionHeading` and `.addButton` both wrap
+     freely (no `white-space: nowrap` on either), so even the longest
+     pairing — "Payment methods" heading + "Add payment method" button
+     — shrinks to its longest-word min-content (~75px + ~90px, well
+     under the ~262px column at 320px) rather than forcing the row
+     wider, same "text wrapping avoids the failure mode" reasoning
+     8.2b-iii's `.countsError` finding already relied on.
+   - `.listRow`/`.listRowActions`: `.listRowActions` is `flex-shrink: 0`
+     (Edit/Delete links, or `ToggleSwitch` + Edit for payment methods —
+     that ToggleSwitch's own min-content is a genuine ~95px floor, same
+     figure 8.2d-i derived), but `.listRowName` and `.paymentMethodInfo`
+     (which already sets its own `min-width: 0`) both shrink and wrap
+     normally, same `.customerName` reasoning 8.2c-i already gave for
+     an analogous name-vs-fixed-actions row — worst case (~137px
+     actions + name's own longest word) still leaves room in the
+     column.
+   - `.openingHoursRow` already had `flex-wrap: wrap` from whenever
+     5.5b built it — the one row in this file that did, before 8.2d-i's
+     fix brought `.openToggleRow` in line with it. Its four children
+     (`.openingHoursDay` at a fixed 100px basis, `ToggleSwitch`,
+     `.openingHoursTimes`' two `type="time"` `FormField`s, and
+     `.openingHoursRowActions`) drop to their own line as a unit rather
+     than overflowing if a line doesn't have room.
+   - `Modal` (`size="sm"`, 360px cap): first responsive-pass use of this
+     component, so nothing to carry over from an earlier task. `.dialog`
+     is `width: 100%` under that cap, so it already shrinks to fit the
+     `.overlay`'s own `space-lg`-padded width at 320px; its footer's two
+     buttons ("Cancel" + "Save"/"Delete") are both short single words,
+     comfortably under the dialog's own padded content width. The
+     `FormField`s inside each modal's form are the same shared,
+     already-verified (8.1e) component.
+   Same standing no-npm-registry-access caveat as every verification
+   session since Task 2.10 — manual trace, not a rendered check. */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.sectionHeading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.addButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.listRowName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.listRowActions {
+  display: flex;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+/* Task 8.9a2 — same fix, same reasoning, as `OwnerMenu.module.css`'s own
+   `.linkButton` comment: 8.9a's audit found this class's tap height was
+   well under 44px despite backing real row actions. Invisible padding
+   via `min-height`/flex-centering only — the visible underlined text is
+   unchanged. */
+.linkButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.linkButtonDanger {
+  composes: linkButton;
+  color: var(--color-error);
+}
+
+.secondaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.dangerButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-error);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.dangerButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.openingHoursList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.openingHoursRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.openingHoursDay {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  flex: 0 0 100px;
+}
+
+.openingHoursTimes {
+  display: flex;
+  gap: var(--space-md);
+  flex: 1 1 auto;
+}
+
+.openingHoursRowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+}
+
+.openingHoursSaved {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+}
+
+.openingHoursError {
+  composes: formError;
+  flex: 1 0 100%;
+}
+
+.paymentMethodInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.paymentMethodMeta {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.modalText {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-md);
+}

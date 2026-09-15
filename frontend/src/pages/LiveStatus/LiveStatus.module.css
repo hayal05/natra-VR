@@ -1,0 +1,125 @@
+/* Task 8.2g — verified at all 4 breakpoints (320/768/1024/1280px). No
+   changes needed. `.page`/`.card` are the same "centered, capped
+   width:100%; max-width:480px card, bordered shell since this screen sits
+   outside RoleShell" shape `RequestLive.module.css`'s own 8.2g comment
+   documents (and, before that, `OwnerRegistration.module.css`'s 8.2a) —
+   above 480px it stays centered rather than stretching, same reasoning.
+   Worst-case content column at 320px: 256px, same figure as every other
+   `.card`-based screen in this pass (see RequestLive's comment for the
+   arithmetic).
+
+   `.statusHeader` (heading + `StatusBadge`, `justify-content:
+   space-between`, no `flex-wrap`) is the one row here worth checking
+   explicitly — it pairs a large (`font-size-heading`, 22px bold) `h1`
+   against a fixed-size nowrap badge, superficially like 8.2b-vi's
+   `.openToggleRow` finding. The difference: a flex item's default
+   `min-width: auto` resolves to *min-content* (its longest unbreakable
+   word), not its full unwrapped line, so `.heading` can shrink-wrap
+   without any explicit `min-width: 0` the way `.foodInfo`/
+   `.paymentMethodInfo` needed one elsewhere in this pass (those sit next
+   to *multiple* short sibling controls eating into the row, not one
+   heading with room to spare). Checked the actual copy against the
+   256px column: the longest single word across all three headings
+   ("Awaiting admin approval", "You're Live!", "Your request was
+   rejected") is "rejected"/"Awaiting", each under 90px at 22px bold —
+   comfortably under the ~256px - ~65px (badge min-content, the same
+   figure 8.2b-iii's `StatusBadge` measurement already established) -
+   ~12px (`space-md` gap) ≈ 179px remaining for the heading to shrink
+   into. No overflow at any width; a heading that wraps to 2 lines next
+   to a single-line badge is a cosmetic vertical-alignment quirk from
+   `align-items: center`, not a broken layout, same as 8.2b-vii's own
+   "not something to chase without an observed problem" posture.
+
+   `.primaryButton`/`.retryButton` are always alone on their own row
+   (never paired with a sibling control), so there's no min-content-sum
+   question for them the way `.actions` rows elsewhere in this pass
+   needed — each is free to take its own natural width. */
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background: var(--color-background);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.statusHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.instructions {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.loadingText {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.metaText {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.primaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.primaryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}

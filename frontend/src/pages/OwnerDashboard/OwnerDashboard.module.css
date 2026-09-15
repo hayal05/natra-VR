@@ -1,0 +1,404 @@
+/* Task 8.2b-i — layout decision for the responsive pass: this page
+   keeps its existing single-column `max-width: 640px` capped shell at
+   every breakpoint rather than switching to a page-level multi-column
+   card grid at tablet/desktop/large-desktop widths.
+
+   Reasoning:
+   - `AdminDashboard.module.css` (Task 6.3b, built before Phase 8) uses
+     this exact same `.page { max-width: 640px }` single-column shell
+     for its own stack of cards — it's already the established
+     "dashboard with several independent cards" convention in this
+     codebase, not something unique to this screen. Diverging here
+     would make this the only dashboard that reflows into columns,
+     which `AdminSettings`/`AdminDashboard` (Task 8.3, still pending)
+     would then either have to also adopt (unplanned scope creep on
+     this task) or sit inconsistent with.
+   - Every other owner screen already capped at this same 640px width
+     (`OwnerRestaurant.module.css`) or narrower (`CustomerInfo`/
+     `PaymentMethod`'s 640px, `OwnerRegistration`/`OwnerLogin`'s 420px,
+     Task 8.1e/8.2a) made the same "capped single column, no grid" call
+     for the same reason: a column of cards/fields reads fine centered
+     at any viewport width, and neither reference image shows a wide
+     desktop layout to design a grid against.
+   - `RoleShell`'s owner variant (Task 2.18) is the bottom-tab nav, not
+     the admin sidebar (Task 2.19) — there's no side rail eating into
+     the content width at desktop that would make a wider, multi-column
+     shell necessary to avoid a cramped reading column the way a
+     sidebar-constrained page might.
+   - Nothing on this page needs adjacent-card comparison (the four
+     cards are independent, unrelated stats/actions, not a table the
+     eye needs to scan across), so there's no functional upside to a
+     grid beyond filling horizontal whitespace on very wide screens —
+     the same trade-off already accepted for every other capped-width
+     screen in this app.
+
+   8.2b-ii onward verifies each card's own internal layout still holds
+   up inside this shell at all 4 breakpoints; this comment only covers
+   the page-level shell question.
+
+   Task 8.2b-ii — verified the shell itself (this block) and the
+   heading/subheading at all 4 `ResponsiveGrid` breakpoints
+   (`<768` mobile / `768` tablet / `1024` desktop / `1280` large-desktop,
+   same cutoffs `ResponsiveGrid.module.css` defines, Task 2.7). No
+   media query exists here and none was added:
+   - `.page` has no fixed-pixel width, only a `max-width` cap, so below
+     640px it's simply fluid-100%-minus-padding (identical, in effect,
+     to how `AdminDashboard.module.css`'s own unmodified `.page` already
+     behaves at its own mobile width) and above 640px it centers with
+     16px of horizontal breathing room never closing to zero.
+   - `space-lg` (16px) side padding at the narrowest supported width
+     (320px) leaves a 288px content column — enough for `.heading`'s
+     22px bold text and every card's own content (verified per-card in
+     8.2b-iii through 8.2b-vi) to wrap normally with no overflow.
+   - Heading/subheading spacing (`space-sm`/`space-xl` margins below
+     each) is the same fixed, non-breakpoint-dependent value at every
+     width — consistent with this being the one font scale the whole
+     app uses (`docs/DESIGN_TOKENS.md`'s Font scale section notes no
+     breakpoint-based type scale was ever defined), so there's no
+     "smaller heading on mobile" rule anywhere else in the codebase this
+     page would be inconsistent with by also not having one.
+   - `RoleShell`'s `.content` (the parent this `.page` sits inside)
+     already reserves `padding-bottom: roleshell-nav-height +
+     safe-area-inset-bottom` for the fixed bottom nav at every width per
+     Task 8.1i's decision to keep that nav visible everywhere — this
+     page's own last card never sits underneath it at any breakpoint.
+   No changes were needed; ticking 8.2b-ii as verified rather than
+   modified. */
+.page {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-sm);
+}
+
+.subheading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-xl);
+}
+
+/* Task 8.2b-vii — cross-card pass (the four 8.2b-iii..vi verifications
+   above each only traced one card's own internal layout in isolation;
+   this is the first pass looking at the five `.card` divs stacked
+   together in `.page`) surfaced one real, non-breakpoint-specific gap:
+   this rule had no `margin-bottom`, unlike `AdminDashboard.module.css`'s
+   own byte-for-byte-identical `.card` (explicitly named as this page's
+   layout model in 8.2b-i's own comment above `.page`), which carries
+   `margin-bottom: var(--space-lg)`. Five `.card`s with no space between
+   them would stack border-to-border — every card's own content held up
+   fine per-card at all 4 widths (8.2b-ii through vi already confirmed
+   that), but the page as a whole read as one fused block rather than a
+   column of distinct cards, at every width equally (not something a
+   per-card check would ever have caught).
+   Fix: added `margin-bottom: var(--space-lg)`, matching
+   `AdminDashboard.module.css`'s own value exactly so the two screens'
+   shared card convention (already identical in every other property)
+   stays identical here too. Confirmed against `RoleShell`'s
+   `.content` bottom padding (8.2b-ii) that this trailing margin on the
+   last card never collides with the fixed bottom nav at any width.
+   Also confirms the unlettered fifth "Get your restaurant Live" card
+   (always rendered, never gated behind `noRestaurantYet`) — it has no
+   CSS of its own beyond this shared `.card`/`.cardTitle`/`.cardBody`/
+   `.actionRow`/`.primaryButton`/`.secondaryButton` set, every piece of
+   which 8.2b-iii through vi (and this fix) already cover, so it needed
+   no separate lettered subtask and holds up at all 4 widths by the same
+   reasoning already given for each of those shared classes. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.cardTitle {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.cardBody {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Task 8.2b-iv — Order notifications card verified at all 4
+   `ResponsiveGrid` breakpoints (Task 2.7), no changes needed. This card
+   has no CSS of its own (`.cardBody` above + `.actionRow`/
+   `.secondaryButton` below, shared with every other card on this page)
+   — verification is about the actual copy in each of the three
+   `notificationPermission` states (`OwnerDashboard.jsx`), not a
+   dedicated class:
+   - `.cardBody` sets no `white-space`/`max-width`/fixed width of its
+     own, so all three states' copy — including the `denied` state's
+     sentence, the longest of the three ("Browser notifications are
+     blocked. Enable them for this site in your browser's settings to
+     get alerted about new orders.") — wraps as plain text at the same
+     ~256px worst-case card column 8.2b-iii already established, the
+     same way every other `.cardBody` paragraph on this page already
+     does. No word in any of the three states is long enough to force
+     that column wider.
+   - The `default` state's "Enable notifications" button is a plain
+     `.secondaryButton` inside `.actionRow` (`display: flex; flex-wrap:
+     wrap`) — identical structure to the Orders card's "View orders"
+     button 8.2b-iii already covers, just one button instead of one
+     link, so it wraps/shrinks the same way if the column ever got
+     narrower than the button's content, which it doesn't at 320px.
+   - The `granted`/`denied` states render *less* than the `default`
+     state (a paragraph only, no `.actionRow`/button at all), so if the
+     default state holds up at every width — which it does — the other
+     two, being strictly simpler, hold up too.
+   No media query was added — none of the above needed one. */
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.primaryButton {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primaryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.secondaryButton {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Task 8.2b-iii — Orders card verified at all 4 `ResponsiveGrid`
+   breakpoints (Task 2.7), no changes needed:
+   - `.newOrdersHeadline` (baseline-aligned count + label) and each
+     `.statusSummaryRow` (`space-between` badge + count) both hold short,
+     single-word/short-number content — `StatusBadge`'s own `.badge` is
+     `white-space: nowrap` (`StatusBadge.module.css`) and never the long
+     side of the row, so neither wraps or overflows even at the
+     narrowest supported width, where the card's own content column is
+     ~256px (320px viewport − .page's `space-lg`×2 − .card's own
+     `space-lg`×2).
+   - `.countsError` has no `flex-wrap` of its own, but that's not a bug:
+     a flex item's default `min-width: auto` resolves to its *min-content*
+     size (the longest unbreakable word), not its full unwrapped line, so
+     the `<p>` still wraps normally onto 2-3 lines at that ~256px column
+     instead of forcing the row wider than its container — the inline
+     "Retry" button just sits vertically centered beside the now-taller
+     paragraph rather than beside a single line. Same shape
+     `AdminDashboard.module.css`'s own identical (as-yet-unverified,
+     Task 8.3) `.countsError` copy will need the same reasoning for.
+   No media query was added — none of the above needed one. */
+.newOrdersHeadline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.newOrdersCount {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.newOrdersLabel {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.statusSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.statusSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.statusSummaryCount {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.countsError {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.retryButtonInline {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Task 8.2b-v — Sales card verified at all 4 `ResponsiveGrid`
+   breakpoints (Task 2.7), no changes needed:
+   - `.salesRow`'s two children (`.salesLabel`/`.salesAmount`) are plain
+     `<span>`s in a `justify-content: space-between` flex row with no
+     `flex-wrap` — same shape `.statusSummaryRow` (8.2b-iii) already
+     verified for the Orders card, and the same "no overflow" reasoning
+     applies: flex items default to `min-width: auto` (min-content), and
+     both spans' text has a natural break point (`.salesLabel`'s "All
+     time" has a space; `.salesAmount`'s `formatPrice` output always has
+     one too, e.g. "1250 ETB") — so if the two together ever exceeded
+     the ~256px card column (8.2b-ii/iii), the longer one wraps onto a
+     second line instead of forcing the row wider. In practice, at
+     `font-size-title` (16px, `DESIGN_TOKENS.md`) even a large all-time
+     total like "999999.50 ETB" sits well under 256px next to "All
+     time", so this stays single-line at every width verified.
+   - `.salesMeta`'s completed-order-count line is a single short
+     sentence with no fixed width — wraps like every other plain
+     `.cardBody`-style paragraph on this page (8.2b-iv).
+   - Loading (`Loading sales summary…`) and error (`.countsError` +
+     inline Retry) states reuse `.cardBody`/`.countsError`, already
+     verified for the Orders card (8.2b-iii) and Order notifications
+     card (8.2b-iv) respectively — same classes, same conclusion.
+   No media query was added — none of the above needed one. */
+.salesSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.salesRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.salesLabel {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.salesAmount {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.salesMeta {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin: var(--space-xs) 0 0;
+}
+
+/* Task 5.19 — Quick actions card. No border/background of its own
+   (unlike OwnerRestaurant.module.css's own .openToggleRow, which sits
+   directly on the page): this row already lives inside .card, which
+   provides that chrome.
+
+   Task 8.2b-vi — verified/adjusted at all 4 `ResponsiveGrid` breakpoints
+   (Task 2.7). Unlike every other row on this page (`.statusSummaryRow`,
+   8.2b-iii; `.salesRow`, 8.2b-v), this one doesn't hold up with margin
+   to spare at the narrowest supported 320px width (~256px card column,
+   8.2b-ii) — it's the first row combining two *separately* nowrap-ish
+   min-content chunks against a fixed-size control:
+   - `.openToggleStatus` (badge + `.openToggleHint`) has `min-width: 0`
+     but is itself a `display: flex` row, so *its* min-content is the
+     `StatusBadge` (`white-space: nowrap`, ~55-65px for "Open"/"Closed")
+     plus `space-md` plus the hint sentence's own min-content — the
+     longest unbreakable word, "Customers", not the full sentence
+     (~60-65px at `font-size-caption`).
+   - `ToggleSwitch`'s wrapper has no `flex-shrink: 0` of its own, so it
+     can shrink, but not below its *own* min-content: the 44px track
+     (itself `flex-shrink: 0` in `ToggleSwitch.module.css`) plus
+     `space-sm` plus its one-word "Open"/"Closed" label (~35-45px at
+     `font-size-body`).
+   Summed with this row's own `space-lg` gap between the two items, that
+   worst case (~145px + 16px + ~95px ≈ 256px) lands right at the edge of
+   the ~256px column with only a few px of slack — not overflowing today
+   given the actual measured copy, but one `font-family` fallback or
+   translation with a longer "Customers"/"Closed" equivalent away from
+   doing so, and this row (unlike `.actionRow` below, which already has
+   `flex-wrap: wrap`) had no fallback if it ever did.
+   Fix: added `flex-wrap: wrap` here too, so a too-tight width drops the
+   `ToggleSwitch` to its own line under the status block instead of
+   forcing the row wider than its column (the same failure mode
+   `.countsError`'s min-content reasoning, 8.2b-iii, relies on `<p>`
+   text wrapping to avoid — this row needed the wrap declared explicitly
+   since `ToggleSwitch` itself doesn't wrap). No visual difference at any
+   of the 4 verified breakpoints' actual widths/copy, since none of them
+   currently trip it — this is a safety margin, not a fix to an observed
+   break. */
+.openToggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.openToggleStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.openToggleHint {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.quickActionError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+}

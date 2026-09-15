@@ -1,0 +1,105 @@
+/* Task 8.3d — verified at all 4 breakpoints (320/768/1024/1280px). No
+   changes needed. Same `max-width: 640px; margin: 0 auto` `.page` shell,
+   and the same deferred-320px-sidebar caveat `AdminDashboard.module.css`'s
+   8.3b comment documents in full (Task 8.3g, this pass's own closing
+   task, is where the admin sidebar's mobile treatment gets decided —
+   not repeated here). At 768px+, content area is 548px+, comfortably
+   inside the 640px cap.
+
+   `ListWithPagination`'s own `.pagination` already carries the
+   `flex-wrap: wrap` fix Task 8.2c-i added — automatic here too.
+
+   `.rowHeader` (`.name` + `.amount`) is the same nowrap-ellipsis-plus-
+   fixed-sibling shape `AdminRestaurants.module.css`'s own `.rowHeader`
+   already worked through in Task 8.3c: `.name`'s `overflow: hidden`
+   (needed for its `text-overflow: ellipsis` truncation) triggers the
+   CSS Flexbox spec's "automatic minimum size is zero when overflow
+   isn't `visible`" rule, so it correctly shrinks against `.amount`'s
+   `flex-shrink: 0` without an explicit `min-width: 0` — same conclusion
+   as that file's own comment, not re-derived from scratch. `.amount`
+   itself (a short "250 ETB"-style value, no `white-space: nowrap` set)
+   has never been observed to wrap in practice given real registration-
+   fee amounts, but even if it did, wrapping is graceful, not an
+   overflow, the same "no fallback needed when nothing breaks" posture
+   elsewhere in this pass takes for genuinely short content. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Each row is one pending live request ListWithPagination renders — same
+   "renderItem output carries its own visual style" contract
+   AdminRestaurants.module.css's own `.row` already establishes.
+   `cursor: pointer` + `:focus-visible` (Task 6.6f) match that same
+   file's `.row` now that this one is a real `role="button"` tap target
+   too, not a static card. */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  cursor: pointer;
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.rowHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.name {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.amount {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.rowMeta {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}

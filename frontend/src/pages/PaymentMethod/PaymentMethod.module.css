@@ -1,0 +1,121 @@
+/* Task 8.1e — same 640px reading-width column CustomerInfo.jsx's own
+   `.page` (this same task) and OrderBuilder.jsx's `.page` (Task 8.1d)
+   already use — otherwise the payment-method cards and Continue button
+   would stretch edge-to-edge on a wide screen. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.status {
+  padding: var(--space-xl) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.methodList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.methodCard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  text-align: left;
+  font-family: var(--font-family);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.methodCard:hover {
+  box-shadow: 0 2px 4px rgba(14, 26, 43, 0.08), 0 8px 20px rgba(14, 26, 43, 0.12);
+  transform: translateY(-2px);
+}
+
+.methodCard:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+
+.methodCardSelected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.methodName {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.methodDetail {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.methodInstructions {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+}
+
+.primaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  width: 100%;
+}
+
+.primaryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}

@@ -1,0 +1,322 @@
+/* Task 8.3e — admin-mode (`role="admin"`) responsive re-check, on top
+   of 8.2c-ii's own owner-mode pass below. No new gaps and no code
+   changes: admin mode renders strictly less than owner mode (per this
+   component's own doc comment, `!isAdmin &&` guards the entire
+   Accept/Reject/Call-Customer/Complete `.actionRow` block, including
+   the one real overflow 8.2c-ii already found and fixed there), so
+   every fix already made for owner mode — this `.page` cap, `.item`'s
+   `flex-wrap` — applies identically since they're the same DOM/CSS for
+   both roles; there is no admin-only markup here to introduce a new
+   risk. `AdminOrders.jsx`'s own tap-through (6.11b) reaches this same
+   component at `/admin/orders/:id`, confirmed against
+   `AdminOrders.module.css`'s own 8.3e comment for that screen's half of
+   this task. Same deferred-320px-sidebar caveat as every admin screen
+   in this pass (see AdminDashboard.module.css's 8.3b comment) — usable
+   starting at 768px, where the sidebar leaves comfortably more than
+   this `.page`'s own 640px cap needs. */
+/* Task 8.2c-ii — responsive verification. Same real gap 8.2c-i (the
+   sibling sub-subtask) found on `OwnerOrders.jsx`'s own `.page`: this
+   screen is a single-resource detail view, the same shape as
+   `AdminRestaurantDetail.jsx`/`AdminLiveRequestDetail.jsx`/
+   `FoodDetails.jsx` (all `max-width: 640px`) and `OrderHistory.jsx`'s
+   own list-in-a-page, but had no cap of its own — above 640px
+   (tablet/desktop/large-desktop) `.card` was stretching full-bleed
+   edge to edge instead of centering in a reading column like every
+   comparable detail screen. Fixed to match. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.backButton {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.status {
+  padding: var(--space-xl) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.orderCode {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.03em;
+}
+
+.dateTime {
+  margin: calc(var(--space-md) * -1) 0 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.detailList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+}
+
+.detailList dt {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.detailList dd {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-text-primary);
+}
+
+.itemList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Task 8.2c-ii — `food_name_snapshot` is `VARCHAR2(120)`
+   (docs/DB_SCHEMA.md), not a short fixed label like `.header`'s order
+   code or `.totalRow`'s "Total" — a row pairing a long name with a
+   price has no wrap fallback anywhere else in this codebase to copy
+   (checked `OrderBuilder.jsx`'s and `OrderConfirmation.jsx`'s own line-
+   item styling; neither has one either, since neither screen puts a
+   full 120-char-capacity name next to a price in an unwrapped flex
+   row). At the ~256px worst-case card column (8.2b-ii's convention), a
+   flex item's default `min-width: auto` keeps this row from overflowing
+   for any *realistic* name (word-by-word min-content, same reasoning
+   8.2b-iii's `.countsError` finding already established), but unlike
+   that finding this field has no length cap this app enforces anywhere
+   below 120 chars, so a single long unbroken word is a real possibility
+   for this field specifically in a way it wasn't there. Added
+   `flex-wrap: wrap` as the same defensive margin 8.2b-vi's
+   `.openToggleRow` added on its own thin-but-currently-fine row: drops
+   the price to its own line under the name instead of ever forcing the
+   row wider than the card, no visual change against any name actually
+   in this app's seed/mock data today. */
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+.mutedText {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+/* "small thumbnail" per docs/NATRA_MASTER_PROMPT.md's own "Order
+   details" wording — deliberately compact, unlike FoodDetails.jsx's own
+   full-width `.image` (that screen's photo *is* the subject; here it's
+   one supporting field among many). ImageViewer's own full-screen
+   overlay (Task 2.6) is what actually lets it be inspected closely. */
+.screenshotThumbnail {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  margin-top: var(--space-xs);
+}
+
+/* Task 5.14b — Accept/Reject action row. Only rendered for a `New`
+   order (see OrderDetail.jsx's own doc comment); sits below the Payment
+   section as its own unbordered block rather than a `.section` — it's
+   an action, not another field group.
+
+   Task 8.2c-ii: the `New`-order row renders three `flex: 1` buttons
+   (Accept/Reject/Call Customer) with no `flex-wrap`, unlike every other
+   multi-button `.actionRow` this app's responsive pass has already
+   covered (`OwnerDashboard.module.css`'s own `.actionRow`,
+   `ListWithPagination.module.css`'s `.pagination`, both `flex-wrap:
+   wrap` — 8.2b-iii/8.2c-i). Summing this row's own min-content at the
+   ~256px worst-case card column (8.2b-ii's convention): "Accept"
+   (~44px text + 32px padding), "Reject" (~44+32) and "Call Customer"
+   (longest word "Customer" ~64px text + 32px padding) plus two
+   `space-md` (12px) gaps totals ~272px — over the ~256px column, so
+   unlike 8.2b-vi's "thin margin, nothing overflows today" finding, this
+   one actually does overflow at the narrowest supported width with
+   today's real copy, not just as a future-proofing margin. The
+   `Accepted`-order row (Complete alone) was never at risk — a single
+   `flex: 1` item can't overflow its own row. Fixed by adding the same
+   `flex-wrap: wrap` convention already used elsewhere, so "Call
+   Customer" drops to its own full-width line instead of forcing the
+   row wider than the card at mobile widths; unchanged at 768px+, where
+   the column is wide enough for all three inline. */
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.actionButton {
+  flex: 1;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Accept — same primary treatment as .retryButton above. */
+.acceptButton {
+  composes: actionButton;
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+}
+
+.acceptButton:active:not(:disabled) {
+  background: var(--color-primary-pressed);
+}
+
+/* Reject — same --color-error `.dangerButton` treatment OwnerMenu.jsx's/
+   OwnerRestaurant.jsx's own delete-confirmation buttons already use for
+   a destructive action, applied here since a reject is equally
+   final/one-way for the order. */
+.rejectButton {
+  composes: actionButton;
+  color: var(--color-text-on-primary);
+  background: var(--color-error);
+}
+
+/* Complete — Task 5.15. Same --color-success `StatusBadge` already maps
+   the `Completed` status onto (see this file's own `ORDER_STATUS_TONE`),
+   reused here for the action that produces that status, same "the
+   button's color previews the state it leads to" reasoning `.acceptButton`/
+   `.rejectButton` already follow against `--color-primary`/`--color-error`. */
+.completeButton {
+  composes: actionButton;
+  color: var(--color-text-on-primary);
+  background: var(--color-success);
+}
+
+/* Call Customer — Task 5.16. A `New`-order action per
+   docs/NATRA_MASTER_PROMPT.md's own "Restaurant order actions" grouping
+   (New: Accept/Reject/Call Customer; Accepted: Complete only), so this
+   sits in the same actionRow as .acceptButton/.rejectButton above, not
+   the Accepted row's .completeButton. It's a plain `tel:` link, not a
+   mutation, so it gets a neutral (non-primary/non-error/non-success)
+   treatment — `--color-surface-muted`/`--color-border`/
+   `--color-text-primary`, the same "just a border, not a colored fill"
+   look FormField (Task 2.10) already established for a neutral control —
+   rather than competing for attention with the two real status-changing
+   actions beside it. `.actionButton`'s shared rules (flex/font/radius/
+   padding) are written for a <button>, which centers its own text by
+   default; an <a> doesn't, so this adds its own centering rather than
+   relying on the base class silently working for both element types. */
+.callButton {
+  composes: actionButton;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  text-align: center;
+  color: var(--color-text-primary);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+}
+
+.actionError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+}

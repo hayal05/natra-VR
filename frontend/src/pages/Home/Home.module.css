@@ -1,0 +1,282 @@
+/* The orange header block from the reference UI
+   (docs/reference_ui/1000065033.jpg): brand row on top, search bar
+   sitting inside the same colored block below it — not a separate
+   white-background search row. */
+.header {
+  background: var(--color-primary);
+  padding-bottom: var(--space-xl);
+  /* A little extra top padding covers a phone's own status bar area on
+     devices that don't already inset it via the browser chrome. */
+  padding-top: calc(var(--space-lg) + env(safe-area-inset-top));
+}
+
+/* Task 8.1a — the brand row + search bar's own centered, width-capped
+   content, separate from `.header`'s full-bleed background above it so
+   the colored block still runs edge-to-edge on a wide screen instead of
+   being capped along with its content. 1280px matches `ResponsiveGrid`'s
+   own `xl` breakpoint (Task 2.7) rather than a new number — past that
+   width this screen's widest section (the Popular Foods grid) has
+   already hit its own max column count, so there's nothing left on this
+   screen that benefits from more horizontal room. Like ResponsiveGrid's
+   768/1024/1280 scale itself, this is a reasonable starting point rather
+   than something measured against a reference image — neither
+   `docs/reference_ui/` image is anything but a phone-width mock. */
+.headerInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-inline: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .headerInner {
+    padding-inline: var(--space-xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .headerInner {
+    padding-inline: var(--space-2xl);
+  }
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Task 8.7g — `.brand`/`.logoMark` (the wrapper + circular "N" mark
+   these used to sit around/next to the wordmark) are removed along with
+   the mark itself: `.brandRow` now holds `.brandName` directly, so an
+   intermediate flex wrapper with nothing else in it would be dead
+   markup. `.brandName` picks up `.brandRow`'s own `align-items: center`
+   for vertical position (unchanged, still centered against the bell
+   icon on the same row) and gets a touch more `letter-spacing` here,
+   now that it's the leftmost thing in the header instead of sitting
+   next to a 32px icon box — the wordmark reads slightly tighter/smaller
+   on its own than it did with that box's visual weight balancing it out
+   on the left, so this compensates rather than just deleting the icon
+   and leaving the row looking lopsided. */
+.brandName {
+  font-family: var(--font-family-brand);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-on-primary);
+  letter-spacing: 0.04em;
+}
+
+.bellIcon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-on-primary);
+  flex-shrink: 0;
+}
+
+/* Task 8.7h — groups the new "Sign up" button with the bell icon so
+   `.brandRow`'s `justify-content: space-between` puts its one gap
+   between the wordmark and this pair, not between three separately
+   spread-out items (see the JSX comment on `.headerActions` for the
+   full reasoning). */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+/* Filled white pill sitting on `.header`'s own orange background —
+   text uses the brand orange so it stays legible against that white
+   fill. `min-height` keeps its tap target at the usual 44px floor
+   despite the text itself being shorter than that. */
+.signUpButton {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-surface);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.signUpButton:active {
+  opacity: 0.8;
+}
+
+/* Task 8.1a — same max-width as `.headerInner` above, and for the same
+   reason (nothing below this width benefits from more room once the
+   Popular Foods grid has hit its own max column count) — kept as its
+   own rule rather than sharing a class with `.headerInner`, since this
+   element has no background of its own to keep full-bleed. */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  padding: var(--space-xl) 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.sectionTitle {
+  margin: 0;
+  padding: 0 var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* Passed to HorizontalScroller's own `className` prop (it merges this
+   onto its scroller `<div>`, per HorizontalScroller.jsx) rather than
+   applied via a CSS Modules `:global()` selector targeting that
+   component's internal class name from outside its own module — CSS
+   Modules hashes class names per-file, so there is no real global
+   `.scroller` class to select here. This keeps the row's left/right
+   padding matched to the section title above it while still letting the
+   row's own scroll area (not a wrapper around it) own the padding, so a
+   card can still scroll flush to the viewport edge. */
+.restaurantsScroller {
+  padding-inline: var(--space-lg);
+}
+
+/* Same reasoning as .restaurantsScroller above — FilterBar's own chip
+   row composes HorizontalScroller internally, so this keeps its
+   left/right padding matched to the section title rather than reaching
+   into FilterBar's own CSS Modules file from outside it. */
+.categoriesFilterBar {
+  padding-inline: var(--space-lg);
+}
+
+.categoriesError {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 0 var(--space-lg);
+}
+
+.retryButtonInline {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.sectionStatus {
+  margin: 0;
+  padding: 0 var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+/* ResponsiveGrid renders its own grid element directly (no extra
+   wrapper — see ResponsiveGrid.jsx), so this class lands on that same
+   element; matches .restaurantsScroller/.categoriesFilterBar's own
+   "match the section title's left/right padding" reasoning above. */
+.popularFoodsGrid {
+  padding-inline: var(--space-lg);
+}
+
+/* EntityCard's own `cta` slot takes a node, not a real button (Food
+   Details, Task 3.9, doesn't exist yet for it to link to — see
+   Home.jsx's own doc comment) — styled to read as an affordance anyway
+   rather than plain text, same visual weight as .retryButton above. */
+.orderNowCta {
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-xs) var(--space-md);
+}
+
+/* Task 3.6 — Search results section. `.searchSubsection`/
+   `.searchSubheading` sit *inside* the single "Search results" `.section`
+   (see Home.jsx) rather than each result type getting its own top-level
+   `.section` the way the normal Restaurants/Categories/Popular Foods rows
+   do — a search hit is one screen's worth of content, not three separate
+   browsable rows, so its two subgroups ("Restaurants", "Foods") read as
+   a lighter sub-heading under one heading rather than three co-equal
+   page sections. `.restaurantsScroller`/`.popularFoodsGrid` above are
+   reused as-is for the actual result rows/grid — a search result card
+   should look exactly like the card it's a hit for, so there's no
+   separate spacing rule to define for it. */
+.searchSubsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.searchSubheading {
+  margin: 0;
+  padding: 0 var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+/* Task 8.1a — every section-level element that pads itself in from the
+   screen edge by `var(--space-lg)` (matching `.headerInner`'s own base
+   padding above) gets the same wider gutter at the same two
+   breakpoints, so the whole page's left/right edge lines up as the
+   gutter grows — not just the header. Grouped into one rule rather than
+   repeating the media query per selector; `padding-inline` here
+   overrides just the left/right side of each selector's own
+   `padding: 0 var(--space-lg)` (or equivalent) shorthand above without
+   needing to touch those declarations themselves. */
+@media (min-width: 768px) {
+  .sectionTitle,
+  .restaurantsScroller,
+  .categoriesFilterBar,
+  .categoriesError,
+  .sectionStatus,
+  .popularFoodsGrid,
+  .searchSubheading {
+    padding-inline: var(--space-xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sectionTitle,
+  .restaurantsScroller,
+  .categoriesFilterBar,
+  .categoriesError,
+  .sectionStatus,
+  .popularFoodsGrid,
+  .searchSubheading {
+    padding-inline: var(--space-2xl);
+  }
+}

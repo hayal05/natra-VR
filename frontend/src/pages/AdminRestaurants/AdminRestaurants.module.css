@@ -1,0 +1,122 @@
+/* Task 8.3c — verified at all 4 breakpoints (320/768/1024/1280px). No
+   changes needed. `.page`'s `max-width: 640px; margin: 0 auto` is the
+   same shell `AdminDashboard.module.css` (8.3b) and every owner-role
+   dashboard/list screen in this pass already use. Same standing
+   320px-viewport caveat 8.3b's own comment documents in full: the
+   admin sidebar (`RoleShell`, Task 2.19) has no collapse at any width
+   today, a shared-shell gap Task 8.3g (this pass's own closing task)
+   is where it gets addressed — not repeated in full here, see that
+   comment for the complete reasoning. At 768px+ (this screen's first
+   genuinely usable width), content area is 548px+, comfortably inside
+   the 640px cap.
+
+   `ListWithPagination`'s own `.pagination` already has the
+   `flex-wrap: wrap` fix Task 8.2c-i added for `OwnerOrders.jsx`'s
+   identical use of the same shared component — that fix lives in the
+   shared component, so it applies here automatically, not something
+   this screen's own CSS needs to repeat or re-verify.
+
+   `.rowHeader` (`.name` + `.badges`, `justify-content: space-between`)
+   is the one row worth explaining rather than just asserting safe:
+   `.name` has no explicit `min-width: 0` the way `.foodInfo`/
+   `.paymentMethodInfo`/`.activityMain` elsewhere in this pass needed
+   one, but doesn't need one either — `.name`'s own `overflow: hidden`
+   (paired with `white-space: nowrap; text-overflow: ellipsis` for the
+   truncation itself) already triggers the CSS Flexbox spec's own
+   "automatic minimum size is zero, not the content-based minimum, for
+   any axis where the item's own `overflow` is not `visible`" rule —
+   the same mechanism that makes any nowrap-ellipsis flex-child pattern
+   work without an explicit `min-width: 0` companion, distinct from the
+   *wrap*-based shrinking (`min-width: auto` resolving to min-content,
+   i.e. the longest unbreakable word) every other row in this pass has
+   relied on instead. `.badges` (`flex-shrink: 0`, two short nowrap
+   `StatusBadge`s) never competes for the space `.name` gives up, so
+   the row correctly truncates a long restaurant name rather than
+   overflowing, at every breakpoint checked. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.searchBar {
+  width: 100%;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Each row is one restaurant in the list ListWithPagination renders —
+   its own `.item`/`.list` styling deliberately adds no chrome of its
+   own (see that component's CSS module comment), so the card look
+   lives entirely here, same "renderItem output carries its own visual
+   style" contract OwnerOrders.module.css's own `.row` already
+   establishes for its order rows. `cursor: pointer` +
+   `:focus-visible` (Task 6.5b) match that same file's `.row` now that
+   this one is a real `role="button"` tap target too, not a static
+   card. */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  cursor: pointer;
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.rowHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.name {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.rowMeta {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}

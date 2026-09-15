@@ -1,0 +1,63 @@
+/* Task 8.1f — same 640px reading-width column every other capped
+   single-column checkout screen in this codebase uses (CustomerInfo/
+   PaymentMethod, Task 8.1e; OrderBuilder, Task 8.1d) — otherwise the
+   instructions text and Continue button would stretch edge-to-edge on a
+   wide screen. `ImageUploadField`'s own 240px max-width (its own CSS)
+   is well within this column at every breakpoint, so it needs no change
+   of its own. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.instructions {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.uploadError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+}
+
+.primaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  width: 100%;
+}
+
+.primaryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.primaryButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}

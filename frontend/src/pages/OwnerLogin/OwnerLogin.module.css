@@ -1,0 +1,130 @@
+/* Task 8.2a — verified at all 4 breakpoints, same conclusion and same
+   reasoning as `OwnerRegistration.module.css`'s own Task 8.2a comment:
+   no changes needed, the centered `width:100%; max-width:420px` card
+   (including the `successBanner`, which wraps normally since it has
+   no fixed width or `white-space` override) already reflows correctly
+   from mobile through large-desktop. */
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background: var(--color-background);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.instructions {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.successBanner {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+  background: var(--color-success-subtle, var(--color-surface));
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+/* Task 8.7e — a neutral (not success-green, not error-red) banner for
+   "you were logged out, log back in" — genuinely a different tone than
+   either existing message type this screen shows, so it gets its own
+   class rather than reusing `.successBanner`'s color. */
+.noticeBanner {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.formError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-error);
+}
+
+.primaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  width: 100%;
+}
+
+.primaryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.primaryButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+/* Task 8.9a2 — `min-height`/`display: inline-flex`/`align-items: center`
+   added on top of the original `padding: 0;` text-link styling: 8.9a's
+   own audit found this class's tap height was just the caption text's
+   own line height, well under the 44×44px minimum, despite this being a
+   real cross-link action. `align-self: center` is untouched (still
+   works on a flex/grid item regardless of its own display value); the
+   extra height is invisible padding around the same visually-unchanged
+   underlined text. */
+.linkButton {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}

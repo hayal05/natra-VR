@@ -1,0 +1,114 @@
+/* Task 8.2c-i — same 640px reading-width cap `OrderHistory.jsx`'s own
+   `.page` (Task 8.1h) already applies for the identical shape (a
+   `ListWithPagination` list wrapped directly in a padded page, no
+   width of its own from that component — see its module's own
+   comment). This page was missed when 8.1h's fix went into the
+   customer screen; without it, order rows and the pagination controls
+   stretched full-bleed edge to edge above 640px (tablet/desktop/
+   large-desktop), unlike every other owner screen (Dashboard,
+   Restaurant, Menu, Account) which already caps at 640px. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Same button treatment OwnerRestaurant.module.css's own .retryButton
+   already uses for its identical "couldn't load, retry" EmptyState
+   action slot -- kept as its own copy here rather than a shared class,
+   same reasoning every other small per-screen style in this codebase
+   isn't factored out until a third near-identical use turns up. */
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+/* Each row is one order in the list ListWithPagination renders -- same
+   "renderItem output carries its own visual style, the list component
+   adds no chrome of its own" contract OrderHistory.module.css's own
+   .row comment already documents. Structure matches that file's row
+   almost exactly, plus a .customerName line an owner (unlike a
+   customer looking at their own history) actually needs to identify
+   who placed the order.
+
+   Task 5.13 turned this row into a real link to the order detail
+   screen -- `cursor: pointer` plus a `:focus-visible` outline (matching
+   EntityCard.module.css's own `.card:focus-visible` treatment for the
+   identical "keyboard-focusable, role=button" shape) are the only
+   additions; the row's own onClick/onKeyDown (OwnerOrders.jsx) already
+   handle the interaction, this file just needs to look clickable. */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  cursor: pointer;
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.orderCode {
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.03em;
+}
+
+.customerName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.rowTotal {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}

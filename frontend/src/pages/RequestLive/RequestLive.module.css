@@ -1,0 +1,134 @@
+/* Task 8.2g — verified at all 4 breakpoints (320/768/1024/1280px). No
+   changes needed. `.page` already centers a `width:100%; max-width:480px`
+   `.card` (the same "centered, capped single column, bordered card since
+   this screen sits outside RoleShell" shape `OwnerRegistration.module.css`
+   (8.2a) documents for its own 420px case — this screen's card is wider
+   since it hosts a 2-step Wizard rather than a login form, but the shell
+   pattern is identical), so above 480px it just stays centered rather
+   than stretching, same "no reference/spec describes a wider treatment"
+   reasoning 8.2a gives.
+
+   Worst-case content column at the narrowest supported width (320px):
+   320 - 2*space-lg (.page's own side padding, 16px each) - 2*space-lg
+   (.card's own side padding, 16px each) = 256px — the same figure every
+   `.card`-based screen in this responsive pass has landed on.
+
+   This is Wizard's (Task 2.20) first real use outside `ComponentSandbox`'s
+   mock preview (2.21), so its own layout was checked fresh rather than
+   assumed safe — see `Wizard.module.css`'s own comment for that
+   component-level verification. Within this screen specifically:
+   - Step 1's `.feeInfo` `dl` stacks each `dt`/`dd` pair in its own
+     `flex-direction: column` `.feeInfoRow` (no side-by-side pairing), so
+     it wraps like every other plain-paragraph field verified elsewhere in
+     this pass (8.2b-iv's `.cardBody` reasoning) — including the longer
+     optional `registration_instructions` value, which has no length cap
+     of its own but isn't paired against anything fixed-size on its row.
+   - Step 2's `ImageUploadField` (Task 2.10) is the same shared,
+     already-verified (8.1f) component — `width:100%` controls, a
+     `max-width: 240px` (not `width`) preview cap that already shrinks
+     below that on narrow viewports — shared-class conclusions carried
+     over rather than re-derived, same approach 8.2b-iv/8.2d-i took for
+     other shared components. */
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background: var(--color-background);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.instructions {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.stepBody {
+  min-height: 120px;
+}
+
+.loadingText {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.feeInfo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.feeInfoRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.feeInfoRow dt {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.feeInfoRow dd {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.feeInfoRow dd.feeAmount {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.uploadError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+}
