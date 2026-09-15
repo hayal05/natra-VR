@@ -1,0 +1,112 @@
+/* Global theme/style config (Task 2.2).
+   Token values sourced from docs/DESIGN_TOKENS.md (Task 2.1) — see that
+   file for what's measured directly from the reference UI images vs.
+   inferred from visual proportions. Variable names below intentionally
+   mirror the token names in that doc 1:1 so this file stays a direct,
+   auditable mapping rather than a second source of truth. */
+
+/* Brand wordmark font — used only for the "NATRA" platform title itself
+   (customer header logo, admin sidebar brand), not general UI text. See
+   --font-family-brand below. Only a Regular weight file exists, so this
+   is the sole @font-face for it. */
+@font-face {
+  font-family: 'Astra';
+  src: url('./assets/fonts/Astra-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Brand
+     Reverted Task 9.1 to the originally-measured brighter values (see
+     the reference image supplied for this task) — Task 8.9b2 had
+     darkened these specifically to clear WCAG AA contrast for white
+     text/icons sitting on top of them (buttons, links, badges); going
+     back to the brighter hue reopens that gap on those elements. See
+     docs/DESIGN_TOKENS.md's Task 8.9b2 section for the ratio table this
+     undoes, in case that tradeoff needs revisiting alongside this. */
+  --color-primary: #f2690c;
+  --color-primary-pressed: #d65c08;
+  /* Measured Task 2.22 (visual QA pass): the home-screen SearchBar's own
+     fill sitting on the orange header (docs/reference_ui/1000065033.jpg)
+     is this lighter tint, not white/surface — see DESIGN_TOKENS.md's
+     Task 2.22 section and SearchBar's `onPrimary` variant. Reverted
+     Task 9.1, same reasoning as color-primary above. */
+  --color-primary-tint: #f88834;
+
+  /* Status — darkened Task 8.9b2, same reasoning as Brand above */
+  --color-success: #188738; /* was #1da143 */
+  --color-error: #ec0708; /* was #fa4f50 */
+
+  /* Text */
+  --color-text-primary: #0e1a2b;
+  --color-text-secondary: #687180; /* darkened Task 8.9b2, was #707a8a */
+  --color-text-on-primary: #ffffff;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-background: #fbfcfd;
+  --color-surface-muted: #f4f6f6;
+  /* Added in Task 2.10 — no prior component needed a visible border (cards
+     and pills use surface-muted fills instead), and neither reference
+     image shows a bordered input to measure. Inferred: a light neutral a
+     shade darker than surface-muted, for FormField's input/textarea/select
+     border. Flagged the same way DESIGN_TOKENS.md flags its own inferred
+     values, in case Task 2.22's visual QA has a real field to check it
+     against. */
+  --color-border: #dde1e6;
+
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+
+  /* Font scale — size/weight pairs from DESIGN_TOKENS.md's font table.
+     Weight tokens are separate so a component can, e.g., pair
+     --font-size-body with --font-weight-semibold for a bold-body
+     variant without needing a new named scale step. */
+  --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Wordmark-only font for the "NATRA" platform title; falls back to
+     --font-family's stack if Astra fails to load. */
+  --font-family-brand: 'Astra', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --font-size-caption: 12px;
+  --font-size-body: 14px;
+  --font-size-title: 16px;
+  --font-size-heading: 22px;
+
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Radius scale */
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* Elevation — subtle lift for cards sitting on the page background
+     (EntityCard etc.), so they read as raised surfaces rather than flat
+     color blocks, per the reference cards (560d4168...png) having a
+     faint separation from the background behind them. Kept soft/low-
+     opacity rather than a heavier drop shadow, matching the app's flat,
+     minimal visual style elsewhere (SearchBar/RoleShell use similarly
+     soft shadows already). */
+  --shadow-card: 0 1px 2px rgba(14, 26, 43, 0.06), 0 4px 12px rgba(14, 26, 43, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+}
