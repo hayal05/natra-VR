@@ -1,0 +1,28 @@
+.scroller {
+  display: flex;
+  gap: var(--scroller-gap, var(--space-lg));
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* "proximity" rather than "mandatory" — snapping shouldn't fight a
+     drag that stops mid-row, only nudge a slow/released scroll to land
+     on an item. */
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  padding-block-end: var(--space-xs);
+
+  /* Hide the scrollbar (this is a swipe row, not a document-style
+     scroll area) while keeping the element natively scrollable/
+     keyboard-focusable — no fake scroll implementation. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  flex: 0 0 auto;
+  width: var(--scroller-item-width, auto);
+  scroll-snap-align: start;
+}

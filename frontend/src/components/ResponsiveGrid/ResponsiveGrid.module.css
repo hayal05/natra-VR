@@ -1,0 +1,30 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols-base, 2), 1fr);
+  gap: var(--grid-gap, var(--space-lg));
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(var(--grid-cols-md, 3), 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(var(--grid-cols-lg, 4), 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(var(--grid-cols-xl, 5), 1fr);
+  }
+}
+
+.item {
+  /* Grid items default to min-width: auto, which lets a child's
+     intrinsic content (e.g. EntityCard's title) push the column wider
+     than the track instead of ellipsis-truncating as designed. */
+  min-width: 0;
+}

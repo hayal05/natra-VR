@@ -1,0 +1,38 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* success/error use DESIGN_TOKENS.md's measured Open/Closed colors as
+   solid fills with white text, matching the reference badges' own
+   contrast. (Corrected note, Task 2.22: these badges actually sit in the
+   card's white body below the image, not over the photo itself — see
+   EntityCard's Task 2.22 fix — but the solid-fill-plus-white-text
+   contrast this rule uses reads fine either way, so the color values
+   here didn't need to change, just this comment's description of where
+   they render.) */
+.success {
+  background: var(--color-success);
+  color: var(--color-text-on-primary);
+}
+
+.error {
+  background: var(--color-error);
+  color: var(--color-text-on-primary);
+}
+
+/* Fallback for any status without a real color yet (see STATUS_TONE's
+   comment in StatusBadge.jsx) — deliberately muted/unopinionated rather
+   than picking a color that would imply a meaning nothing verified. */
+.neutral {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}

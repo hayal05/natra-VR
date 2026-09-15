@@ -1,0 +1,108 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: rgba(14, 26, 43, 0.5);
+  z-index: 1000;
+}
+
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 90vh;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+.sm {
+  max-width: 360px;
+}
+
+.md {
+  max-width: 480px;
+}
+
+.lg {
+  max-width: 720px;
+}
+
+/* Edge-to-edge — no card chrome — for ImageViewer's eventual full-bleed
+   use case (an image, not a form/confirmation card). */
+.full {
+  max-width: none;
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 0;
+  padding: 0;
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Task 8.9a2 — 8.9a's own audit found this button's visible 32×32 box
+   under the 44×44px minimum. Growing the visible box itself was avoided
+   here (unlike QuantityStepper): at this button's existing `top`/`right:
+   var(--space-md)` offsets, a bigger box would eat further into
+   `.title`'s own `margin-right` clearance than the current 32px already
+   does, risking new text overlap this task isn't scoped to fix. Instead,
+   an invisible 44×44 hit area is centered on the same 32×32 visible
+   button via this `::after` — `.dialog`'s own `overflow-y: auto` (which
+   also computes `overflow-x` to `auto`) doesn't clip it, since the extra
+   6px each side stays well inside `.dialog`'s own 24px (`--space-xl`)
+   padding. A click anywhere in the enlarged invisible area still
+   dispatches to `.closeButton` itself (a `::after` isn't a separate DOM
+   node/event target), so no JS/markup change was needed alongside this
+   CSS-only fix. */
+.closeButton::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+.title {
+  margin: 0 var(--space-xl) var(--space-md) 0;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.body {
+  flex: 1;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}

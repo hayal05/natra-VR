@@ -1,0 +1,155 @@
+/* Task 8.2g — Wizard's first responsive verification against a real
+   screen (`RequestLive.jsx`, its one named concrete use per this file's
+   own header comment), rather than only `ComponentSandbox`'s mock-data
+   preview (2.21/2.22 — visual QA, not a breakpoint pass). Checked at all
+   4 breakpoints against the ~256px worst-case content column
+   `RequestLive.module.css`'s own 8.2g comment derives for its card. No
+   changes needed:
+
+   - `.indicator`: each `.indicatorItem` is `flex: 1`, so at 256px total
+     width with `RequestLive`'s real 2-step labels ("Payment Info" /
+     "Upload Screenshot") each item gets ~128px. `.indicatorLabel` has no
+     `white-space: nowrap`, so it wraps like any other plain text label in
+     this pass — the longest word ("Screenshot", ~70px at
+     `font-size-caption`) fits well inside 128px even before wrapping, so
+     in practice both labels stay on one line at every breakpoint checked
+     with this screen's real copy; a longer future label would just wrap
+     to 2 lines rather than overflow, same as every other unconstrained
+     text element verified elsewhere in this pass.
+   - `.indicatorCircle` is a fixed 28px regardless of item width, well
+     under even a many-step wizard's per-item share at 320px.
+   - `.indicatorLine`'s `left: 50%; width: 100%` intentionally extends
+     past its own `.indicatorItem`'s right edge to reach the next item's
+     circle (the connecting-line effect) — this is the component's
+     by-design geometry, unrelated to viewport width, not a breakpoint bug
+     to fix here.
+   - `.actions`: two buttons (`.backButton`/`.nextButton`) with no
+     `flex-wrap`, unlike the 3+-button `.actionRow`s elsewhere in this
+     pass that needed one (`OrderDetail.jsx`'s Accept/Reject/Call
+     Customer, 8.2c-ii). Measured against `RequestLive.jsx`'s real
+     longest `nextButton`/`completeLabel` text ("Submitting…", 12 chars):
+     `.backButton` min-content (~32px padding + ~30px "Back" text ≈ 62px)
+     plus `.nextButton` min-content (~48px padding + ~90px "Submitting…"
+     text ≈ 138px) plus the row's own `space-md` gap (12px) totals
+     ~212px — under the 256px column with real margin to spare, unlike
+     8.2b-vi's `.openToggleRow` finding (~8px slack) or 8.2c-ii's
+     `.actionRow` finding (an actual overflow) — so no defensive
+     `flex-wrap` was added here; there's nothing thin-margin about this
+     particular pairing with the labels this component's one real caller
+     actually uses. A future caller passing much longer step labels or
+     button text would need its own check, same as any shared component's
+     conclusions being tied to the copy that was actually measured. */
+.wizard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.indicator {
+  display: flex;
+  align-items: flex-start;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.indicatorItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  text-align: center;
+}
+
+.indicatorCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  /* Sits above the connecting line drawn across the row below. */
+  z-index: 1;
+}
+
+.indicatorCircleActive {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+}
+
+.indicatorCircleComplete {
+  background: var(--color-success);
+  color: var(--color-text-on-primary);
+}
+
+.indicatorLabel {
+  margin-top: var(--space-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Each item draws the line connecting it to the *next* item, positioned
+   through the vertical center of the circles — simplest way to get one
+   continuous line across N items without a separate absolutely-
+   positioned full-width overlay to keep in sync with circle spacing. */
+.indicatorLine {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--color-border);
+  z-index: 0;
+}
+
+.indicatorLineComplete {
+  background: var(--color-success);
+}
+
+.stepContent {
+  min-height: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.backButton {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.backButton:disabled {
+  visibility: hidden;
+}
+
+.nextButton {
+  padding: var(--space-sm) var(--space-xl);
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.nextButton:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}

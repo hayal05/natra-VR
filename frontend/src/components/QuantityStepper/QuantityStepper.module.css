@@ -1,0 +1,67 @@
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  font-family: var(--font-family);
+}
+
+/* Task 8.9a2 — grown from 32×32 to 44×44: 8.9a's own audit flagged this
+   as a clear violation of the 44×44px tap-target minimum, on a
+   frequently-tapped cart-quantity control. `font-size`/glyph stay at
+   18px (the +/- symbols don't need to grow with the box), so this is a
+   bigger tap target around the same-looking icon, not a visually bigger
+   button. */
+.button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.button:disabled {
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.value {
+  width: 2.5ch;
+  border: none;
+  background: none;
+  text-align: center;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.value:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  border-radius: var(--radius-md);
+}
+
+.value:disabled {
+  color: var(--color-text-secondary);
+}
+
+/* Hide native number spinner in case a consumer or browser still applies
+   one; the input is type="text" precisely to avoid this, but this is a
+   harmless belt-and-suspenders rule. */
+.value::-webkit-outer-spin-button,
+.value::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

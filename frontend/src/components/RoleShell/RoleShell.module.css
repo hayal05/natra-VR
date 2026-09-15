@@ -1,0 +1,343 @@
+/* Nav height as its own var so the content area's bottom padding and the
+   nav bar's own height can never drift apart from each other. The extra
+   `env(safe-area-inset-bottom)` covers the home-indicator area on iOS
+   full-screen web apps; it's 0px on every other device, so it's harmless
+   to always add. */
+/* Task 8.2h — cross-screen verification (the final piece of Task 8.2's
+   own responsive pass) that this shared bottom-nav chrome renders
+   correctly, at all 4 breakpoints, on every owner-role screen wrapping
+   itself in `RoleShell role="owner"`: `OwnerDashboard.jsx` (8.2b),
+   `OwnerOrders.jsx`/`OrderDetail.jsx` (8.2c), `OwnerRestaurant.jsx`
+   (8.2d), `OwnerMenu.jsx`/`AddFood.jsx` (8.2e), and `OwnerAccount.jsx`
+   (8.2f) — seven screens total. `OwnerRegistration.jsx`/`OwnerLogin.jsx`
+   (8.2a) and `RequestLive.jsx`/`LiveStatus.jsx` (8.2g) are deliberately
+   out of scope here, same as they were out of scope for their own
+   sessions' nav-chrome concerns — each of those four screens' own doc
+   comment already states they render with no `RoleShell` wrapper at all
+   (pre-auth for the first two, the standing `attachOwnerRestaurant` gap
+   for the latter two), so there is no nav chrome on them to verify.
+
+   No changes needed. The reason this check generalizes cleanly across
+   all seven, rather than needing seven separate per-screen passes: none
+   of them pass a `className` override to `RoleShell`, and none renders
+   anything of their own outside the `<RoleShell>...</RoleShell>`
+   boundary — each is a plain `<RoleShell role="owner"><div
+   className={styles.page}>...</div></RoleShell>`, so the nav chrome
+   itself (`.shell`/`.content`/`.nav`/`.navInner`) is byte-for-byte the
+   same DOM/CSS on every one of them, not something each screen can
+   independently break.
+
+   Specifically re-confirmed, once, on behalf of all seven:
+   - **The "switches to a wider-viewport treatment" framing in this
+     task's own title doesn't apply** — per this file's own header
+     comment, Task 2.18 (owner 4-tab nav) deliberately shares the exact
+     same bottom-nav render path as Task 2.17 (customer), not a
+     genuinely different admin-sidebar-style layout the way `role=
+     "admin"` gets. There is no reference/spec anywhere in
+     `docs/NATRA_MASTER_PROMPT.md` describing a distinct wide-viewport
+     shape for the owner role, same "nothing to invent from a guess"
+     reasoning Task 8.1i already gave for the customer variant. The one
+     real wide-viewport accommodation either role gets is 8.1i's own
+     `.navInner` 480px cap — already built, already shared by both
+     roles, and already re-verified against these owner screens here.
+   - **`.content`'s `padding-bottom` (reserving `--roleshell-nav-height`
+     + safe-area-inset) never collides with any screen's own last
+     element** at any of the 4 breakpoints — this was individually
+     confirmed for `OwnerDashboard.jsx` back in 8.2b-ii, and holds
+     identically for the other six: since `.content`'s padding lives on
+     `RoleShell`'s own wrapper, outside any of the seven screens' own
+     `.page`/`.card` markup, no screen-specific CSS could accidentally
+     override or shrink it — there's nothing in any of the seven
+     `.module.css` files that touches `.content` or reduces its own
+     bottom padding/margin to compensate, which would be the only way
+     this could break per-screen.
+   - **The "Orders" nav badge (Task 5.21)** renders correctly across
+     breakpoints too — it's `.navBadge`, absolutely positioned off
+     `.iconWrap` (a fixed 22px icon), not sized relative to `.navInner`'s
+     own 480px cap, so the cap's width has no effect on the badge's own
+     layout at any breakpoint; already using the same nowrap-badge shape
+     `StatusBadge` (8.2b-iii) and this exact badge (Task 5.21's own
+     build) were already established to hold at 320px.
+   - **`OrderDetail.jsx`'s `role={role}` prop** (owner vs. admin,
+     depending on which route rendered it) only ever resolves to
+     `"owner"` on the owner-side route this task's scope covers
+     (`/owner/orders/:id`); its admin-mode rendering (`role="admin"`,
+     the sidebar branch) is out of scope here and belongs to Task 8.3
+     (admin responsive pass) instead.
+
+   Same standing no-npm-registry-access caveat as every verification
+   session since Task 2.10 (`npm ping` → 403) — manual trace against
+   computed widths, real markup, and each of the seven screens' own
+   route wiring in `App.jsx`, not a rendered/screenshotted check. */
+.shell {
+  --roleshell-nav-height: 56px;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+}
+
+.content {
+  flex: 1;
+  padding-bottom: calc(var(--roleshell-nav-height) + env(safe-area-inset-bottom));
+}
+
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  height: var(--roleshell-nav-height);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  /* Reference UI's tab bar sits above the scrolling content with a soft
+     lift rather than a hard line alone. */
+  box-shadow: 0 -2px 8px rgba(14, 26, 43, 0.06);
+}
+
+/* Task 8.1i — caps the row of tabs itself, not `.nav` (which stays the
+   full-bleed fixed bar above). 480px rather than the 640px content
+   column other screens use (Tasks 8.1d-h): a 4-icon tab bar reads fine
+   staying phone-width even on a very wide screen — there's no benefit
+   to spacing four icons out across a 640px+ row the way there is for a
+   list of cards or a form, and a narrower cap keeps the tap targets
+   close enough together to scan at a glance. */
+.navInner {
+  display: flex;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.navItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  /* Full-height, equal-width tap target for each of the four tabs rather
+     than sizing to icon+label content, so the touch target stays generous
+     ("touch-friendly controls", docs/NATRA_MASTER_PROMPT.md's Design
+     system section) even for the shortest label. */
+}
+
+.navItemActive {
+  color: var(--color-primary);
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Task 5.21 — a positioning wrapper just for the icon+badge pair, so the
+   badge's own `position: absolute` is relative to the icon (top-right
+   corner of a 22px glyph), not to `.navItem`'s full-height tap target,
+   which would put it somewhere near the middle of the tab instead of
+   looking like a small corner badge on the icon itself. */
+.iconWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.navBadge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--color-error);
+  color: var(--color-text-on-primary);
+  font-family: var(--font-family);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 16px;
+  text-align: center;
+  /* A thin ring in the nav bar's own background color keeps the badge
+     visually separated from the icon it overlaps rather than the two
+     colors touching edge-to-edge. */
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+/* Visually hidden but still announced — the badge's own text (a bare
+   number) reads as noise to a screen reader on its own, so the count is
+   also spelled out here as part of the tab's accessible name instead. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.label {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+}
+
+.navItemActive .label {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Admin sidebar variant (Task 2.19) — a fixed left rail + content offset
+   to its right, not the bottom-nav shape above. `--roleshell-sidebar-
+   width` is shared between the rail's own width and the content area's
+   `margin-left` the same way `--roleshell-nav-height` ties the bottom
+   nav to its content padding above, so the two can't drift apart.
+   `--roleshell-nav-height` itself is also (re)declared here, not just
+   inherited from `.shell` (which this branch never renders) — Task
+   8.3g's own mobile bottom nav below renders the shared `.nav`/
+   `.navInner`/`.navItem` markup inside *this* wrapper instead, and
+   without redeclaring the variable here a `var(--roleshell-nav-height)`
+   read from inside `.shellSidebar`'s own subtree would have no
+   ancestor to resolve it from — same value (56px) as `.shell`'s, not a
+   different admin-specific height, since it's the exact same physical
+   nav bar component reused, not a new one. */
+.shellSidebar {
+  --roleshell-sidebar-width: 220px;
+  --roleshell-nav-height: 56px;
+
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+  width: var(--roleshell-sidebar-width);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-lg) 0;
+  overflow-y: auto;
+}
+
+/* Task 8.3g — below 768px the sidebar itself is hidden; its content
+   (Dashboard/Restaurants/Orders/Platform Settings) instead renders as
+   the `.adminMobileNav` bottom tab bar declared near the bottom of
+   this file, reusing the exact bottom-nav markup/classes already
+   built and verified for the customer/owner roles (2.17/2.18, 8.1i/
+   8.2h) rather than inventing a new hamburger/off-canvas pattern —
+   see this file's own header comment (originally written when Task
+   2.19 first deferred this exact decision to "Task 8.3") and
+   `.adminMobileNav`'s own comment below for the full reasoning. 768px
+   matches the same "first usable admin width" breakpoint every
+   8.3a-8.3f verification session already measured its own screen
+   against (see e.g. AdminDashboard.module.css's 8.3b comment) — this
+   is where that standing deferred-320px-sidebar caveat finally gets
+   resolved, for every admin screen those sessions covered, in one
+   shared place rather than per-screen.
+
+   Deliberately placed *after* `.sidebar`'s own base rule above, not
+   before it — both are the plain `.sidebar` selector at equal
+   specificity, so with no media query active on the base rule, source
+   order is what decides which `display` value wins when this query
+   does match; had this block stayed above the base rule (as an
+   earlier pass of this file briefly had it), the later, unconditional
+   `display: flex` in the base rule would have won at every width,
+   silently no-op'ing this fix. */
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.sidebarBrand {
+  padding: 0 var(--space-lg) var(--space-xl);
+  font-family: var(--font-family-brand);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.sidebarList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  /* Transparent border-left (rather than adding it only on the active
+     state) keeps the active link's own colored border from shifting the
+     label's horizontal position by its own width when it appears. */
+  border-left: 3px solid transparent;
+}
+
+.sidebarLinkActive {
+  color: var(--color-primary);
+  background: var(--color-surface-muted);
+  border-left-color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sidebarIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.contentSidebar {
+  margin-left: var(--roleshell-sidebar-width);
+  min-height: 100vh;
+}
+
+/* Task 8.3g — below 768px the sidebar is hidden (see `.sidebar`'s own
+   media query above), so its `margin-left` offset is no longer needed;
+   `padding-bottom` instead reserves room for `.adminMobileNav`'s own
+   fixed bottom bar, the same `--roleshell-nav-height` +
+   safe-area-inset shape `.content`'s own rule above already uses for
+   the customer/owner bottom nav — this is the same physical nav
+   component rendering in a different wrapper, so it gets the same
+   reservation math, not a separately-derived one. */
+@media (max-width: 767px) {
+  .contentSidebar {
+    margin-left: 0;
+    padding-bottom: calc(var(--roleshell-nav-height) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Task 8.3g — `.adminMobileNav` marks the second `<nav>`
+   `RoleShell.jsx`'s admin branch now renders (in addition to
+   `.sidebar` above) — same `.nav`/`.navInner`/`.navItem` classes the
+   customer/owner bottom nav already uses (styled once, above), this
+   class only ever adds one rule: hide it at 768px+, where `.sidebar`
+   is visible instead. The two are never both visible — one shared
+   767/768px breakpoint switches between them — so there's no
+   transition state, toggle button, or open/closed JS state to build
+   or verify, unlike a hamburger/off-canvas drawer would need. */
+@media (min-width: 768px) {
+  .adminMobileNav {
+    display: none;
+  }
+}

@@ -1,0 +1,145 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(14, 26, 43, 0.08);
+  font-family: var(--font-family);
+}
+
+/* Task 8.9d — `.input` below sets `outline: none` (needed since the
+   pill shape has no room for a squared default outline without
+   clipping), so the focus indicator has to live here instead: a ring
+   on the whole bar whenever the input or clear button inside it has
+   focus, same `:focus-within`-on-the-wrapper approach used for any
+   compound control where the focusable element itself can't carry the
+   ring. Uses `:focus-within` (there's no `:focus-visible` for a
+   non-focusable wrapper like `.bar`) — this shows the ring for any
+   focus, mouse-initiated included, which is a stricter guarantee than
+   this codebase's other `:focus-visible`-only components, but the only
+   one available without JS to distinguish input modality here. */
+.bar:focus-within {
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.bar.disabled {
+  background: var(--color-surface-muted);
+  opacity: 0.7;
+}
+
+/* Updated: white fill on the orange header (was a tinted orange fill),
+   so text/icon go back to the same dark tones the default `.bar` uses
+   rather than the light-on-dark tones a tinted/orange fill needed. */
+.onPrimary {
+  background: var(--color-surface);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Ring color follows the fill change above: on a white bar, brand
+   orange reads clearly, so no need for the light-on-dark ring color
+   the tinted-orange fill required. */
+.onPrimary:focus-within {
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.onPrimary .icon {
+  color: var(--color-text-secondary);
+}
+
+.onPrimary .input {
+  color: var(--color-text-primary);
+}
+
+.onPrimary .input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.onPrimary .clearButton {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-secondary);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* type="search" gives mobile keyboards a "search" action key, but some
+   browsers (Chrome/Safari) also draw their own native clear ("x")
+   button, which would sit right next to this component's own — hidden
+   here so there's exactly one clear affordance, not two. */
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.clearButton {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Task 8.9a2 — 8.9a's own audit found this the smallest violation found
+   (20×20), and the tightest space to fix it in: `.bar` has no fixed
+   height (it sizes to its own tallest flex child plus its own vertical
+   padding), so growing `.clearButton`'s visible box to 44px would grow
+   the whole pill's height with it, well past this search bar's own
+   compact pill proportions everywhere it's used (`Home.jsx`'s header
+   search, every admin list's `SearchBar`). Same invisible-`::after`
+   technique as `Modal.closeButton` instead: a 44×44 hit area centered on
+   the same 20×20 visible "×", `position: relative` added to
+   `.clearButton` itself (staying in the flex row's normal flow — only
+   the `::after` is taken out of flow via `position: absolute`), so
+   `.bar`'s own height is completely unaffected by this fix. */
+.clearButton::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+.clearButton:disabled {
+  cursor: not-allowed;
+}

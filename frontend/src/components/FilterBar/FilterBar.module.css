@@ -1,0 +1,75 @@
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  font-family: var(--font-family);
+}
+
+/* Chips — same measured tokens as the reference UI's Categories row. */
+/* Task 8.9a2 — vertical padding bumped from `space-sm` (8px) to
+   `space-md` (12px): 8.9a's own audit measured this chip at ~36px tall
+   (8px × 2 + ~20px body-text line height), a few px short of the 44×44px
+   minimum. `space-md` × 2 + ~20px ≈ 44px. Horizontal padding
+   (`space-lg`) is untouched — width was never the gap here, every chip
+   label is already comfortably wider than 44px. */
+.chip {
+  flex-shrink: 0;
+  padding: var(--space-md) var(--space-lg);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  background: var(--color-border);
+}
+
+.chipActive {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.chipActive:hover {
+  background: var(--color-primary);
+}
+
+/* Dropdown — no reference-image equivalent, styled as a pill so it sits
+   visually with the chip groups on the same bar (see FilterBar.jsx). */
+.dropdownWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  align-self: flex-start;
+}
+
+.dropdownLabel {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Task 8.9a2 — same `space-sm` → `space-md` vertical-padding bump as
+   `.chip` above, same reasoning: ~36px measured tall, `space-md` gets it
+   to ~44px. */
+.dropdown {
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  cursor: pointer;
+}
+
+.dropdown:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}

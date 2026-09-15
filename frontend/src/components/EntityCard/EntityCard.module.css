@@ -1,0 +1,133 @@
+/* EntityCard sizes itself to its container's width on purpose — it doesn't
+   set a fixed width/flex-basis here, since that's a layout concern owned by
+   whatever places it (HorizontalScroller for the Restaurants row,
+   ResponsiveGrid for Popular Foods — Tasks 2.6/2.7), not by the card
+   itself. */
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-align: left;
+  font-family: var(--font-family);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.card[role='button']:hover {
+  box-shadow: 0 2px 4px rgba(14, 26, 43, 0.08), 0 8px 20px rgba(14, 26, 43, 0.12);
+  transform: translateY(-2px);
+}
+
+.card[role='button']:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+
+.card[role='button'] {
+  cursor: pointer;
+}
+
+.card[role='button']:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface-muted);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* No border-radius of its own (corrected Task 2.22 — see
+     DESIGN_TOKENS.md's Task 2.22 section): the card already clips to
+     var(--radius-lg) via its own overflow:hidden, which rounds this
+     image's top corners for free since it's flush with the card's top
+     edge. An extra radius here double-rounded the *bottom* corners too,
+     where the reference images (560d4168...png, all four cards) show a
+     hard flat edge as the photo runs straight into the white body below
+     it — only the top corners are actually rounded. */
+}
+
+/* Positioned per docs/NATRA_MASTER_PROMPT.md's Open/Closed status on
+   restaurant cards. Corrected Task 2.22 (see DESIGN_TOKENS.md's Task
+   2.22 section): a closer crop of all four cards in
+   560d4168...png shows this sitting in the card body below the image,
+   left-aligned, above the title — never overlaid on the photo the way
+   Task 2.3's original top-left guess assumed (that guess was made before
+   this closer inspection; neither reference image had been cropped
+   tightly enough yet to see it clearly). Now a normal in-flow element,
+   not absolutely positioned. */
+.badgeSlot {
+  margin-bottom: var(--space-xs);
+}
+
+/* Circular restaurant logo "overlapping image" per the master prompt.
+   Horizontally centered on the card (corrected Task 2.22 — see
+   DESIGN_TOKENS.md's Task 2.22 section: all four reference cards show the
+   logo centered on the card's midpoint, not anchored to the left side),
+   straddling the image's bottom edge: half in the media area, half over
+   the card body below it. */
+.logo {
+  position: absolute;
+  bottom: calc(var(--space-md) * -1);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-surface);
+  object-fit: cover;
+  background: var(--color-surface);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+  /* Clears the logo, which overlaps into the top of this area. Only
+     matters when a logo is actually present, but a fixed reserve keeps
+     badge/title position from jumping between logo/no-logo cards in the
+     same row. */
+  padding-top: var(--space-lg);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metaLine {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.ctaSlot {
+  margin-top: var(--space-sm);
+}

@@ -1,0 +1,82 @@
+/* Task 8.9a2 — `padding: 10px 0` added: 8.9a's own audit found the real
+   clickable area here (this whole `<label>`, since a label click toggles
+   its `for`-linked input) was only as tall as the 24px `.track`/the label
+   text, well under the 44×44px minimum, despite gating real actions
+   (Open/Closed, a payment method's Active state, each opening-hours
+   day's Closed toggle). 10px top+bottom brings the label's own box to
+   24px (track) + 20px (padding) = 44px tall. Vertical padding only —
+   `.track`'s own 44px *width* (referenced by `OwnerRestaurant.module.css`'s
+   own min-content math for this component) is untouched, so no layout
+   math elsewhere that measures this component's width needs revisiting. */
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 0;
+  cursor: pointer;
+  font-family: var(--font-family);
+  user-select: none;
+}
+
+.wrapper.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* The real checkbox is visually hidden but stays in the layout and
+   focusable — visibility/display tricks that remove it from the a11y
+   tree or tab order are avoided on purpose. */
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.track {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(14, 26, 43, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.input:checked + .track {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.input:checked + .track .thumb {
+  transform: translateX(20px);
+}
+
+.input:focus-visible + .track {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.label {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
