@@ -39,6 +39,18 @@ const adminSettings = crudFactory({
     'order_timeout_custom_minutes',
     'notify_before_expiry',
   ],
+  selectColumns: [
+    'id',
+    'registration_fee_amount',
+    'registration_method_name',
+    'registration_account_number',
+    'registration_account_name',
+    'registration_instructions',
+    'order_timeout_mode',
+    'order_timeout_custom_minutes',
+    'notify_before_expiry',
+    'updated_at',
+  ],
 });
 
 module.exports = adminSettings;
