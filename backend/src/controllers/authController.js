@@ -19,15 +19,16 @@
 // signup/login already establish, same `toPublicUser` strip before
 // responding, same lowercased-email-uniqueness-check pattern signup's
 // own duplicate-email handling already has to do. Both are scoped to
-// `req.user.id` (from authMiddleware) — there's no "update someone
-// else's account" path here, on purpose; an owner/admin editing another
-// user's row isn't a feature this task (or anything in TASKS.md) asks
-// for.
+// `req.user.id` (from authMiddleware) — there's no "update someone else's
+// account" path here, on purpose; an owner/admin editing another user's
+// row isn't a feature this task (or anything in TASKS.md) asks for.
 
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
 
 const users = require('../models/users');
+const restaurants = require('../models/restaurants');
+const { withTransaction } = require('../config/db');
 const { hashPassword, verifyPassword } = require('../utils/passwordHash');
 const { badRequest, unauthorized, conflict } = require('../utils/errors');
 
@@ -70,7 +71,7 @@ const ORA_UNIQUE_CONSTRAINT_VIOLATION = 1;
 // One message for every way login can fail (unknown email, wrong
 // password) — returning a different message for "no such email" than for
 // "wrong password" would let login be used to enumerate which emails have
-// accounts, which a signup-duplicate check (1.12c) already tells you
+// accounts, which a signup-duplicate check (1.12) already tells you
 // separately but a login endpoint has no reason to also confirm.
 const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password';
 
@@ -116,7 +117,33 @@ async function signup(req, res, next) {
 
     let created;
     try {
-      created = await users.create({ role, full_name, email, phone, password_hash });
+      created = await withTransaction(async (connection) => {
+        const user = await users.create(
+          { role, full_name, email, phone, password_hash },
+          { connection }
+        );
+
+        // Owners must have a restaurant row before attachOwnerRestaurant
+        // can resolve their restaurant for the Request Live flow. The
+        // initial name is only a draft value; the existing Restaurant
+        // settings screen lets the owner replace it after approval.
+        if (role === 'owner') {
+          await restaurants.create(
+            {
+              owner_id: user.id,
+              name: `${full_name}'s Restaurant`,
+              phone,
+              live_status: 'not_requested',
+              is_suspended: 0,
+              is_open: 0,
+            },
+            { connection }
+          );
+        }
+
+        await connection.commit();
+        return user;
+      });
     } catch (err) {
       if (err.errorNum === ORA_UNIQUE_CONSTRAINT_VIOLATION) {
         throw conflict('An account with this email already exists');
@@ -167,10 +194,10 @@ async function login(req, res, next) {
   }
 }
 
-// GET /api/auth/me — Task 1.14d, the first route mounted behind
+// GET /api/auth/me — Task 1.14d, the first route protected by
 // authMiddleware (1.14a-c). No DB call of its own: authMiddleware has
 // already looked the user up and attached the public (no
-// `password_hash`) shape as `req.user` by the time a request reaches
+// password_hash) shape as req.user by the time a request reaches
 // here, so this handler's only job is to hand that back. Exists mainly
 // to give the middleware a real, callable endpoint to be exercised
 // through (see authController.test.js's new describe block) rather than
