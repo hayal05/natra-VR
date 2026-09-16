@@ -8,35 +8,8 @@ import styles from './Modal.module.css';
  * document.body (not in place) so it isn't clipped by an ancestor's
  * `overflow: hidden` — e.g. EntityCard's card container — and so its
  * z-index only has to beat page content, not fight a specific parent's
- * stacking context. Same reasoning, and largely the same overlay
- * behavior (focus management, Escape-to-close, scroll lock), as
- * ImageViewer (2.5) — that component's own doc comment already flagged
- * this exact fold-in as "a reasonable follow-up" once Modal existed.
- * That refactor isn't done here, though: this task is "build Modal",
- * not "migrate ImageViewer onto it" — a deliberate follow-up, not an
- * oversight, same way 2.14 left multi-select chips as a future call
- * rather than guessing it in now.
- *
- * Unlike ImageViewer (which manages its own trigger ref), Modal doesn't
- * need the caller to hand it a trigger element to restore focus to —
- * it snapshots `document.activeElement` itself when it opens and
- * refocuses that on close, since whatever had focus right before the
- * caller set `isOpen=true` is, by definition, the thing that should get
- * focus back.
- *
- * `title` and `footer` are optional slots (not required children) so
- * this covers both of the task's two named uses without forcing either
- * shape: an image viewer wants neither (just its own full-bleed image),
- * a confirmation dialog wants both (a heading + Confirm/Cancel
- * buttons). `children` is the body content either way — plain
- * `ReactNode`, not a specific shape, matching EmptyState's/FormField's
- * own reserved-slot pattern for content this component shouldn't
- * presume the shape of.
- *
- * `size` picks a max-width preset (`sm`/`md`/`lg`/`full`) rather than
- * accepting an arbitrary CSS value — `full` in particular exists for
- * ImageViewer's eventual full-bleed-image use case, which needs the
- * dialog itself to be edge-to-edge rather than a centered card.
+ * stacking context. Same reasoning, and largely the same overlay behavior
+ * (focus management, Escape-to-close, scroll lock), as ImageViewer.
  */
 export default function Modal({
   isOpen,
@@ -52,6 +25,14 @@ export default function Modal({
   const closeButtonRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
   const titleId = useId();
+  const onCloseRef = useRef(onClose);
+
+  // Keep the latest callback available without making the focus-management
+  // effect re-run on every parent render. Modal children are controlled
+  // inputs, so parent renders must not trigger the effect cleanup/focus restore.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -62,7 +43,7 @@ export default function Modal({
     document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') onCloseRef.current();
     };
     document.addEventListener('keydown', handleKeyDown);
 
@@ -71,7 +52,7 @@ export default function Modal({
       document.removeEventListener('keydown', handleKeyDown);
       previouslyFocusedRef.current?.focus?.();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
