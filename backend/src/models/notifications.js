@@ -45,6 +45,16 @@ const crudFactory = require('../utils/crudFactory');
 const notifications = crudFactory({
   table: 'notifications',
   columns: ['recipient_id', 'type', 'restaurant_id', 'order_id', 'message', 'is_read'],
+  selectColumns: [
+    'id',
+    'recipient_id',
+    'type',
+    'restaurant_id',
+    'order_id',
+    'message',
+    'is_read',
+    'created_at',
+  ],
   ownerColumn: 'recipient_id',
 });
 
