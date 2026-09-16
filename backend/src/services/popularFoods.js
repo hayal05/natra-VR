@@ -37,7 +37,7 @@
 // **Ranking, as of Task 7.2**: `docs/NATRA_MASTER_PROMPT.md` calls for
 // Popular Foods to be "ranked dynamically by actual completed
 // sales/order volume" — now backed by `popularity_stats` (Task 7.1's
-// aggregation/upsert pipeline), ordered `completed_quantity DESC` with
+// aggregation/upsert pipeline), ordered `quantity_sold DESC` with
 // a `f.name ASC` tiebreak for foods tied on quantity (including two
 // foods both sitting at zero). Before this task, ranking here was a
 // placeholder (`ORDER BY f.name ASC`, matching
@@ -48,7 +48,7 @@
 // f.id` (not `INNER JOIN`) so that a food with zero completed orders —
 // meaning no `popularity_stats` row at all, since 7.1b's upsert only
 // ever visits foods that have at least one completed sale — still
-// appears in the grid, just ranked last (`COALESCE(ps.completed_quantity,
+// appears in the grid, just ranked last (`COALESCE(ps.quantity_sold,
 // 0)` treats "no row" the same as "a row with 0"). This is safe for
 // `getPublicFoodById` too, even though that function neither selects
 // nor orders by anything popularity-related: `popularity_stats.food_id`
@@ -150,7 +150,7 @@ async function listPopularFoods(rawParams = {}) {
                 f.restaurant_id AS restaurant_id,
                 r.name AS restaurant_name
            ${BASE_FROM}
-          ORDER BY COALESCE(ps.completed_quantity, 0) DESC, f.name ASC
+          ORDER BY COALESCE(ps.quantity_sold, 0) DESC, f.name ASC
           OFFSET :pagingOffset ROWS FETCH NEXT :pagingLimit ROWS ONLY`,
         { ...LIVE_FOOD_BINDS, pagingOffset: offset, pagingLimit: limit }
       ),
