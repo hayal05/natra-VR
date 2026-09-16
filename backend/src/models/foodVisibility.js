@@ -18,12 +18,17 @@
 // initial insert (there's no "who" for a row created alongside its food,
 // only for a later explicit hide/show toggle) — it's listed as settable
 // here so that later toggle write has somewhere to put it.
+//
+// Production Oracle schema has `updated_at` but no `created_at`, so an
+// explicit select list is required here instead of crudFactory's default
+// (which assumes both DB-managed timestamp columns exist).
 
 const crudFactory = require('../utils/crudFactory');
 
 const foodVisibility = crudFactory({
   table: 'food_visibility',
   columns: ['food_id', 'is_hidden', 'updated_by'],
+  selectColumns: ['id', 'food_id', 'is_hidden', 'updated_by', 'updated_at'],
 });
 
 module.exports = foodVisibility;
