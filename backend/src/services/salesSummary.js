@@ -82,7 +82,7 @@ async function getSalesSummary(restaurantId) {
       // Same string-or-number driver ambiguity `orderCounts.js`'s own
       // comment already flags for its grouped `count` — coerced rather
       // than trusted as already numeric.
-      const amount = Number(row.total);
+      const amount = Number(row.TOTAL);
       allTimeTotal += amount;
 
       // `created_at` comes back as either a JS `Date` (real oracledb,
@@ -90,7 +90,7 @@ async function getSalesSummary(restaurantId) {
       // or an ISO string (`fakeDb`'s own double, which stores it as
       // `new Date().toISOString()` at insert time) — `new Date(...)`
       // accepts both without needing to branch on which.
-      const createdAt = new Date(row.created_at);
+      const createdAt = new Date(row.CREATED_AT);
       if (createdAt >= todayStart) {
         todayTotal += amount;
       }

@@ -71,8 +71,8 @@ async function getOrderCounts(restaurantId) {
       // (same ambiguity `paginate.js`'s own `total` handling already
       // works around) — coerced with `Number(...)` rather than trusted
       // as already numeric.
-      const count = Number(row.count);
-      counts[row.status] = count;
+      const count = Number(row.COUNT);
+      counts[row.STATUS] = count;
       total += count;
     }
 
