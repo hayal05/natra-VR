@@ -1,5 +1,9 @@
 const oracledb = require('oracledb');
 
+oracledb.initOracleClient({
+  libDir: '/opt/oracle/instantclient_23_26'
+});
+
 // Return objects as plain JS objects ({ col: value }) instead of arrays,
 // everywhere in the app, not just in ad-hoc queries.
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
@@ -82,7 +86,7 @@ async function withTransaction(work) {
       await connection.rollback();
     } catch (rollbackErr) {
       // Rollback itself failed (e.g. the connection already dropped) —
-      // surface the original error, not this secondary one. A connection
+      // surface the original error, not this secondary error. A connection
       // that can't roll back is also one poolPingInterval will weed out
       // before it's handed to another caller.
     }
