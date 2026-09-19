@@ -66,8 +66,12 @@ function createFakeDb() {
   function project(row, colsStr) {
     const cols = colsStr.split(',').map((s) => s.trim());
     const out = {};
-    cols.forEach((c) => {
-      out[c] = row[c] !== undefined ? row[c] : null;
+    cols.forEach((expression) => {
+      // Mirror Oracle's quoted SELECT aliases, e.g. id AS "id" -> id.
+      const m = expression.match(/^(\\w+)\\s+AS\\s+"(\\w+)"$/i);
+      const sourceCol = m ? m[1] : expression;
+      const outputKey = m ? m[2] : expression;
+      out[outputKey] = row[sourceCol] !== undefined ? row[sourceCol] : null;
     });
     return out;
   }
