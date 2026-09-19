@@ -67,13 +67,13 @@ async function listRestaurantMenu(restaurantId, rawParams = {}) {
   return withConnection(async (connection) => {
     const [rowsResult, countResult] = await Promise.all([
       connection.execute(
-        `SELECT f.id AS id,
-                f.name AS name,
-                f.description AS description,
-                f.price AS price,
-                f.image_url AS image_url,
-                f.image_thumbnail_url AS image_thumbnail_url,
-                f.restaurant_id AS restaurant_id
+        `SELECT f.id AS "id",
+                f.name AS "name",
+                f.description AS "description",
+                f.price AS "price",
+                f.image_url AS "image_url",
+                f.image_thumbnail_url AS "image_thumbnail_url",
+                f.restaurant_id AS "restaurant_id"
            ${BASE_FROM}
           ORDER BY f.name ASC
           OFFSET :pagingOffset ROWS FETCH NEXT :pagingLimit ROWS ONLY`,

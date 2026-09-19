@@ -118,14 +118,14 @@ const LIVE_FOOD_BINDS = { liveStatus: 'approved', isSuspended: 0, isHidden: 0 };
 async function getPublicFoodById(foodId) {
   return withConnection(async (connection) => {
     const result = await connection.execute(
-      `SELECT f.id AS id,
-              f.name AS name,
-              f.description AS description,
-              f.price AS price,
-              f.image_url AS image_url,
-              f.image_thumbnail_url AS image_thumbnail_url,
-              f.restaurant_id AS restaurant_id,
-              r.name AS restaurant_name
+      `SELECT f.id AS "id",
+              f.name AS "name",
+              f.description AS "description",
+              f.price AS "price",
+              f.image_url AS "image_url",
+              f.image_thumbnail_url AS "image_thumbnail_url",
+              f.restaurant_id AS "restaurant_id",
+              r.name AS "restaurant_name"
          ${BASE_FROM}
          AND f.id = :foodId`,
       { ...LIVE_FOOD_BINDS, foodId }
@@ -141,14 +141,14 @@ async function listPopularFoods(rawParams = {}) {
   return withConnection(async (connection) => {
     const [rowsResult, countResult] = await Promise.all([
       connection.execute(
-        `SELECT f.id AS id,
-                f.name AS name,
-                f.description AS description,
-                f.price AS price,
-                f.image_url AS image_url,
-                f.image_thumbnail_url AS image_thumbnail_url,
-                f.restaurant_id AS restaurant_id,
-                r.name AS restaurant_name
+        `SELECT f.id AS "id",
+                f.name AS "name",
+                f.description AS "description",
+                f.price AS "price",
+                f.image_url AS "image_url",
+                f.image_thumbnail_url AS "image_thumbnail_url",
+                f.restaurant_id AS "restaurant_id",
+                r.name AS "restaurant_name"
            ${BASE_FROM}
           ORDER BY COALESCE(ps.quantity_sold, 0) DESC, f.name ASC
           OFFSET :pagingOffset ROWS FETCH NEXT :pagingLimit ROWS ONLY`,
