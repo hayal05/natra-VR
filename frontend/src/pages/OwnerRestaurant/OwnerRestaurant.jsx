@@ -61,7 +61,9 @@ function updateMyRestaurant(data) {
 }
 
 function fetchCategories({ page }, signal) {
-  return api.get(`/categories?page=${page}`, { signal });
+  return api
+    .get(`/categories?page=${page}`, { signal })
+    .then(({ categories, meta }) => ({ rows: categories, meta }));
 }
 
 function fetchOpeningHours(signal) {
@@ -69,7 +71,9 @@ function fetchOpeningHours(signal) {
 }
 
 function fetchServiceAreas({ page }, signal) {
-  return api.get(`/service-areas?page=${page}`, { signal });
+  return api
+    .get(`/service-areas?page=${page}`, { signal })
+    .then(({ service_areas, meta }) => ({ rows: service_areas, meta }));
 }
 
 // Unlike `fetchCategories`/`fetchServiceAreas` above, this reshapes the
