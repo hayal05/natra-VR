@@ -122,7 +122,7 @@ function crudFactory(config) {
     : [primaryKey, ...columns, 'created_at', 'updated_at'];
   selectCols.forEach((col) => assertSafeIdentifier(col, `select column ("${table}"."${col}")`));
   // De-dupe in case a caller-supplied selectColumns repeats primaryKey/etc.
-  const selectColList = [...new Set(selectCols)].join(', ');
+  // Oracle returns unquoted SELECT identifiers in uppercase. Quote each alias\n  // explicitly so every CRUD result keeps the lowercase keys the application\n  // contract expects (e.g. `password_hash`, not `PASSWORD_HASH`).\n  const selectColList = [...new Set(selectCols)]\n    .map((col) => `${col} AS "${col}"`)\n    .join(', ');
 
   /**
    * Keep only the keys in `data` that are on this table's settable-column
