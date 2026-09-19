@@ -55,24 +55,16 @@
 // stops holding, not designed around from the start the way `paginate`
 // was for genuinely large tables.
 //
-// Column-casing note: like every other raw/generated SQL in this
-// codebase (crudFactory.js's SELECTs, paginate.js's `SELECT COUNT(*) AS
-// total`), this assumes unquoted lowercase identifiers come back as
-// lowercase object keys (`row.name`) under `oracledb.outFormat =
-// OUT_FORMAT_OBJECT` (config/db.js). That assumption has never actually
-// been exercised against a live Oracle instance anywhere in this
-// codebase yet (real Oracle uppercases unquoted identifiers by default,
-// so this may need `row.NAME` — or an explicit lowercase alias — once
-// this runs against a real DB) — a pre-existing, systemic gap this task
-// inherits and matches for consistency, not one it introduces or is
-// positioned to fix on its own.
+// Column-casing note: Oracle returns unquoted aliases in uppercase when
+// using OUT_FORMAT_OBJECT. The SQL below therefore quotes the alias so
+// the service's existing `row.name` mapping remains correct and stable.
 
 const { withConnection } = require('../config/db');
 
 async function listLiveCategoryNames() {
   return withConnection(async (connection) => {
     const result = await connection.execute(
-      `SELECT DISTINCT c.name AS name
+      `SELECT DISTINCT c.name AS "name"
          FROM categories c
          JOIN restaurants r ON r.id = c.restaurant_id
         WHERE r.live_status = :liveStatus
