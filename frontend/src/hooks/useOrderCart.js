@@ -172,12 +172,10 @@ export function useOrderCart() {
   // commits to the cart on submit, so there's no need for this hook to
   // expose more granular field-level updates nothing calls.
   const setCustomerInfo = useCallback((customerInfo) => {
-    setCart((prev) => {
-      const next = { ...prev, customerInfo };
-      writeCart(next);
-      return next;
-    });
-  }, []);
+    const next = { ...cart, customerInfo };
+    writeCart(next);
+    setCart(next);
+  }, [cart]);
 
   // setPaymentMethod (Task 3.13) — the Payment Method selection screen's
   // own save point, same "commit on selection" shape as `setCustomerInfo`
@@ -189,24 +187,10 @@ export function useOrderCart() {
   // id, the same way `customerInfo` is read back as plain form data
   // rather than anything server-fetched.
   const setPaymentMethod = useCallback((paymentMethodId) => {
-    setCart((prev) => {
-      // Changing which method is selected also clears any already-
-      // uploaded screenshot (Task 3.14): a screenshot is proof of
-      // payment to one specific method's account details, so a
-      // screenshot uploaded against the *previous* selection can't
-      // silently carry over to a newly-picked one — same "stale
-      // pointer to the wrong thing" reasoning `addItem`'s restaurant
-      // swap already applies to this same field. Re-selecting the
-      // *same* method id (e.g. tapping it again) also clears it here,
-      // which is harmless: PaymentMethod.jsx only calls this on an
-      // actual tap, and re-uploading a screenshot after one extra tap
-      // is a trivial cost next to the alternative of missing a genuine
-      // method change because the id happened to be identical.
-      const next = { ...prev, paymentMethodId, paymentScreenshotUrl: null };
-      writeCart(next);
-      return next;
-    });
-  }, []);
+    const next = { ...cart, paymentMethodId, paymentScreenshotUrl: null };
+    writeCart(next);
+    setCart(next);
+  }, [cart]);
 
   // setPaymentScreenshotUrl (Task 3.14) — the Payment Screenshot
   // screen's own save point, same "commit on success" shape as
@@ -220,12 +204,10 @@ export function useOrderCart() {
   // reference, not the client-side input" shape `paymentMethodId`
   // already uses for the method id instead of the whole method object.
   const setPaymentScreenshotUrl = useCallback((paymentScreenshotUrl) => {
-    setCart((prev) => {
-      const next = { ...prev, paymentScreenshotUrl };
-      writeCart(next);
-      return next;
-    });
-  }, []);
+    const next = { ...cart, paymentScreenshotUrl };
+    writeCart(next);
+    setCart(next);
+  }, [cart]);
 
   const clearCart = useCallback(() => {
     writeCart(EMPTY_CART);
