@@ -64,19 +64,19 @@ const { parsePaginationParams, buildPaginationMeta } = require('../utils/paginat
 // reason an admin list row should show a narrower shape than every
 // other restaurant read in this codebase already does.
 const RESTAURANT_COLUMNS = [
-  'id',
-  'owner_id',
-  'name',
-  'description',
-  'logo_url',
-  'cover_url',
-  'phone',
-  'location_text',
-  'live_status',
-  'is_suspended',
-  'is_open',
-  'created_at',
-  'updated_at',
+  'id AS "id"',
+  'owner_id AS "owner_id"',
+  'name AS "name"',
+  'description AS "description"',
+  'logo_url AS "logo_url"',
+  'cover_url AS "cover_url"',
+  'phone AS "phone"',
+  'location_text AS "location_text"',
+  'live_status AS "live_status"',
+  'is_suspended AS "is_suspended"',
+  'is_open AS "is_open"',
+  'created_at AS "created_at"',
+  'updated_at AS "updated_at"',
 ].join(', ');
 
 /**
@@ -112,7 +112,7 @@ async function listRestaurantsForAdmin(rawParams = {}) {
           FETCH NEXT :pagingLimit ROWS ONLY`,
         { ...filterBinds, pagingOffset: offset, pagingLimit: limit }
       ),
-      connection.execute(`SELECT COUNT(*) AS total FROM restaurants ${whereSql}`, filterBinds),
+      connection.execute(`SELECT COUNT(*) AS "total" FROM restaurants ${whereSql}`, filterBinds),
     ]);
 
     const total = Number(countResult.rows[0].total);

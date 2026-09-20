@@ -46,7 +46,7 @@ const crudFactory = require('../utils/crudFactory');
 
 const liveRequests = crudFactory({
   table: 'live_requests',
-  columns: ['restaurant_id'],
+  columns: ['restaurant_id', 'user_id'],
   ownerColumn: 'restaurant_id',
   selectColumns: [
     'id',

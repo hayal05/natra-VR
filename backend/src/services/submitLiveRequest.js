@@ -78,10 +78,13 @@ const ADMIN_SETTINGS_ID = 1;
  *   `registration_payments` row.
  */
 async function submitLiveRequest(data) {
-  const { restaurant_id, payment_screenshot_url } = data || {};
+  const { restaurant_id, user_id, payment_screenshot_url } = data || {};
 
   if (!Number.isInteger(restaurant_id) || restaurant_id < 1) {
     throw badRequest('restaurant_id is required');
+  }
+  if (!Number.isInteger(user_id) || user_id < 1) {
+    throw badRequest('user_id is required');
   }
   if (typeof payment_screenshot_url !== 'string' || payment_screenshot_url.trim() === '') {
     throw badRequest('payment_screenshot_url is required');
@@ -107,7 +110,7 @@ async function submitLiveRequest(data) {
   const amount = Number(settings.registration_fee_amount);
 
   return withTransaction(async (connection) => {
-    const liveRequest = await liveRequests.create({ restaurant_id }, { connection });
+    const liveRequest = await liveRequests.create({ restaurant_id, user_id }, { connection });
     const payment = await registrationPayments.create(
       { live_request_id: liveRequest.id, amount, payment_screenshot_url },
       { connection }

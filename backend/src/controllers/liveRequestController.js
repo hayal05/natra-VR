@@ -86,6 +86,7 @@ async function create(req, res, next) {
     const { payment_screenshot_url } = parseOrThrow(createLiveRequestSchema, req.body);
     const { liveRequest, payment } = await submitLiveRequest({
       restaurant_id: req.user.restaurant_id,
+      user_id: req.user.id,
       payment_screenshot_url,
     });
     res.status(201).json({ live_request: liveRequest, registration_payment: payment });

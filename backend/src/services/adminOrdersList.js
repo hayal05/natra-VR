@@ -175,17 +175,17 @@ function parseDateFilter(raw) {
 // query can't ask crudFactory for its own select list, same reasoning
 // `adminRestaurantsList.js`'s own `RESTAURANT_COLUMNS` comment gives.
 const ORDER_COLUMNS = [
-  'o.id',
-  'o.order_code',
-  'o.restaurant_id',
-  'r.name AS restaurant_name',
-  'o.customer_name',
-  'o.customer_phone',
-  'o.customer_location_text',
-  'o.total',
-  'o.status',
-  'o.status_updated_at',
-  'o.created_at',
+  'o.id AS "id"',
+  'o.order_code AS "order_code"',
+  'o.restaurant_id AS "restaurant_id"',
+  'r.name AS "restaurant_name"',
+  'o.customer_name AS "customer_name"',
+  'o.customer_phone AS "customer_phone"',
+  'o.customer_location_text AS "customer_location_text"',
+  'o.total AS "total"',
+  'o.status AS "status"',
+  'o.status_updated_at AS "status_updated_at"',
+  'o.created_at AS "created_at"',
 ].join(', ');
 
 /**
@@ -269,7 +269,7 @@ async function listOrdersForAdmin(rawParams = {}) {
         { ...filterBinds, pagingOffset: offset, pagingLimit: limit }
       ),
       connection.execute(
-        `SELECT COUNT(*) AS total
+        `SELECT COUNT(*) AS "total"
            FROM orders o
            JOIN restaurants r ON r.id = o.restaurant_id
            ${whereSql}`,

@@ -11,14 +11,14 @@ const { notFound } = require('../utils/errors');
 
 const PENDING_STATUS = 'pending';
 
-const LIVE_REQUEST_COLUMNS = `lr.id AS id,
-                lr.restaurant_id AS restaurant_id,
-                r.name AS restaurant_name,
-                lr.status AS status,
-                lr.created_at AS created_at,
-                rp.amount AS amount,
-                rp.payment_screenshot_url AS payment_screenshot_url,
-                rp.submitted_at AS submitted_at`;
+const LIVE_REQUEST_COLUMNS = `lr.id AS "id",
+                lr.restaurant_id AS "restaurant_id",
+                r.name AS "restaurant_name",
+                lr.status AS "status",
+                lr.created_at AS "created_at",
+                rp.amount AS "amount",
+                rp.payment_screenshot_url AS "payment_screenshot_url",
+                rp.submitted_at AS "submitted_at"`;
 
 const LIVE_REQUEST_FROM_JOIN = `FROM live_requests lr
            JOIN restaurants r ON r.id = lr.restaurant_id
@@ -38,7 +38,7 @@ async function listLiveRequestsForAdmin(rawParams = {}) {
           FETCH NEXT :pagingLimit ROWS ONLY`,
         { status: PENDING_STATUS, pagingOffset: offset, pagingLimit: limit }
       ),
-      connection.execute(`SELECT COUNT(*) AS total FROM live_requests WHERE status = :status`, {
+      connection.execute(`SELECT COUNT(*) AS "total" FROM live_requests WHERE status = :status`, {
         status: PENDING_STATUS,
       }),
     ]);

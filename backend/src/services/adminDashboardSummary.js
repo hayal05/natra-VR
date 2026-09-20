@@ -86,16 +86,16 @@ const ACTIVITY_FETCH_LIMIT = ACTIVITY_LIMIT;
 async function getTotals(connection) {
   const [restaurantsResult, pendingResult, ordersResult] = await Promise.all([
     connection.execute(
-      `SELECT COUNT(*) AS total,
+      `SELECT COUNT(*) AS "total",
               SUM(CASE WHEN live_status = :liveStatus AND is_suspended = :notSuspended
-                       THEN 1 ELSE 0 END) AS live
+                       THEN 1 ELSE 0 END) AS "live"
          FROM restaurants`,
       { liveStatus: LIVE_STATUS, notSuspended: NOT_SUSPENDED }
     ),
-    connection.execute(`SELECT COUNT(*) AS pending FROM live_requests WHERE status = :status`, {
+    connection.execute(`SELECT COUNT(*) AS "pending" FROM live_requests WHERE status = :status`, {
       status: PENDING_STATUS,
     }),
-    connection.execute('SELECT COUNT(*) AS total FROM orders'),
+    connection.execute('SELECT COUNT(*) AS "total" FROM orders'),
   ]);
 
   const restaurantsRow = restaurantsResult.rows[0];
@@ -117,10 +117,10 @@ async function getTotals(connection) {
 async function getRecentActivity(connection) {
   const [liveRequestsResult, ordersResult] = await Promise.all([
     connection.execute(
-      `SELECT lr.id AS id,
-              lr.status AS status,
-              lr.created_at AS created_at,
-              r.name AS restaurant_name
+      `SELECT lr.id AS "id",
+              lr.status AS "status",
+              lr.created_at AS "created_at",
+              r.name AS "restaurant_name"
          FROM live_requests lr
          JOIN restaurants r ON r.id = lr.restaurant_id
         ORDER BY lr.created_at DESC
@@ -128,11 +128,11 @@ async function getRecentActivity(connection) {
       { fetchLimit: ACTIVITY_FETCH_LIMIT }
     ),
     connection.execute(
-      `SELECT o.id AS id,
-              o.order_code AS order_code,
-              o.status AS status,
-              o.created_at AS created_at,
-              r.name AS restaurant_name
+      `SELECT o.id AS "id",
+              o.order_code AS "order_code",
+              o.status AS "status",
+              o.created_at AS "created_at",
+              r.name AS "restaurant_name"
          FROM orders o
          JOIN restaurants r ON r.id = o.restaurant_id
         ORDER BY o.created_at DESC
