@@ -57,6 +57,7 @@ const submitOrder = require('../services/submitOrder');
 const updateOrderStatus = require('../services/updateOrderStatus');
 const { getOrderCounts } = require('../services/orderCounts');
 const { getSalesSummary } = require('../services/salesSummary');
+const { getHourlySales } = require('../services/hourlySales');
 const orders = require('../models/orders');
 const orderItems = require('../models/orderItems');
 const paymentMethods = require('../models/paymentMethods');
@@ -291,6 +292,25 @@ async function salesSummary(req, res, next) {
   }
 }
 
+// GET /api/orders/sales-hourly (owner-authenticated) — Task 10.3e2-i
+//
+// Backs the owner Dashboard's Sales Overview hourly line chart (Task
+// 10.3e2-ii) — Phase 10's one named new-backend exception. Mounted
+// (order.routes.js) ahead of `GET /:id` for the same shadowing reason
+// `counts`/`sales-summary` are, with the same `authMiddleware` →
+// `attachOwnerRestaurant` chain. Delegates to `services/hourlySales.js`,
+// which returns today's `Completed` sales bucketed into 24 local-hour
+// entries.
+async function salesHourly(req, res, next) {
+  try {
+    requireRestaurantScope(req);
+    const hourly = await getHourlySales(req.user.restaurant_id);
+    res.status(200).json({ hourly });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // GET /api/orders/:id (owner-authenticated) — Task 5.13
 //
 // `docs/NATRA_MASTER_PROMPT.md`'s "Order details" list: Order ID,
@@ -510,6 +530,7 @@ module.exports = {
   list,
   counts,
   salesSummary,
+  salesHourly,
   getOne,
   updateStatus,
   updateStatusSchema,

@@ -27,9 +27,42 @@
 // through this same pair unchanged.
 
 const { paginate } = require('../utils/paginate');
+const { badRequest } = require('../utils/errors');
 const notifications = require('../models/notifications');
 
-// GET /api/notifications — Task 7.5b
+// Task 10.3a-ii — an optional `is_read` equality filter, added as a real
+// prerequisite for the owner-dashboard notification-count indicator
+// (`DashboardHeader`, Task 10.0b-iv/frontend `fetchUnreadNotificationCount`),
+// the same "small, scoped backend gap closed as part of the frontend task
+// that needed it" shape `docs/PROJECT_STATUS.md`'s own Task 8.4c-ii entry
+// already took for a thumbnail-URL persistence gap. Before this, `list`
+// below only ever accepted `req.query`'s pagination params (`page`/
+// `limit`/`offset`) — `is_read` wasn't filterable at all, so there was no
+// way to ask this endpoint for "how many of my notifications are unread"
+// without fetching every row and counting client-side, which `paginate`'s
+// own page-size cap (`utils/paginate.js`'s `MAX_LIMIT`) makes unreliable
+// for a real total. `is_read` is already in `models/notifications.js`'s
+// own `columns` allow-list (so `crudFactory`'s `_buildFilterWhere` already
+// accepts it as an equality filter with no model change needed) — this
+// controller just needed to actually forward it.
+//
+// Validated the same "exact-match filter parsed and rejected with a 400
+// on anything else, not silently ignored" way `adminOrdersList.js`'s own
+// `parseStatusFilter`/`parseRestaurantIdFilter` already do for their own
+// exact-match filters: the DB's own `ck_notifications_is_read` constraint
+// (migration 0010) only ever allows `0`/`1`, so a query string of anything
+// else (`is_read=yes`, `is_read=2`) can never match a real row and is
+// almost certainly a caller bug worth a 400, not a filter that silently
+// returns zero rows every time.
+function parseIsReadFilter(raw) {
+  if (raw === undefined || raw === '') return undefined;
+  if (raw !== '0' && raw !== '1') {
+    throw badRequest('"is_read" must be 0 or 1');
+  }
+  return Number(raw);
+}
+
+// GET /api/notifications — Task 7.5b, `is_read` filter added Task 10.3a-ii
 //
 // `orderBy: 'id', orderDir: 'DESC'` — same reasoning every other
 // newest-first list in this codebase already gives for using the
@@ -40,12 +73,14 @@ const notifications = require('../models/notifications');
 // never caller-settable anywhere in this codebase).
 async function list(req, res, next) {
   try {
-    const { rows, meta } = await paginate(
-      notifications,
-      { recipient_id: req.user.id },
-      req.query,
-      { orderBy: 'id', orderDir: 'DESC' }
-    );
+    const isRead = parseIsReadFilter(req.query.is_read);
+    const filters = { recipient_id: req.user.id };
+    if (isRead !== undefined) filters.is_read = isRead;
+
+    const { rows, meta } = await paginate(notifications, filters, req.query, {
+      orderBy: 'id',
+      orderDir: 'DESC',
+    });
     res.status(200).json({ notifications: rows, meta });
   } catch (err) {
     next(err);
