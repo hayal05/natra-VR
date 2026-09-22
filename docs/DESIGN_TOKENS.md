@@ -203,6 +203,191 @@ Not changed, deliberately, after re-checking:
   (Home/Categories/Orders/Profile, house/grid/clipboard/person glyphs,
   orange active state) — no change needed.
 
+## Task 10.2b-ii — restaurant card content restyle (EntityCard)
+
+Compared `EntityCard`'s restaurant-card slot combination against
+`docs/reference_ui/phase10_customer_home_reference.jpg` (both of its
+restaurant cards, not just one). Scope is deliberately narrow — this
+task covers photo/name/location-line only; the Open/Closed badge's own
+placement is `10.2b-iii`'s job and is untouched here.
+
+1. **Logo repositioned: top-left over the photo, not centered/
+   straddling the image-body seam.** The Task 2.22 finding above was
+   measured against the *old* `560d4168...png` reference and doesn't
+   hold against this new one — both restaurant cards here show a small
+   square logo badge sitting inside the photo's top-left corner. Fixed:
+   `.logo` moved from `bottom: -space-md; left: 50%; transform:
+   translateX(-50%)` (circular, pill radius) to `top: space-sm; left:
+   space-sm` (rounded-square, `--radius-md`) — still positioned
+   relative to `.media`, its own `position: relative` parent. `.body`'s
+   old `padding-top: var(--space-lg)` override (added to clear the
+   logo's overlap into the body) is removed — nothing overlaps the body
+   from above anymore.
+2. **Name weight bumped semibold → bold.** The reference's restaurant/
+   food card names both read noticeably heavier than this app's
+   existing `--font-weight-semibold` (600) title. Bumped `.title` to
+   `--font-weight-bold` (700) — shared by both card types (Popular
+   Foods' own name in the same reference is the same weight).
+3. **Location-line size bumped caption (12px) → body (14px).** The
+   reference's `location_text` line under each restaurant name reads
+   larger than this app's existing 12px caption size — matched here.
+   Shared with the Popular Foods card's price line (`.metaLine`'s only
+   other caller), which the same reference also shows at this larger
+   size.
+
+**Confirmed, not changed:** no star rating/review count added (no
+ratings/reviews column anywhere in `docs/DB_SCHEMA.md` — see
+`docs/UI_REDESIGN_ROADMAP.md`'s own "Star rating / review count"
+deviation note) and no location-pin icon added ahead of the
+`location_text` line (no such icon asset exists anywhere in this
+codebase, and Phase 10's governing rule is restyle using real
+data/icons only, never inventing a new one) — the card's only fields
+remain photo, name, `location_text`, and (unchanged by this task)
+Open/Closed status.
+
+## Task 10.2b-iii — restaurant card badge placement (EntityCard)
+
+Re-checked the Open/Closed badge's placement against both restaurant
+cards in `docs/reference_ui/phase10_customer_home_reference.jpg` rather
+than assuming Task 2.22's own "badge sits in the card body, not on the
+photo" finding still holds — it doesn't. That finding was measured
+against the *old* `560d4168...png` reference; this new one clearly
+shows the pill sitting on top of the photo's top-right corner (the
+opposite corner from `10.2b-ii`'s repositioned top-left logo), not below
+it in the white card body.
+
+Fixed: `badge` moved from an in-flow element at the top of `.body` back
+to an absolutely-positioned overlay on `.media` (`.badgeSlot`, `top`/
+`right: var(--space-sm)`) — the same slot shape Task 2.3's original,
+pre-2.22 guess had, just re-arrived-at independently from this new
+reference rather than reverted from memory. `StatusBadge`'s own solid-
+fill/white-text styling already reads fine directly against a photo, so
+nothing in `StatusBadge.module.css` needed to change, only where
+`EntityCard` places its slot.
+
+## Task 10.2c-i — Categories row tile restyle (FilterBar chips)
+
+Confirmed `FilterBar`'s `type: 'chips'` rendering (`.chip`/`.chipActive`,
+`FilterBar.module.css`) is used by exactly one real screen — `Home.jsx`'s
+Categories row — before touching a shared component (`AdminOrders.jsx`,
+the only other `FilterBar` caller, uses `type: 'dropdown'` groups only;
+grep-confirmed, not assumed).
+
+Compared that row against
+`docs/reference_ui/phase10_customer_home_reference.jpg`'s own Categories
+section: compact rounded-rectangle tiles (icon on top, label below), not
+the wide pill shape `.chip` had (itself measured off the old,
+pre-redesign `1000065033.jpg` reference — see `docs/TASKS.md`'s own
+struck-through `10.0f` note for why no per-category icon is being added:
+categories are owner-defined free text with no icon field, and no icon
+set exists to draw from). Per the redesign's "restyle with real data/
+icons only" rule, this collapses to a text-only tile rather than an
+icon+label one.
+
+**Changes, `.chip`/`.chipActive` only:**
+- `border-radius`: `--radius-pill` → `--radius-md` (12px) — squared off
+  from a full pill.
+- Horizontal padding: `space-lg` → `space-md`, so a short label ("All",
+  "Pizza") reads closer to square instead of stretching into a wide
+  pill. Vertical padding (`space-md`) is untouched, preserving the Task
+  8.9a2 44px touch-target fix.
+- Inactive fill: `--color-surface-muted` (gray) → `--color-page-glow`
+  (Task 10.0a's peach token) — a closer match to this reference's own
+  light-peach inactive tile, and already a real shipped token rather
+  than a new one added for this task.
+- `.chipActive` (solid `--color-primary` fill, white text) is unchanged
+  — already matches the reference's filled-orange active tile.
+
+Layout-shell only, per this task's own scope: the real category names/
+active-selection wiring this renders (`Home.jsx`, Task 3.4) is untouched
+here — re-verified, not re-built, in Task 10.2c-ii.
+
+## Task 10.0a — redesign palette/gradient tokens
+
+Sampled directly (Python/Pillow, median-region sampling, same method as
+the original tokens above) from the 4 new reference images received for
+Phase 10: the login card mock, Customer Home, Owner Dashboard, and Admin
+Dashboard.
+
+**Header gradient** (Customer Home band, Owner/Admin `DashboardHeader`):
+sampled the orange header region's top-left vs. top-right/bottom-right
+corners on all 3 header images —
+
+| Image | Top-left | Lighter corner |
+|---|---|---|
+| Customer Home | `#F37E1F` | `#F88E48` |
+| Owner Dashboard | `#F1660A` | `#F97814`–`#F97E15` |
+| Admin Dashboard | `#F4710C` | `#F97E15` |
+
+All three cluster tightly around the app's two **existing** brand
+tokens — `--color-primary` (`#F2690C`) and `--color-primary-tint`
+(`#F88834`) — close enough that no new hex value is needed, only a new
+*gradient* token combining the two already-shipped colors:
+
+| Token | Value | Source |
+|---|---|---|
+| `gradient-header` | `linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-tint) 100%)` | measured (stop colors) / inferred (exact angle — screenshots don't preserve enough geometry to measure a gradient angle precisely, 135deg matches the top-left→bottom-right direction visible in all 3 images) |
+
+Note: this reuses `--color-primary`/`--color-primary-tint` at their
+current (Task 9.1-reverted, brighter) values, not the Task 8.9b2
+WCAG-AA-darkened ones — matching the sampled reference and staying
+consistent with how those two tokens already render everywhere else
+shipped in the app today (header bands, buttons). Not re-opening the
+8.9b2/9.1 tradeoff here; that's a standing, already-made decision
+outside this task's scope.
+
+**Pre-auth page gradient** (`OwnerLogin`/`AdminLogin` background, per
+10.1a's shared shell): sampled the login reference's top-left corner
+(soft peach glow) vs. lower-page area (fades to neutral) —
+
+| Region | Value |
+|---|---|
+| Top-left corner | `#FCF1E8` |
+| Lower-page / bottom corners | `#F2F3F5`–`#F3F4F6` |
+
+The lower value is close enough to the existing `--color-surface-muted`
+(`#F4F6F6`) to reuse directly. The peach corner has no existing token,
+so one new color is added:
+
+| Token | Value | Source |
+|---|---|---|
+| `color-page-glow` | `#FCF1E8` | measured — login reference's top-left corner |
+| `gradient-page-preauth` | `radial-gradient(ellipse 140% 100% at top left, var(--color-page-glow) 0%, var(--color-surface-muted) 55%, var(--color-background) 100%)` | measured (stop colors) / inferred (radial shape/stop positions — same reasoning as `gradient-header`'s angle) |
+
+This is a new page-level background, additive — it does not replace
+`--color-background` (still used everywhere else) or touch any of the
+6 already-adjusted 8.9b2 text-safe tokens; nothing in this gradient
+sits behind text directly (the white card sits on top of it), so no
+new contrast pairing is introduced.
+
+No other new tokens needed for Phase 10's 4 in-scope pages: `NATRA`'s
+wordmark treatment already exists (`--font-family-brand`, the 'Astra'
+font, already used on `Home.jsx`'s header and `RoleShell`'s admin
+sidebar brand — `10.0b-ii` reuses this directly, not a new font);
+`StatusBadge`'s success/error/neutral tones and the full spacing/font/
+radius scales already cover everything these 4 screens need. Per-status
+pill colors for `10.4d-i` (Pending/New/Accepted/Completed/Approved) are
+a real open decision, deliberately left to that task itself rather than
+decided here as a side effect of the shared kit.
+
+## Task 10.1d — primary CTA gradient token
+
+Sampled from the login reference's "Log in" button (Pillow, same method
+as 10.0a): a vertical gradient, top `#FF691C` -> bottom `#E75D12`.
+Existing tokens bracket it closely (`--color-primary` `#F2690C` at the
+top, `--color-primary-pressed` `#D65C08` at the bottom; the reference is
+slightly brighter at both ends), so no new hex value is added — only a
+new *gradient* combining the two, same approach as `gradient-header`.
+
+| Token | Value | Source |
+|---|---|---|
+| `gradient-button-primary` | `linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-pressed) 100%)` | measured (direction, endpoint colors ~within 17/255 per channel of existing tokens) |
+
+Contrast of the white label on it: 3.09:1 at the top, 3.89:1 at the
+bottom (previous flat `--color-primary` fill: 3.09:1). No regression;
+still below 4.5:1 for the reason already recorded under Task 9.1 (the
+brighter brand orange was restored deliberately). Not reopened here.
+
 ## Notes for Task 2.2
 
 - One brand color, two status colors, three surface tones, two text
@@ -214,3 +399,29 @@ Not changed, deliberately, after re-checking:
   sandbox against these same two reference images) is where spacing/
   font/radius actually get corrected against the eye, not against a
   pixel ruler that doesn't exist for these source images.
+
+
+## Task 10.4f — admin sidebar restyle (RoleShell)
+
+No new tokens. The admin sidebar (`RoleShell.module.css`, `.sidebar*`)
+was moved to the Phase 10 look using existing values only:
+
+| Element | Value |
+|---|---|
+| Link shape | `--radius-md` pill, 44px min-height, `--space-md` padding, inset `--space-md` from the rail edge |
+| Hover | `--color-surface-muted` |
+| Active background | `color-mix(in srgb, var(--color-primary) 14%, var(--color-surface))` — the same primary tint `StatTile`/`StatusBadge` use (`#fdeadd` on white) |
+| Active text/icon | `--color-primary`, semibold |
+| Active marker | 3×20px rounded bar, `--color-primary`, on the pill's left edge (the bottom bar's underline, turned vertical) |
+| Focus | 2px `--color-primary` outline, 2px offset (as `StatTile`) |
+
+Source: `docs/reference_ui/phase10_admin_dashboard_reference.jpg` shows
+only the phone bottom bar (orange icon + label, short rounded orange bar
+under the active tab), so the sidebar is inferred from that vocabulary,
+not measured. The same bar was added to the admin *bottom* nav
+(`.navInnerAdmin`), which the reference does show.
+
+Contrast, computed (WCAG): active label `#f2690c` on `#fdeadd` = 2.65:1
+(previous active state on `--color-surface-muted` = 2.85:1); inactive
+`#687180` on white = 4.93:1. Below AA for the active state — the standing
+Task 9.1 / 10.0a tradeoff, not re-opened here.
