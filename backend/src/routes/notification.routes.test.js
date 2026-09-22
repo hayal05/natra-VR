@@ -93,6 +93,45 @@ describe('GET /api/notifications', () => {
     expect(res.status).toBe(200);
     expect(res.body.notifications).toEqual([]);
   });
+
+  // Task 10.3a-ii — the `is_read` filter added for the owner-dashboard
+  // notification-count indicator (`DashboardHeader`, frontend
+  // `fetchUnreadNotificationCount`).
+  test('"is_read=0" scopes both the rows and meta.total to unread notifications only', async () => {
+    const owner = await createOwner();
+
+    const unread1 = await seedNotification(owner.userId, { message: 'Unread 1' });
+    await seedNotification(owner.userId, { message: 'Unread 2' });
+    const readOne = await seedNotification(owner.userId, { message: 'Read 1' });
+
+    await request(app)
+      .patch(`/api/notifications/${readOne.id}/read`)
+      .set('Authorization', `Bearer ${owner.token}`);
+
+    const res = await request(app)
+      .get('/api/notifications?is_read=0&limit=1')
+      .set('Authorization', `Bearer ${owner.token}`);
+
+    expect(res.status).toBe(200);
+    // meta.total reflects the full unread count regardless of the
+    // page-limiting `limit=1` above — see utils/paginate.js's own doc
+    // comment on why `meta.total` comes from a separate `count()` run
+    // against the same filters, not `rows.length`.
+    expect(res.body.meta.total).toBe(2);
+    expect(res.body.notifications).toHaveLength(1);
+    expect(res.body.notifications[0].id).toBeGreaterThanOrEqual(unread1.id);
+  });
+
+  test('an "is_read" value other than 0/1 is a 400, not a silently-empty result', async () => {
+    const owner = await createOwner();
+    await seedNotification(owner.userId);
+
+    const res = await request(app)
+      .get('/api/notifications?is_read=yes')
+      .set('Authorization', `Bearer ${owner.token}`);
+
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('PATCH /api/notifications/:id/read', () => {

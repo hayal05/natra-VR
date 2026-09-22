@@ -74,6 +74,10 @@ router.get(
   attachOwnerRestaurant,
   orderController.salesSummary
 );
+// Task 10.3e2-i — hourly sales for the Dashboard chart; literal path
+// segment, registered before `GET /:id` for the same shadowing reason as
+// `/counts` and `/sales-summary` above.
+router.get('/sales-hourly', authMiddleware, attachOwnerRestaurant, orderController.salesHourly);
 router.get('/:id', authMiddleware, attachOwnerRestaurant, requireOwnedOrder, orderController.getOne);
 // Task 5.14a — same three-deep chain as `GET /:id` immediately above
 // (an Accept/Reject action needs the exact same "is this caller's
