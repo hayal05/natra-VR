@@ -4,80 +4,410 @@
   margin: 0 auto;
 }
 
+/* Task 10.5h-v — new wrapper so `accountLink` (10.5h-iv) can sit at the
+   right end of the heading row; see the JSX comment above this row's
+   call site for why this row, specifically, was the placement chosen.
+   `margin: 0 0 var(--space-lg)` moved here from `.heading` below (that
+   class's only call site, confirmed by grep, so edited in place rather
+   than duplicated — same convention `.subheading` followed at 10.5g-i)
+   so the gap before the hero stays fixed regardless of which child
+   (the heading text or the avatar/fallback link) ends up taller.
+   `align-items: center` keeps a short heading and a circular avatar
+   vertically centered on each other rather than top-aligned by default;
+   `justify-content: space-between` is what actually pushes the account
+   link to the row's right end with the heading staying left. No gap
+   value needed: `space-between` handles the horizontal separation, and
+   at narrow widths the two children simply have the row's own full
+   width between them (a heading this short plus a ~44px avatar has no
+   realistic overlap risk at any of this page's supported breakpoints;
+   `10.5i`'s responsive pass will confirm that against a real render). */
+.headingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 var(--space-lg);
+}
+
 .heading {
   font-family: var(--font-family);
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--space-lg);
+  margin: 0;
 }
 
+/* Task 10.5h-vi — `.accountAvatar` (circle branch) and
+   `.accountFallbackLink` (text branch), the two shapes `accountLink`
+   (10.5h-iv) can take, placed by `.headingRow` above (10.5h-v).
+
+   Colors are existing tokens, not invented for this task:
+   `--color-primary` (`#F2690C`, `docs/DESIGN_TOKENS.md`) for the
+   circle's fill / the fallback link's text, and `--color-text-on-primary`
+   (`#ffffff`, `frontend/src/styles/global.css`) for the letter inside
+   it — the same orange-fill/white-text pairing `DashboardHeader.module.css`'s
+   `.header` band already established for text on a colored background,
+   reused rather than re-derived.
+
+   `.accountAvatar`: `width`/`height: 44px` doubles as both the circle's
+   diameter and the task's own "≥44px tap target" requirement directly —
+   no separate invisible-padding trick needed the way `.linkButton`'s own
+   8.9a2 fix needed one for a *text* link's thin natural hit area, since
+   a circle sized to exactly 44px already *is* a 44px target with no
+   extra box required. `display: flex` + centering keeps the single
+   letter centered in the circle regardless of that letter's own glyph
+   width (a "W" and an "I" don't take equal horizontal space at the same
+   font-size). `font-size-title` (16px) rather than `font-size-heading`
+   (22px): a single glyph at heading size would visually crowd a 44px
+   circle's padding; title size leaves clear room on every side at this
+   diameter. `line-height: 1` prevents the font's own default line-height
+   from pushing the glyph off-center vertically inside a fixed-height
+   flex box.
+
+   `:focus-visible` gets an explicit white outline rather than the
+   browser default (every other link in this file relies on that
+   default — `.categoryEditLink`, `.menuManagementLink`, etc. — because
+   none of them sit on a colored fill): the same solid-orange-background
+   problem `DashboardHeader.module.css`'s own `.accountLink:focus-visible`
+   already solved, solved here the same way rather than differently for
+   no reason.
+
+   `.accountFallbackLink`: properties are the same as the pre-10.5g-iv
+   `.linkButton` used to be (caption size, semibold, `--color-primary`,
+   underlined, `min-height: 44px` + `inline-flex` for the tap-target
+   floor) — this page's plain white background, not a colored fill, so
+   no custom focus outline needed here, same as every other plain link
+   in this file. */
+.accountAvatar {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.accountAvatar:focus-visible {
+  outline: 2px solid var(--color-text-on-primary);
+  outline-offset: 2px;
+}
+
+.accountFallbackLink {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Task 10.5g-i — restyled into the soft tinted, rounded, full-width
+   strip the reference draws for the "Menu management" note
+   (docs/reference_ui/phase10_owner_restaurant_reference.jpg, bottom of
+   the page). Checked first, per the task's own note: `.subheading` has
+   exactly one call site in this file — this `<p>` (confirmed by grep)
+   — and no other page can see it (CSS Modules scope per-file), so this
+   edits the class in place rather than adding a new scoped one; there's
+   no sibling caller to leak into, unlike `.section`/`.addButton` etc.
+   above, which is why those needed the "new class per section"
+   treatment and this doesn't.
+
+   Fill/radius/padding reuse `OwnerDashboard`'s own tinted-strip recipe
+   (`.salesTotal`/`.salesCompleted`, Task 10.3e-i/ii): `--color-surface-
+   muted` background, `--radius-lg`, `padding: var(--space-md)
+   var(--space-lg)` — not `.sectionCard`'s white-card-with-border
+   treatment, since the reference's strip has a flat tinted fill and no
+   visible border/shadow (pixel-checked: sampled background clusters at
+   `#eef1f5`–`#f4f6f6`, the same JPEG-noisy cluster `.areaChip`'s own
+   comment above already measured and mapped to `--color-surface-muted`
+   — not a new color). No `box-sizing`/explicit `width` needed: this
+   `<p>` is a plain block element with an auto width, so the new padding
+   is subtracted from its own content width the same way `.page`'s
+   `padding` already is, not added on top of a fixed width — no overflow
+   risk to guard against, unlike `.form`'s percentage-width case.
+   `margin: var(--space-xl) 0 0` (the gap from Payment methods above) is
+   unchanged, matching 10.5b-i's convention of carrying an existing
+   spacing value over untouched when a task doesn't own that decision.
+
+   Text/link styling (`.menuManagementLink`, applying to "manage your
+   foods" inside — `.linkButton` at the time this comment was written,
+   since renamed by 10.5g-ii and removed as dead CSS by 10.5g-iv) and
+   the note's copy are untouched — that's 10.5g-ii/10.5g-iii's own
+   scope, not this task's. No icon: the reference shows
+   a gear icon here too, but per 10.5c-i's split note the governing rule
+   drops every icon that has no real counterpart in the codebase, and
+   this page has never had one — same call already made for the four
+   section-card headers above. */
 .subheading {
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: var(--space-xl) 0 0;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
 }
 
-/* Task 8.2d-i — verified/adjusted at all 4 `ResponsiveGrid` breakpoints
-   (Task 2.7). This is the same `.openToggleStatus`/`.openToggleHint`-vs-
-   `ToggleSwitch` shape `OwnerDashboard.module.css`'s own `.openToggleRow`
-   already worked through in detail for Task 8.2b-vi, just measured
-   against this screen's own column instead of a `.card`'s:
-   - `.page` (this file) is 640px-capped with `space-lg` (16px) side
-     padding, so at the narrowest supported 320px viewport its inner
-     width is 288px.
-   - This row adds its own `space-md` (12px) side padding on top of
-     that (border + background, unlike `OwnerDashboard`'s version which
-     sits inside a `.card` that already provides that chrome) — 264px
-     left for the row's own content, close to but not the same 256px
-     `OwnerDashboard.module.css`'s comment measured for its `.card`
-     column.
-   - Same worst-case min-content sum 8.2b-vi's comment derives applies
-     here unchanged, since it's the same `StatusBadge`/`.openToggleHint`/
-     `ToggleSwitch` markup: `.openToggleStatus` ~145px (badge + gap +
-     "Customers") plus this row's own `space-lg` (16px) gap plus
-     `ToggleSwitch` ~95px (track + gap + "Open"/"Closed") ≈ 256px —
-     inside the 264px available here today, but by an even thinner
-     margin (~8px) than `OwnerDashboard`'s own ~0px-to-spare case, and
-     with the same "no fallback if a translation or fallback font
-     lengthens it" risk that row's comment gives.
-   Fix: added `flex-wrap: wrap` here too, same fix, same reasoning —
-   lets `ToggleSwitch` drop to its own line under the status block
-   rather than forcing the row wider than `.page`. No visual difference
-   at any of the 4 verified breakpoints' actual widths/copy, since none
-   trip it today — a safety margin, not a fix to an observed break. */
-.openToggleRow {
+/* Task 8.2d-i built `.openToggleRow` (the standalone card this row used
+   to be, above the hero) and sized it against `StatusBadge` +
+   `.openToggleHint` + `ToggleSwitch` sharing one row at 320px — see the
+   git history for that math. Task 10.5a-iv-i moved `StatusBadge` out of
+   it first (down into `.nameRow`, below); Task 10.5a-iv-ii (this task)
+   moved the remaining `.openToggleHint` + `ToggleSwitch` pair down too,
+   as `.statusRow` (below `.nameBadge`) — `.openToggleRow` had nothing
+   left in it at that point, so the class and its rule are removed here
+   rather than kept as an empty wrapper. */
+
+/* Task 10.5a-ii — hero wrapper: cover photo + the logo badge row (+ its
+   upload/error messages). Takes over the bottom margin the old
+   `.imageFields` block (standalone Logo field, now gone) carried, so the
+   gap down to the form is unchanged. */
+.hero {
+  margin-bottom: var(--space-xl);
+}
+
+/* Task 10.5a-ii — the row that holds the logo badge and, since 10.5a-iii,
+   the name/description block beside it. Since 10.5a-iv-i, `StatusBadge`
+   lives in here too (see `.nameRow`, below `.identityText`); since
+   10.5a-iv-ii, the `ToggleSwitch` + hint sentence do as well (see
+   `.statusRow`, directly under `.nameRow`) — `.openToggleRow`, the
+   standalone card that used to hold them above the hero, is gone.
+
+   `--logo-badge-size` is the one place the badge's size is decided:
+   `clamp(72px, 17%, 96px)`.
+   - 17% — the reference's badge is ~95px in a ~560px-wide hero (≈17%), so
+     it scales with the column instead of being a copied mockup pixel size.
+   - 72px floor — keeps the tile a comfortable tap target (it is the logo's
+     only upload control) and legible for its caption on a 320px phone,
+     where 17% of the 256px row would be just ~44px.
+   - 96px cap — matches the reference's size, so on a wide desktop column
+     it stops growing rather than turning into a huge tile.
+   The `%` resolves against this row's content width. Both `.logoBadge`'s
+   `width` and its `margin-top` below read the same variable, and CSS
+   percentages for both a flex item's width and its margins resolve against
+   that same container width — so the overlap stays exactly half the
+   badge at every size, instead of drifting the way a mixed % / px pair
+   would. Inset by `space-lg` from the cover's left edge, like the
+   reference (~16px). */
+.identityRow {
+  --logo-badge-size: clamp(72px, 17%, 96px);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  padding: 0 var(--space-lg);
+}
+
+/* Pulled up by half its own height so it straddles the cover's bottom
+   edge, as in the reference (~50px of the ~95px badge sits on the photo).
+   Half the size is always <= the shortest cover the 21:5 ratio produces
+   (288px column -> ~69px tall; half of the 72px minimum badge is 36px), so
+   the badge never pokes out of the top of the photo.
+
+   `position: relative; z-index: 1`: the cover's preview box is
+   `position: relative` (positioned), and positioned boxes paint above
+   non-positioned in-flow ones regardless of DOM order — without this the
+   photo would be painted over the top of the badge. `flex: 0 0 auto` so
+   it never shrinks now that the name block (`.identityText`, below)
+   shares the row with it, from 10.5a-iii. */
+.logoBadge {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: var(--logo-badge-size);
+  margin-top: calc(var(--logo-badge-size) / -2);
+}
+
+/* Task 10.5a-iii — name + description preview, beside the logo badge.
+   Plain in-flow block (no negative margin like the badge), so it starts
+   at the row's own top edge, right under the cover — not pulled up over
+   the photo the way the badge is.
+
+   `min-width: 0` overrides flexbox's default `min-width: auto` on a flex
+   item, which otherwise refuses to shrink narrower than the text's own
+   longest unbroken run (the description, before it's clamped) and would
+   push this column wider than the row, forcing `.hero` to overflow
+   `.page` at narrow viewports. `flex: 1 1 auto` lets it take the row's
+   remaining width next to the badge's fixed size. */
+.identityText {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Task 10.5a-iv-i — name heading + `StatusBadge`, side by side. `gap:
+   var(--space-sm)` matches the spacing `StatusBadge` already keeps from
+   adjacent text everywhere else it's used (e.g. `OwnerDashboard`'s own
+   open/closed row). `min-width: 0` on the row itself, same reasoning as
+   `.identityText` above: without it, flexbox would let `.restaurantName`
+   refuse to shrink below its own longest unbroken run and push the row
+   wider than the column. `align-items: center` keeps the pill vertically
+   centered against the heading's cap-height rather than its line-box
+   top. */
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+/* `StatusBadge` is `display: inline-flex` internally, which — now that
+   it's itself a flex item inside `.nameRow` — would default to
+   `flex-shrink: 1` and get squeezed once the row runs out of room next
+   to a long name. `flex: 0 0 auto` keeps the pill at its own natural
+   size always, so it's `.restaurantName`'s ellipsis (not the badge)
+   that absorbs a narrow column. */
+.nameBadge {
+  flex: 0 0 auto;
+}
+
+/* Task 10.5a-iv-ii — `ToggleSwitch` + its hint sentence, moved here from
+   the now-removed `.openToggleRow` card above the hero. `justify-content:
+   space-between` + `flex-wrap: wrap` is the same pairing `.openToggleRow`
+   used (hint text has no natural break-point-friendly max-width, toggle
+   is a fixed ~95px min-content per 8.2d-i's own math) — carried over
+   unchanged since the failure mode (long hint text + fixed-size control
+   on one line) is identical here, just in a narrower column (this row's
+   width is `.identityText`'s share of the hero, not the page's full
+   content width `.openToggleRow` had). `margin-top` gives it the same
+   breathing room from `.nameRow` that `.descriptionPreview`'s own
+   `--space-xs` gives from whatever precedes it, one step up
+   (`--space-sm`) since this row holds a real interactive control, not
+   just text. No border/background/padding card treatment carried over —
+   unlike the old standalone `.openToggleRow`, this row now lives inside
+   the hero's own `.identityText` column, which isn't a bordered card
+   itself, so wrapping this one row in its own card border would look
+   like a second, unrelated box floating inside the hero rather than
+   part of the same identity block as the name and description. */
+.statusRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-lg);
-  padding: var(--space-md);
-  margin-bottom: var(--space-xl);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
-.openToggleStatus {
-  display: flex;
-  align-items: center;
   gap: var(--space-md);
-  min-width: 0;
+  margin-top: var(--space-sm);
 }
 
-.openToggleHint {
+.statusHint {
   font-family: var(--font-family);
   font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
 }
 
-.imageFields {
+.restaurantName {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  /* Long restaurant names still get one line here too, same reasoning as
+     `.descriptionPreview` below — this column is only ever as wide as
+     the row minus the badge, and a wrapped second line of the name would
+     push the description down unevenly from one card to the next.
+     `flex: 1 1 auto` + `min-width: 0` (added for 10.5a-iv-i, `.nameRow`
+     being a flex row now) is what lets this ellipsis actually engage —
+     without them the heading would keep its intrinsic width and push
+     `StatusBadge` off toward the row's edge instead of sitting right
+     next to the (possibly truncated) name. */
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* One-line clamp: normal CSS whitespace collapsing already folds a
+   multi-line `description`'s own newlines into single spaces, so
+   `white-space: nowrap` + `text-overflow: ellipsis` is enough on its
+   own — no JS truncation needed for the "one-line preview" the roadmap
+   asks for. */
+.descriptionPreview {
+  margin: var(--space-xs) 0 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Real empty-description fallback (roadmap's own requirement — "not
+   blank space pretending to be content"): a plain prompt pointing at the
+   real Description field below, not an invented placeholder tagline.
+   Same size/color as the non-empty preview so the hero's height doesn't
+   jump between the two states. */
+.descriptionPreviewEmpty {
+  margin: var(--space-xs) 0 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Upload/error text for the cover and logo, rendered by the page (the two
+   fields are told not to, via `messageId`). Sits under the badge row —
+   clear of the overhanging badge, which text rendered inside the cover
+   field, right under the photo, would have collided with. */
+.heroMessages {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-  margin-bottom: var(--space-xl);
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+/* Non-error message ("Uploading …") — same size/tone the fields' own
+   `.helperMessage` used for this exact text before it moved here. Errors
+   reuse `.formError` below, this file's existing error style. */
+.heroHint {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Task 10.5a-i — cover-photo hero box, passed as `ImageUploadField`'s
+   `mediaClassName` (that component's own `.previewOverlay` resets
+   `max-width`/`aspect-ratio` to `none`/`auto` specifically so this
+   class, not a fixed default, controls sizing here).
+
+   `aspect-ratio: 21 / 5` (≈4.2:1) is measured from
+   `docs/reference_ui/phase10_owner_restaurant_reference.jpg`'s own hero
+   crop (597px wide × ~140px tall there), not guessed. Kept as a ratio
+   rather than a fixed px height (`RestaurantProfile.module.css`'s own
+   `.cover` uses `height: 200px`, a deliberate difference): that
+   screen's cover sits below a fixed-height `RoleShell`-less header with
+   no page-width cap of its own, but this one sits inside `.page`'s
+   640px-capped column, where a fixed height would look disproportionately
+   short at 320px (288px column → a 200px fixed cover reads nearly
+   square) and disproportionately tall once the column maxes out at
+   640px — a ratio keeps the same visual proportion the reference shows
+   at every width instead.
+
+   Device-size check: at the narrowest 320px viewport, `.page`'s own
+   `space-lg` side padding leaves a 288px column, so the hero is
+   288 / (21/5) ≈ 69px tall — short, but `.buttonOverlay`'s own 44px
+   floor plus `space-sm` padding on both sides (8px + 8px) fits inside
+   that with room to spare (44 + 16 = 60px ≤ 69px), so the overlaid
+   button is never taller than the photo it sits on even at this
+   worst-case width. */
+.coverHero {
+  width: 100%;
+  aspect-ratio: 21 / 5;
+  background: var(--color-surface-muted);
 }
 
 .status {
@@ -104,10 +434,35 @@
   background: var(--color-primary-pressed);
 }
 
+/* Task 10.5b-i — the name + Description form, restyled into the same card
+   treatment Phase 10's other panels already use (`OwnerDashboard`'s
+   `.card`, `EntityCard`, `OwnerLogin`'s form card): `--color-surface`
+   fill, 1px `--color-border`, `--radius-md`, `--shadow-card`, `--space-lg`
+   padding. Pure restyle — same `<form>` element, same two `FormField`s,
+   same `handleSubmit`; nothing here touches state or data.
+
+   `min-width: 0` lets the card shrink inside `.page`'s column instead of
+   being held open by a long unbreakable value in a field, and
+   `box-sizing: border-box` keeps the padding inside the column width at
+   320px (measured in a real browser: at 320px the card is 288px wide, so
+   after its `space-lg` padding + 1px borders the fields get ~254px,
+   comfortably above `FormField`'s own min-content).
+
+   Bottom margin is deliberately not set: the `.section` that follows
+   already carries its own `margin-top: var(--space-xl)`, so the gap down
+   to Categories is unchanged. (`.section`'s `border-top` divider stays
+   until 10.5c-i turns that section into a card too.) */
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+  box-sizing: border-box;
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
 }
 
 .formError {
@@ -152,10 +507,74 @@
   cursor: not-allowed;
 }
 
-.section {
+/* Task 10.5b-i — the profile form's own `Save changes` button, restyled to
+   the reference's filled orange pill: `--radius-pill` and an explicit 44px
+   `min-height` (tap-target floor) instead of relying on padding + line
+   height happening to add up. Flat `--color-primary` fill, as in the
+   reference. Deliberately a separate class from `.submitButton` above:
+   that one is also the Save button inside the Category / Service area /
+   Payment method modals' footers, which belong to 10.5c–10.5f and stay
+   as they are. Same pressed/disabled states as `.submitButton`. */
+.saveButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-pill);
+  min-height: 44px;
+  padding: var(--space-md) var(--space-xl);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.saveButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.saveButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+/* Task 10.5c-i-a — the card shell the Categories / Opening hours /
+   Service areas / Payment methods sections are moving to, one section
+   per task, per docs/reference_ui/phase10_owner_restaurant_reference.jpg.
+   Same recipe as `.form` (10.5b-i) and `OwnerDashboard`'s `.card`:
+   `--color-surface` fill, 1px `--color-border`, `--radius-md`,
+   `--shadow-card`, `--space-lg` padding.
+
+   **A new class, not an edit to `.section`** — same reasoning 10.5b-i
+   used for `.saveButton` vs. `.submitButton`: `.section` was still the
+   wrapper of the other sections until each moved onto `.sectionCard` in
+   its own task (Opening hours 10.5d-i-a, Service areas 10.5e-i-a,
+   Payment methods 10.5f-i-a). All four have now moved, and Task
+   10.5f-iii removed `.section` itself as dead CSS (confirmed by grep —
+   zero remaining call sites).
+
+   `margin-top: var(--space-xl)` is the gap `.section` used to put
+   between this section and whatever is above it (the profile form
+   card), so that gap is unchanged; the old `padding-top` +
+   `border-top` divider is not carried over — a card's own border
+   replaces it.
+
+   No `display`/`gap`: the header's own `margin-bottom`
+   (`.sectionHeader`) still spaces header from list, and re-laying the
+   header is 10.5c-i-b's job, not this one. `box-sizing: border-box` +
+   `min-width: 0` for the same reason `.form` has them: keep padding
+   inside the `.page` column at 320px and let a long category name
+   shrink/wrap instead of holding the card open. */
+.sectionCard {
   margin-top: var(--space-xl);
-  padding-top: var(--space-xl);
-  border-top: 1px solid var(--color-border);
+  box-sizing: border-box;
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
 }
 
 /* Task 8.2d-ii — verified at all 4 `ResponsiveGrid` breakpoints (Task
@@ -207,55 +626,160 @@
   margin-bottom: var(--space-lg);
 }
 
+/* Task 10.5c-i-b — heading typography only (no icon: see the split note
+   above `.sectionCard`), matching the same title convention
+   `OwnerDashboard.module.css`'s/`AdminDashboard.module.css`'s own
+   `.cardTitle` already established for every one of *their* card
+   headers (Orders/Order notifications/Sales Overview/the row right
+   above 10.3d-v's Quick Actions tiles, and every `AdminDashboard` card)
+   — `font-size-title` (16px) + `font-weight-semibold` (600), not this
+   page's own previous `font-size-body` (14px) + `font-weight-bold`
+   (700). That's the entire change: color and margin are unchanged, and
+   so is layout — `.sectionHeader` below already puts the heading on the
+   left and the action button on the right with both free to wrap (Task
+   8.2d-ii verified that at all 4 breakpoints already; nothing about
+   wrap behavior changes here).
+
+   `.sectionHeading` is intentionally **not** in the "new class per
+   section" list the split note above `.sectionCard` names
+   (`.section`/`.addButton`/`.linkButton`) — unlike those, which differ
+   section-to-section until each one's own later task migrates it, a
+   heading's *typography* has no reason to differ by section, so this
+   edit applies to Categories/Opening hours/Service areas/Payment
+   methods' headings all at once (all four `<h2 className={styles.
+   sectionHeading}>` call sites, per `OwnerRestaurant.jsx`) rather than
+   waiting for each section's own card-migration task. The other three
+   sections keep every *other* part of today's plain-divider `.section`
+   look (border-top divider, `.addButton`'s outline-square button) until
+   their own tasks — only the heading font changes early. */
 .sectionHeading {
   font-family: var(--font-family);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin: 0;
 }
 
-.addButton {
+/* Task 10.5c-i-c — the outlined orange pill the reference draws for
+   "Add category" (docs/reference_ui/phase10_owner_restaurant_reference.jpg):
+   orange text + 1px orange outline, no fill, fully rounded.
+
+   **A new class, not an edit to `.addButton`** — same reasoning 10.5b-i
+   used for `.saveButton` vs. `.submitButton` and 10.5c-i-a used for
+   `.sectionCard` vs. `.section`: `.addButton` styled "Add payment
+   method" until 10.5f-i-c moved it onto this class (Task 10.5e-i-c had
+   already moved Service areas' "Add area" the same way). With all four
+   "Add …" buttons now on `.addPill`, Task 10.5f-iii removed `.addButton`
+   itself as dead CSS (confirmed by grep — zero remaining call sites).
+
+   Same font/color/outline as `.addButton`; what changes is the shape
+   (`--radius-pill` instead of `--radius-md`) and the tap height:
+   `.addButton` was ~30px tall, this is an explicit 44px `min-height`
+   (same touch-target floor `.saveButton` and `.linkButton` already
+   use), centered with inline-flex so a label that wraps stays centered
+   inside the pill. Like `.addButton`, no `white-space: nowrap` — the
+   label may wrap rather than force `.sectionHeader` wider (Task 8.2d-ii's
+   finding); `text-align: center` keeps a wrapped label tidy.
+   `:active` uses `--color-primary-pressed`, same press cue `.saveButton`
+   has. */
+.addPill {
   font-family: var(--font-family);
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
   background: none;
   border: 1px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-pill);
+  min-height: 44px;
+  padding: var(--space-sm) var(--space-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   cursor: pointer;
 }
 
-.listRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+.addPill:active {
+  color: var(--color-primary-pressed);
+  border-color: var(--color-primary-pressed);
 }
 
-.listRowName {
+/* Task 10.5c-ii-a — category name as a tinted rounded chip, matching
+   docs/reference_ui/phase10_owner_restaurant_reference.jpg's peach pill.
+
+   **New class, not an edit to `.listRowName`** — same "new class per
+   section" reasoning 10.5c-i-a/10.5c-i-c already used: `.listRowName`
+   still renders Service areas' `area_name` and Payment methods'
+   `method_name` as plain text until those sections' own tasks
+   (10.5e-ii-a / 10.5f-ii-b) give them their own scoped treatment, which
+   may or may not end up identical to this one — that's each task's own
+   call, not decided here. **Resolved by 10.5e-ii-a: it isn't identical**
+   — Service areas' `.areaChip` uses a neutral gray pairing instead of
+   this peach/orange one; see that class's own comment for the pixel-
+   sampled reasoning. Only Categories' name uses `.categoryChip` for
+   now; `OwnerRestaurant.jsx`'s category `renderItem` swaps
+   `styles.listRowName` for `styles.categoryChip`, nothing else in that
+   row changes (Edit/Delete are still `.linkButton`/`.linkButtonDanger`,
+   untouched — that's 10.5c-ii-b).
+
+   Background/text pairing reuses the peach `--color-page-glow` +
+   `--color-primary-pressed` pair Task 10.2d-ii's `.addCta` fix already
+   established and contrast-checked (5.42:1, clears AA) — not a new
+   color decision made here.
+
+   **Also fixes the long-unbreakable-word overflow at 320px** that
+   10.5c-i-a's own log entry flagged (`.listRowName` has no wrap rule):
+   `overflow-wrap: anywhere` breaks a single long unbroken token instead
+   of forcing `.listRow` wider than its column, and `min-width: 0` lets
+   the chip actually shrink inside `.listRow`'s flex row to make that
+   wrapping possible in the first place — a flex item's default
+   `min-width: auto` would otherwise hold it to its own min-content
+   width regardless of the `overflow-wrap` rule. `max-width: 100%` stops
+   the chip itself from ever exceeding its row once it does shrink.
+   `.listRow`/`.listRowActions` are intentionally untouched — the actual
+   "chip + actions side by side vs. wrap below" row layout is 10.5c-ii-c's
+   own task, not this one. */
+.categoryChip {
+  display: inline-flex;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
-  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-pressed);
+  background: var(--color-page-glow);
+  border-radius: var(--radius-pill);
+  padding: var(--space-xs) var(--space-md);
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
-.listRowActions {
-  display: flex;
-  gap: var(--space-md);
-  flex-shrink: 0;
-}
+/* Task 10.5c-ii-b — Categories' Edit/Delete as their own scoped link
+   classes, not `.linkButton`/`.linkButtonDanger` directly.
 
-/* Task 8.9a2 — same fix, same reasoning, as `OwnerMenu.module.css`'s own
-   `.linkButton` comment: 8.9a's audit found this class's tap height was
-   well under 44px despite backing real row actions. Invisible padding
-   via `min-height`/flex-centering only — the visible underlined text is
-   unchanged. */
-.linkButton {
+   **New classes, not edits to `.linkButton`/`.linkButtonDanger`** — same
+   "new class per section" reasoning `.sectionCard` (10.5c-i-a),
+   `.addPill` (10.5c-i-c) and `.categoryChip` (10.5c-ii-a) above already
+   used: `.linkButton` also backs Opening hours' per-day Save link,
+   Payment methods' Edit link, and the "manage your foods" menu link at
+   the foot of the page — none of which this task restyles. Editing
+   `.linkButton` in place would restyle all three; a new pair scoped to
+   Categories doesn't.
+
+   Full property duplication rather than `composes: linkButton` (the way
+   `.linkButtonDanger` itself is built) — composing would still tie
+   Categories to whatever `.linkButton` becomes later, the exact coupling
+   this split exists to avoid.
+
+   Properties are otherwise identical to `.linkButton`/`.linkButtonDanger`
+   today — Task 8.9a2's 44px `min-height` tap-target fix, underlined
+   text, `--color-primary` / `--color-error` — since neither the
+   reference (`docs/reference_ui/phase10_owner_restaurant_reference.jpg`)
+   nor this task calls for a different look, just an independent class to
+   hang one on. `.linkButton`/`.linkButtonDanger` themselves are
+   untouched below, still serving the other three call sites. */
+.categoryEditLink {
   font-family: var(--font-family);
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
@@ -270,10 +794,370 @@
   text-decoration: underline;
 }
 
-.linkButtonDanger {
-  composes: linkButton;
+.categoryDeleteLink {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-error);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
 }
+
+/* Task 10.5c-ii-c — Categories' row: chip + actions side by side when
+   wide, actions wrap to their own line below when narrow.
+
+   **New classes, not edits to `.listRow`/`.listRowActions`** — same
+   "new class per section" reasoning `.sectionCard`/`.addPill`/
+   `.categoryChip`/`.categoryEditLink`/`.categoryDeleteLink` above
+   already used: `.listRow`/`.listRowActions` still lay out Payment
+   methods' rows (its own row-layout task is 10.5f-ii-a) and are
+   untouched here. Service areas' equivalent is `.areaRow`/
+   `.areaRowActions`, built by 10.5e-ii-c.
+
+   This also revisits, for Categories only, Task 8.2d-ii's own
+   "no `flex-wrap` needed" finding on `.listRow`/`.listRowActions`: that
+   finding was reasoned from `.listRowName`'s plain text, which shrinks
+   and wraps *within* the row (so the row itself never needed to wrap).
+   `.categoryChip` (10.5c-ii-a) is a rounded pill around that text
+   instead of bare text — visually cheaper to drop below the actions
+   than to keep squeezing sideways next to a fixed-width `.linkButton`
+   pair — hence `flex-wrap: wrap` here, matching `.openToggleRow`'s
+   `space-between` + `flex-wrap` pairing (Task 8.2d-i) instead of
+   `.listRow`'s no-wrap layout. `.categoryRowActions` keeps
+   `.listRowActions`' `flex-shrink: 0` (Edit/Delete's own combined
+   min-content is a real floor, not something to squeeze further) so a
+   narrow row wraps the chip and actions onto separate lines rather than
+   shrinking either past its own content. */
+.categoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.categoryRowActions {
+  display: flex;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+/* Task 10.5f-ii-a — Payment methods' own row shell, duplicating
+   `.listRow`'s box exactly (border/radius/background/padding: the same
+   bordered inner box the reference shows for this card). New class, not
+   an edit to `.listRow` — same "new class per section" reasoning
+   `.categoryRow`/`.areaRow` above already used, even though `.listRow`
+   is (as of this task) only referenced by this one section: keeping a
+   dedicated class here, rather than just leaving `.listRow` in place,
+   matches the convention the other three sections already set and
+   means 10.5f-iii's cleanup can delete `.listRow` alongside `.section`/
+   `.addButton` without hunting for a lone remaining call site. No
+   `flex-wrap` here (unlike `.categoryRow`/`.areaRow`): 8.2d-ii's finding
+   (cited above `.sectionHeader`) is specifically that `.listRowName`/
+   `.paymentMethodInfo`'s plain text already shrinks and wraps *within*
+   the row, so the row itself has never needed to wrap onto two lines —
+   that reasoning still holds under the new class name. */
+.paymentMethodRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* `.listRow` — Payment methods was its last user until 10.5f-ii-a moved
+   it onto `.paymentMethodRow`; Task 10.5f-iii removed `.listRow` itself
+   as dead CSS (confirmed by grep — zero remaining call sites), same as
+   `.section`/`.addButton` above. `.listRowName`/`.listRowActions`,
+   Payment methods' last remaining users of the shared "list row" family,
+   were removed alongside it in the same cleanup task — see the two
+   entries below. */
+
+/* Task 10.5f-ii-b — the method-name line ("CBE"). Reference
+   pixel-zoomed (same method 10.5e-ii-a used): bold/dark, not the plain
+   weight `.listRowName` had. Same font-size/color as `.listRowName`
+   (already correct, already matched the reference) — only
+   `font-weight-semibold` is added, matching `.categoryChip`'s/
+   `.areaChip`'s own choice for their name text. New class, not an
+   edit to `.listRowName` — same "new class per section" convention as
+   `.paymentMethodRow`. */
+.paymentMethodName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* Task 10.5f-ii-d — the `ToggleSwitch` + Edit-link container. Same
+   "new class per section" convention as `.paymentMethodRow`/
+   `.paymentMethodName` above; no layout change from `.listRowActions`
+   — `display: flex` + `gap` already puts the toggle group before Edit,
+   left to right, which the reference's pixel-zoomed order (toggle →
+   "Active" → "Edit") already matches, and `flex-shrink: 0` already
+   protects both from being squeezed (8.2d-ii's own finding, cited
+   above `.sectionHeader`, specifically named this row's ~95px
+   `ToggleSwitch` min-content floor). */
+.paymentMethodActions {
+  display: flex;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+/* Task 10.5f-ii-e — Payment methods' Edit link. New class, not an edit
+   to `.linkButton` — same "new class per section" convention
+   `.categoryEditLink` (10.5c-ii-b) and `.areaEditLink` (10.5e-ii-b)
+   already used, and for the same reason: `.linkButton` still backs the
+   menu-management link below (10.5g's own task), so it stays untouched
+   for that caller. Byte-for-byte the same declarations as `.linkButton`
+   — no visual change, only scoping. No matching `.paymentMethodDeleteLink`
+   exists: Task 5.7 deliberately has no delete for payment methods
+   (deactivate via the `ToggleSwitch` instead), so there's nothing to
+   scope on the danger side. */
+.paymentMethodEditLink {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Task 10.5f-ii-f — Payment methods' per-row toggle-failure error
+   (`toggleErrors[paymentMethod.id]`). New class, not the bare
+   `.formError` — same "new class per section" reasoning
+   `.categoryLoadError`/`.areaLoadError` already used. Unlike
+   `.openingHoursError` (10.5d-ii-g), which needs `flex: 1 0 100%` to
+   sit correctly inside `.openingHoursRow`'s flex *row*, this error sits
+   inside `.paymentMethodInfo`, a flex *column* — its children (name,
+   account line, optional instructions, this error) already stack
+   top-to-bottom without any sibling to compete with for row space, so
+   `composes: formError` alone is enough. */
+.paymentMethodToggleError {
+  composes: formError;
+}
+
+/* Task 10.5e-ii-a — service area name as a tinted rounded chip, matching
+   the *shape* `.categoryChip` (10.5c-ii-a) established for Categories —
+   but a **different color pairing**, per the reference
+   (`docs/reference_ui/phase10_owner_restaurant_reference.jpg`): zoomed
+   into both chips there (Categories' "የናለከ ምግቦች" vs. Service areas'
+   "ስዲስ አበጓ, ዑረነብ"; Python/Pillow pixel sampling, same method
+   `docs/DESIGN_TOKENS.md` uses elsewhere in this file), Categories' chip
+   is the peach `--color-page-glow` / `--color-primary-pressed` pairing
+   `.categoryChip` already uses, but Service areas' chip is a **neutral
+   light-gray pill with dark-gray text** — no orange anywhere in it.
+   That's the split note above `.categoryChip`'s own \"may or may not end
+   up identical — that's each task's own call\" language resolved: it
+   doesn't, here. Sampled background clusters around `#eef1f5`–`#f4f6f6`
+   (JPEG-noisy, but consistently the existing `--color-surface-muted`
+   token, not a new color), and the text samples (`#616874`–`#8894a3`
+   across several letter-stroke pixels) bracket the existing
+   `--color-text-secondary` token (`#687180`) — again no new hex needed.
+   Font weight is a judgment call, not a pixel measurement: at this
+   image's resolution the stroke width doesn't clearly separate regular
+   from semibold, so this reuses `--font-weight-semibold` to match
+   `.categoryChip`'s weight and the rest of this page's chip/pill
+   vocabulary, rather than introducing an unverifiable third weight.
+
+   **New class, not an edit to `.listRowName`** — same "new class per
+   section" reasoning `.categoryChip` used: `.listRowName` still renders
+   Payment methods' `method_name` as plain text until 10.5f-ii-b decides
+   its own treatment (which may or may not match either chip above).
+   `OwnerRestaurant.jsx`'s service-area `renderItem` swaps
+   `styles.listRowName` for `styles.areaChip`; Edit/Delete are untouched
+   (still `.linkButton`/`.linkButtonDanger` — row/action restyling is
+   10.5e-ii-b/c, not this task).
+
+   **Also fixes the same long-unbreakable-word overflow at 320px**
+   10.5e-i-a's own log entry flagged and pointed at this task: identical
+   `overflow-wrap: anywhere` + `min-width: 0` + `max-width: 100%` trio
+   `.categoryChip` uses, same reasoning (breaks a single long unbroken
+   token instead of forcing `.listRow` wider than its column; `min-width:
+   0` is what actually lets the chip shrink inside `.listRow`'s flex row
+   in the first place). `.listRow`/`.listRowActions` themselves are
+   intentionally untouched — the "chip + actions side by side vs. wrap
+   below" row layout is 10.5e-ii-c's own task, not this one. */
+.areaChip {
+  display: inline-flex;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-pill);
+  padding: var(--space-xs) var(--space-md);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* Task 10.5e-ii-b — Service areas' Edit/Delete as their own scoped link
+   classes, matching `.categoryEditLink`/`.categoryDeleteLink`
+   (10.5c-ii-b). **Checked against the reference first, unlike
+   `.areaChip`'s color this doesn't diverge** — zoomed into both rows in
+   `docs/reference_ui/phase10_owner_restaurant_reference.jpg`, Service
+   areas' "Edit"/"Delete" are the same underlined orange/red text as
+   Categories', not a different color pairing the way the chip above
+   turned out to be.
+
+   **New classes, not edits to `.linkButton`/`.linkButtonDanger`** — same
+   "new class per section" reasoning `.categoryEditLink`/
+   `.categoryDeleteLink` used: `.linkButton` also backs Opening hours'
+   per-day Save link, Payment methods' Edit link, and the "manage your
+   foods" menu link — none of which this task restyles, so editing it in
+   place would restyle all three.
+
+   Full property duplication, not `composes: linkButton`, same reasoning
+   `.categoryEditLink`/`.categoryDeleteLink` used: composing would still
+   tie Service areas to whatever `.linkButton` becomes later. Properties
+   are otherwise identical to `.linkButton`/`.linkButtonDanger` today —
+   Task 8.9a2's 44px `min-height` tap-target fix, underlined text,
+   `--color-primary` (Edit) / `--color-error` (Delete). */
+.areaEditLink {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.areaDeleteLink {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-error);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Task 10.5e-ii-c — Service areas' row: chip + actions side by side when
+   wide, actions wrap to their own line below when narrow. Matches
+   `.categoryRow`/`.categoryRowActions` (10.5c-ii-c) exactly — same
+   layout decision, no reference divergence to check here (the reference
+   doesn't show a narrow-width wrap state for either card; this is a
+   behavioral rule carried over from Categories, not something pixel-
+   sampled from the image).
+
+   **New classes, not edits to `.listRow`/`.listRowActions`** — same
+   "new class per section" reasoning `.categoryRow`/`.categoryRowActions`
+   used: `.listRow`/`.listRowActions` still lay out Payment methods' rows
+   (its own row-layout task is 10.5f-ii-a) and are untouched here.
+
+   Same reasoning as `.categoryRow`'s own comment: Task 8.2d-ii's "no
+   `flex-wrap` needed" finding on `.listRow`/`.listRowActions` was based
+   on `.listRowName`'s plain text, which shrinks/wraps *within* the row.
+   `.areaChip` (10.5e-ii-a) is a rounded pill instead — cheaper to drop
+   below the actions than to keep squeezing sideways against a
+   fixed-width Edit/Delete pair — hence `flex-wrap: wrap` here, the same
+   `space-between` + `flex-wrap` pairing `.categoryRow`/`.openToggleRow`
+   use. `.areaRowActions` keeps `.listRowActions`' `flex-shrink: 0` for
+   the same reason `.categoryRowActions` does: Edit/Delete's combined
+   min-content is a real floor. */
+.areaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.areaRowActions {
+  display: flex;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+/* `.linkButton` (this file's shared row-action link style, tap-target-
+   fixed by Task 8.9a2) used to sit here. Its last real call site (the
+   "manage your foods" link) moved onto `.menuManagementLink` below at
+   Task 10.5g-ii, which left it with zero call sites (confirmed by grep,
+   same check 10.5f-iii ran for `.section`/`.addButton`/`.listRow` and
+   `.linkButtonDanger`). Task 10.5g-iv removed it as dead CSS. */
+
+/* Task 10.5g-ii — "manage your foods" link restyle. New class, not an
+   edit to `.linkButton` — see that class's own comment above for why.
+   Properties are identical to `.linkButton` except `font-size`: this
+   link sits inline inside a sentence of body text (`.subheading`,
+   10.5g-i, `--font-size-body`), not as a standalone row action the way
+   Edit/Delete/Save are, so it reads as a natural part of that sentence
+   at the sentence's own size rather than dropping to caption size mid-
+   line. Checked against the reference
+   (`docs/reference_ui/phase10_owner_restaurant_reference.jpg`) first:
+   at this image's resolution (597px wide, the link's own text only
+   ~6-8px tall) pixel-counting the exact point size isn't reliable
+   enough to call 12px vs. 14px definitively — same "not pixel-
+   verifiable at this resolution" limitation `.categoryChip`'s weight
+   decision ran into — so this is a typographic judgment call (inline
+   link matches its sentence), not a measured one; color/underline/
+   weight were still worth keeping identical to `.linkButton`'s
+   existing orange/semibold/underlined treatment, which already matches
+   the reference's link color. `min-height: 44px` + `inline-flex` are
+   kept unchanged too — the existing Task 8.9a2 tap-target floor applies
+   to this link exactly as much as it did under `.linkButton`, and nothing
+   about this task's scope (restyle to match the reference) touches
+   accessibility sizing. */
+.menuManagementLink {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* `.linkButtonDanger` (`composes: linkButton` + `--color-error`) used to
+   sit here, backing Categories'/Service areas' Delete links. Both moved
+   onto their own scoped classes (`.categoryDeleteLink` 10.5c-ii-b,
+   `.areaDeleteLink` 10.5e-ii-b) with byte-for-byte identical properties,
+   and Payment methods never had a Delete link (Task 5.7's deliberate
+   scope — deactivate via `ToggleSwitch` instead). With no caller left
+   (confirmed by grep), Task 10.5f-iii removed `.linkButtonDanger` as
+   dead CSS alongside `.section`/`.addButton`/`.listRow`/`.listRowName`/
+   `.listRowActions`. */
 
 .secondaryButton {
   font-family: var(--font-family);
@@ -322,6 +1206,27 @@
   background: var(--color-surface);
 }
 
+/* Task 10.5d-ii-e — day label + `Closed` `ToggleSwitch`, grouped so they
+   move as one unit when `.openingHoursRow` wraps (10.5d-i-a already made
+   the row `flex-wrap: wrap`). Before this task the label and the toggle
+   were two independent flex children of the row itself, so a narrow
+   column could wrap them onto separate lines — e.g. the day label alone
+   on line 1 and its own toggle starting line 2, next to whichever other
+   row-child (times, actions) happened to fit the remaining width — which
+   breaks the "label describes the control right next to it" reading.
+   `gap: var(--space-sm)` matches `.nameRow`'s own label+`StatusBadge`
+   pairing (Task 10.5a-iv-i) — the same "tightly related label and
+   control" spacing already established elsewhere on this page.
+   `flex: 0 0 auto` keeps the group at its own natural width rather than
+   growing/shrinking — `.openingHoursTimes` (below) is the row's one
+   flexible child, same division of labor as before this task. */
+.openingHoursDayGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+}
+
 .openingHoursDay {
   font-family: var(--font-family);
   font-size: var(--font-size-body);
@@ -332,8 +1237,56 @@
 
 .openingHoursTimes {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-md);
   flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Task 10.5d-i-a — regression guard found by the first real render of
+   this section, not a restyle (10.5d-ii-f still owns the time fields'
+   look). Once Opening hours sits inside `.sectionCard` (16px padding + 1px
+   border each side), the row's content box at 320px is ~228px, but two
+   `type="time"` inputs at their intrinsic min-content width plus the gap
+   need ~262px — the "Closes" field spilled past the row's and the card's
+   right border. (Before the card it fit with ~0px to spare: Task
+   8.2d-ii's "no changes needed" was a manual trace, never rendered.)
+   `min-width: 0` on the container *and* its fields (the container's own
+   min-content was the floor) lets them shrink with the row. Scoped via
+   the child selector so the shared `FormField` stays untouched. */
+.openingHoursTimes > * {
+  flex: 1 1 8.25rem;
+  min-width: 0;
+}
+
+/* Task 10.5d-ii-f — the Opens / Closes time fields. Two scoped changes,
+   both reached through `.openingHoursTimes` so the shared `FormField`
+   (and every other form that uses it) is untouched; the fields' colours,
+   border, radius, label and focus ring are still FormField's own, which
+   already match the reference's input treatment (the profile form above
+   uses them unchanged).
+
+   1. **No more clipped AM/PM.** The 10.5d-i-a guard above (`flex: 1 1 0`,
+      no wrap) made both fields shrink to whatever the row had left. At
+      320px that is 108px each, but a time control needs ~126px to show
+      its whole value ("12:30 PM", measured 125.7px in headless Chromium
+      with system-ui resolving to DejaVu Sans — wider than real device
+      faces), so the AM/PM segment was cut off ("09:00 A") and an owner
+      could not tell 9 AM from 9 PM. Now the pair may wrap: each field's
+      basis is 8.25rem (~132px, a few px over the measured need; rem so it
+      scales with the user's text size, like the control's own text), so
+      they sit side by side when the row has room and stack, each full
+      width, when it does not — content-driven, no breakpoint. A field
+      only ever gets less than its basis when the *container* is narrower
+      than the basis, and `min-width: 0` keeps that case from overflowing.
+      The 10.5d-i-a overflow it guarded against cannot recur: a wrapped
+      field never sits in a line it does not fit.
+   2. **44px tap target** (Task 8.9a's floor, the standing Phase 10
+      rule). The inputs measured 38.7px tall. `min-height` only, so the
+      text and padding are unchanged — same approach 10.1's Login inputs
+      took (`.inputField`, scoped, other screens' inputs unaffected). */
+.openingHoursTimes input {
+  min-height: 44px;
 }
 
 .openingHoursRowActions {
@@ -341,6 +1294,52 @@
   align-items: center;
   gap: var(--space-sm);
   flex: 0 0 auto;
+}
+
+/* Task 10.5d-ii-g — the per-day Save link as its own scoped class, not
+   `.linkButton` directly. Same convention and same reasoning as
+   `.categoryEditLink`/`.categoryDeleteLink` (10.5c-ii-b): `.linkButton`
+   still backs Payment methods' Edit link (10.5f-ii-e) and the "manage
+   your foods" link (10.5g-ii), which restyle in their own tasks, so
+   restyling it in place would leak into them. Full property duplication
+   rather than `composes: linkButton`, for the same reason 10.5c gave
+   (composing would keep Save tied to whatever `.linkButton` becomes).
+
+   No reference exists for this card's editing states (the reference shows
+   only its load-error), so the resting look is 10.5c's link treatment
+   unchanged: orange, underlined, caption size, semibold, 44px `min-height`
+   (Task 8.9a2). Width is deliberately NOT padded up to 44px, matching
+   Categories' links: an open day's row has only ~3px of spare width on the
+   640px desktop column (measured, 10.5d-ii-g log entry), so extra
+   horizontal padding here would wrap Save onto its own line in every row.
+
+   The one addition is `:disabled`. `saveDay` disables the button and swaps
+   its label to "Saving…" while the PATCH is in flight, but until now that
+   state looked identical to an active link (orange, underlined, pointer
+   cursor). Categories' links have no such state (their actions open a
+   `Modal`), so this follows the page's other disabled control,
+   `.dangerButton:disabled` (muted colour, `not-allowed`), using
+   `--color-text-secondary` (4.93:1 on the row's white surface); the
+   underline is dropped so it no longer reads as clickable. */
+.openingHoursSaveLink {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.openingHoursSaveLink:disabled {
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .openingHoursSaved {
@@ -353,6 +1352,113 @@
 .openingHoursError {
   composes: formError;
   flex: 1 0 100%;
+}
+
+/* Task 10.5c-ii-d — inline load-error, scoped to Categories only (same
+   "new class per section" reasoning `.sectionCard`/`.addPill`/
+   `.categoryChip`/`.categoryRowActions`/`.categoryEditLink`/
+   `.categoryDeleteLink` above already used, rather than editing the
+   shared `.formError` that Opening hours' `.openingHoursError` and the
+   profile form above both still rely on). `composes: formError` keeps
+   the same color/size/font as every other inline error on this page;
+   no extra rules needed here since `.sectionCard`'s own padding already
+   contains this text and no sibling layout (unlike `.openingHoursError`,
+   which needs `flex: 1 0 100%` to sit inside `.openingHoursRow`'s flex
+   row — this one replaces the whole `ListWithPagination` slot instead,
+   so no flex context to fit into). */
+.categoryLoadError {
+  composes: formError;
+}
+
+/* Task 10.5e-ii-d — Service areas' inline load error, scoped to this card
+   (same "new class per section" reasoning `.categoryLoadError` above and
+   `.openingHoursLoadError` below already used, rather than editing the
+   shared `.formError`). Same situation as Categories': this replaces the
+   whole `ListWithPagination` slot, no sibling layout to fit into, so
+   `composes: formError` alone is enough — no extra rules, same as
+   `.categoryLoadError`. */
+.areaLoadError {
+  composes: formError;
+}
+
+/* Task 10.5f-ii-g — Payment methods' inline load error, scoped to this
+   card (same "new class per section" reasoning `.categoryLoadError`/
+   `.areaLoadError`/`.openingHoursLoadError` above already used). Fourth
+   and last of the four section-level load errors on this page. Same
+   situation as the other three: replaces the whole `ListWithPagination`
+   slot, no sibling flex layout to fit into, so `composes: formError`
+   alone is enough. */
+.paymentMethodsLoadError {
+  composes: formError;
+}
+
+/* Task 10.5d-ii-a — Opening hours' section-level load error, scoped to
+   this card (same "new class per section" reasoning as
+   `.categoryLoadError` above). Deliberately separate from
+   `.openingHoursError`, which is the per-day save error that lives
+   inside `.openingHoursRow`'s flex row and needs `flex: 1 0 100%`
+   (10.5d-ii-g). This one replaces the whole list slot, so it has no flex
+   context. `composes: formError` = red, `--font-size-body`, no margin —
+   the same treatment as Categories' load error; the reference shows
+   plain red text directly under the title, no banner/box, which this
+   already is. */
+.openingHoursLoadError {
+  composes: formError;
+}
+
+/* Task 10.5d-ii-b — Opening hours' loading text, scoped to this card.
+   The bare `.status` is the whole-screen loader (centered, `--space-xl`
+   / `--space-lg` padding); inside `.sectionCard`'s own padding that
+   would double up and centre the text under a left-aligned title. This
+   mirrors `ListWithPagination`'s `.loadingStatus` (what Categories'
+   loading label uses): left-aligned, no margin/padding, body size,
+   secondary text colour. Plain text, no spinner/skeleton — the same
+   convention as every other loading state in this codebase. */
+.openingHoursLoading {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+/* Task 10.5c-ii-e — the Categories card's empty state. Same reasoning
+   `OwnerDashboard.module.css`'s `.card .notificationsEmpty` (Task
+   10.3f-ii) already used: `EmptyState`'s own
+   `padding: var(--space-2xl) var(--space-lg)` is sized for a
+   whole-screen empty region, and inside `.sectionCard`'s own
+   `--space-lg` padding it would double up into a tall, mostly-empty
+   box, so this trims it to a modest vertical pad and no side pad (the
+   card already supplies that). `.sectionCard .categoriesEmpty` (two
+   classes) wins over `EmptyState`'s own single-class rule regardless of
+   stylesheet injection order, same specificity reasoning. */
+.sectionCard .categoriesEmpty {
+  padding: var(--space-lg) 0;
+}
+
+/* Task 10.5d-ii-c — Opening hours' empty state; same trim and same
+   two-class specificity reasoning as `.categoriesEmpty` above (beats
+   `EmptyState`'s own single-class `padding` regardless of stylesheet
+   injection order). Own class per section, matching the rest of 10.5c–f. */
+.sectionCard .openingHoursEmpty {
+  padding: var(--space-lg) 0;
+}
+
+/* Task 10.5e-ii-e — Service areas' empty state; same trim and same
+   two-class specificity reasoning as `.categoriesEmpty`/
+   `.openingHoursEmpty` above (beats `EmptyState`'s own single-class
+   `padding` regardless of stylesheet injection order). Own class per
+   section, matching the rest of 10.5c–f. */
+.sectionCard .areasEmpty {
+  padding: var(--space-lg) 0;
+}
+
+/* Task 10.5f-ii-g — Payment methods' empty state; same trim and same
+   two-class specificity reasoning as `.categoriesEmpty`/
+   `.openingHoursEmpty`/`.areasEmpty` above (beats `EmptyState`'s own
+   single-class `padding` regardless of stylesheet injection order).
+   Fourth and last of the four cards on this page to get this trim. */
+.sectionCard .paymentMethodsEmpty {
+  padding: var(--space-lg) 0;
 }
 
 .paymentMethodInfo {

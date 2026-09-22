@@ -110,6 +110,19 @@ export default function OwnerLogin() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
+        {/* Task 10.1b — "NATRA" wordmark, the one named exception in
+            docs/UI_REDESIGN_ROADMAP.md's governing rule: plain text only,
+            no logo dot/mark (the reference's own orange dot next to
+            "Zoble Chat" is not built — no dot/mark asset exists in this
+            codebase). Reuses --font-family-brand, same font already
+            shipped for this exact wordmark on Home.jsx's header and
+            RoleShell's admin sidebar brand. Added above the existing
+            "Owner login" heading, not replacing it — the reference's
+            single generic login form has no need to distinguish a login
+            type, but this app has two real, different login screens
+            (owner vs admin), and that distinction is real content this
+            restyle keeps, not an invented element to drop. */}
+        <span className={styles.brandName}>NATRA</span>
         <h1 className={styles.heading}>Owner login</h1>
         <p className={styles.instructions}>
           Log in to manage your restaurant, menu, and orders.
@@ -129,6 +142,7 @@ export default function OwnerLogin() {
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <FormField
+            className={styles.inputField}
             label="Email"
             type="email"
             required
@@ -141,6 +155,7 @@ export default function OwnerLogin() {
           />
 
           <FormField
+            className={styles.inputField}
             label="Password"
             type="password"
             required
@@ -164,13 +179,25 @@ export default function OwnerLogin() {
           </button>
         </form>
 
-        <button
-          type="button"
-          className={styles.linkButton}
-          onClick={() => navigate('/owner/register')}
-        >
-          Don&apos;t have an account? Register your restaurant
-        </button>
+        {/* Task 10.1e — reference shows plain gray "Don't have an account?"
+            text followed by a bold orange link, on one centered line. The
+            previous single underlined button is split accordingly: only
+            the actionable part is a <button>, same handler and same real
+            copy ("Register your restaurant" — the reference's own
+            "Create one" wording is a style reference, not text to
+            invent). `.altAction` is a wrapping flex row so on narrow
+            screens the link drops to its own centered line rather than
+            overflowing or truncating. */}
+        <p className={styles.altAction}>
+          <span>Don&apos;t have an account?</span>
+          <button
+            type="button"
+            className={styles.linkButton}
+            onClick={() => navigate('/owner/register')}
+          >
+            Register your restaurant
+          </button>
+        </p>
       </div>
     </div>
   );

@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { api, ApiError } from '../../api/client';
+import DashboardHeader from '../../components/DashboardHeader';
+import EmptyState from '../../components/EmptyState';
+import Greeting from '../../components/Greeting';
+import QuickActionTile from '../../components/QuickActionTile';
 import RoleShell from '../../components/RoleShell';
+import StatTile from '../../components/StatTile';
 import StatusBadge from '../../components/StatusBadge';
-import ToggleSwitch from '../../components/ToggleSwitch';
 import { useApiQuery, useMutation } from '../../hooks';
 import { NOTIFICATION_UNSUPPORTED, getNotificationPermission } from '../../utils/browserNotifications';
+import HourlySalesChart from './HourlySalesChart';
 import styles from './OwnerDashboard.module.css';
 
 // Same tone map `OwnerOrders.jsx`'s (5.12b) own doc comment already
@@ -43,6 +48,41 @@ function fetchSalesSummary(signal) {
   return api.get('/orders/sales-summary', { signal }).then(({ summary }) => summary);
 }
 
+// Task 10.3e2-ii — backs the Sales Overview hourly line chart
+// (`HourlySalesChart.jsx`), via Task 10.3e2-i's `GET /orders/sales-hourly`.
+// Its own independent fetch, same reasoning as `fetchSalesSummary`: a
+// failed chart must not take down the totals above it.
+function fetchHourlySales(signal) {
+  return api.get('/orders/sales-hourly', { signal }).then(({ hourly }) => hourly.hours);
+}
+
+// Task 10.3f-i — the Recent Order Notifications card's list (real
+// `notifications` rows, Task 7.5b's `GET /api/notifications`: newest
+// first, scoped to the caller's own user id). `limit=5` keeps it a
+// "recent" glance rather than a full inbox. Its own fetch, separate from
+// the header's unread-*count* fetch above (that one asks for `limit=1`
+// and reads only `meta.total`).
+function fetchRecentNotifications(signal) {
+  return api
+    .get('/notifications?page=1&limit=5', { signal })
+    .then(({ notifications }) => notifications);
+}
+
+// Same `Intl.DateTimeFormat` default `OrderDetail.jsx`'s own
+// `formatDateTime` uses (duplicated rather than imported, same reasoning
+// as `formatPrice` above), minus the year: these are *recent*
+// notifications, so a short "Sep 20, 3:41 PM" reads fine in a row.
+function formatNotificationTime(isoString) {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 // Task 5.19's Open/Close quick action needs the restaurant's current
 // `is_open` value and a way to flip it — the exact same `GET`/
 // `PATCH /api/restaurants/me` pair `OwnerRestaurant.jsx` (Task 5.8)
@@ -56,6 +96,25 @@ function fetchMyRestaurant(signal) {
 
 function updateMyRestaurant(data) {
   return api.patch('/restaurants/me', data);
+}
+
+// Task 10.3a-ii — the real unread count `DashboardHeader`'s
+// notification indicator (Task 10.0b-iv) needs. `GET /api/notifications`
+// (Task 7.5b) has no dedicated "unread count" endpoint of its own, but
+// `is_read` is in `models/notifications.js`'s own `columns` allow-list,
+// so it's a legal equality filter for `paginate()` (Task 1.9) to accept
+// — `is_read=0` scopes the count to unread rows the same way any other
+// filtered list screen in this codebase already does. `limit=1` keeps
+// the actual row payload to the minimum `paginate()` will allow (this
+// call only ever reads `meta.total`, never `notifications`), rather than
+// fetching a real page of rows just to throw them away — `meta.total` is
+// already computed from a `count()` run against the same filters
+// (`utils/paginate.js`'s own doc comment), so it's the real total
+// regardless of how many rows this one page happens to return.
+function fetchUnreadNotificationCount(signal) {
+  return api
+    .get('/notifications?is_read=0&limit=1', { signal })
+    .then(({ meta }) => meta.total);
 }
 
 // Identical to OrderDetail.jsx's/OrderHistory.jsx's/OwnerOrders.jsx's own
@@ -147,6 +206,54 @@ function formatPrice(price) {
  * the "Get your restaurant Live" card below already tells that owner
  * what to do next.
  *
+ * **Header (Task 10.3a-i)** — the old plain `<h1>Dashboard</h1>` is
+ * replaced with the shared `DashboardHeader` (Task 10.0b), passing
+ * `subtitle="Owner Dashboard"` per `docs/reference_ui/
+ * phase10_owner_dashboard_reference.jpg` (the "NATRA" wordmark itself
+ * is that component's own hardcoded content, not something this screen
+ * supplies). **10.3a-iii — `accountHref="/owner/account"`**, the real,
+ * already-built screen (`OwnerAccount.jsx`) this owner's profile/
+ * password settings live on. `accountLabel` is left unpassed —
+ * `DashboardHeader`'s own default ("Account") is used rather than
+ * fetching the owner's name (`GET /auth/me`, `OwnerAccount.jsx`'s own
+ * `fetchMe`) just for this label: this task's own wording only asks for
+ * the link, and a fifth independent fetch on this screen for one label
+ * word isn't this task's own scope — worth a look if a future task
+ * explicitly asks for a name-based label instead of the generic one.
+ *
+ * **Notification indicator (Task 10.3a-ii)** — `notificationCount` is
+ * now wired to a fourth, independent `useApiQuery` call
+ * (`fetchUnreadNotificationCount`, above) against the real
+ * `notifications` table (Task 7.5), not an invented placeholder.
+ * `notificationHref` points at `/owner/orders`: every notification this
+ * codebase creates today is a `new_order` row (see
+ * `useOwnerNewOrderAlerts.js`'s own `NEW_ORDER_NOTIFICATION_TYPE`), and
+ * there is no dedicated notification-list screen anywhere in this app
+ * for the count to link to instead — `/owner/orders` is the real,
+ * already-built screen where an owner actually acts on what those
+ * notifications are about. Flagged as a decision, not a dead link
+ * dressed up as one: `10.3f`'s own "Recent Order Notifications" card
+ * (still to come, on this same page) may give this indicator a more
+ * specific in-page destination once real per-notification rows are
+ * rendered here — revisit then rather than assuming this href is final.
+ * Passed only once the fetch actually resolves (`typeof
+ * notificationCountData === 'number'`) — while loading or on a fetch
+ * failure, `notificationCount` is left `undefined` so `DashboardHeader`
+ * shows the plain "Notifications" link with no parenthetical figure,
+ * same "don't show an invented/stale number" reasoning every other
+ * secondary section on this screen already gives for degrading in place
+ * rather than blocking or guessing (see the Orders/Sales cards' own
+ * `noRestaurantYet`/error handling below). No separate error UI is
+ * shown for this one fetch — `DashboardHeader`'s notification link
+ * itself already degrades to "no count" on failure, and a broken
+ * unread-count fetch isn't a reason to block the header from rendering
+ * at all the way a broken Orders/Sales fetch gets its own inline retry.
+ * The old `.subheading` paragraph ("Here's what's happening with your
+ * restaurant today.") is now the shared `Greeting` component's own
+ * `subtitle` (Task 10.3b, below) — `Greeting` itself supplies the
+ * "Good afternoon!"-style time-of-day headline (Task 10.0c-i), so this
+ * screen only needed to supply the second line.
+ *
  * The subheading's "Quick actions land here in a later task" line is
  * dropped now that they're built.
  *
@@ -189,12 +296,29 @@ export default function OwnerDashboard() {
     loading: salesLoading,
     refetch: refetchSales,
   } = useApiQuery(fetchSalesSummary, []);
+  // Task 10.3e2-ii — see `fetchHourlySales` above.
+  const {
+    data: hourlySales,
+    error: hourlySalesError,
+    loading: hourlySalesLoading,
+    refetch: refetchHourlySales,
+  } = useApiQuery(fetchHourlySales, []);
+  // Task 10.3f-i — see `fetchRecentNotifications` above.
+  const {
+    data: recentNotifications,
+    error: recentNotificationsError,
+    loading: recentNotificationsLoading,
+    refetch: refetchRecentNotifications,
+  } = useApiQuery(fetchRecentNotifications, []);
   const {
     data: restaurantData,
     error: restaurantError,
     loading: restaurantLoading,
     refetch: refetchRestaurant,
   } = useApiQuery(fetchMyRestaurant, []);
+  // Task 10.3a-ii — see this file's header comment for why loading/error
+  // both fall back to `undefined` rather than a `0`/stale count.
+  const { data: unreadNotificationCount } = useApiQuery(fetchUnreadNotificationCount, []);
   const { mutate: mutateRestaurant, loading: openToggleSaving } = useMutation(updateMyRestaurant);
   const [openToggleFailed, setOpenToggleFailed] = useState(false);
 
@@ -251,8 +375,41 @@ export default function OwnerDashboard() {
   return (
     <RoleShell role="owner">
       <div className={styles.page}>
-        <h1 className={styles.heading}>Dashboard</h1>
-        <p className={styles.subheading}>Here's what's happening with your restaurant today.</p>
+        <DashboardHeader
+          subtitle="Owner Dashboard"
+          notificationCount={unreadNotificationCount ?? undefined}
+          notificationHref="/owner/orders"
+          accountHref="/owner/account"
+          className={styles.dashboardHeader}
+        />
+        <Greeting
+          subtitle="Here's what's happening with your restaurant today."
+          className={styles.greeting}
+        />
+
+        {/* Task 10.3c — the four `StatTile`s (Task 10.0d), assembled into
+            the reference's 2×2 grid by 10.3c-v. All four derive from the
+            one `GET /orders/counts` response (`orderCounts.js`), so no
+            backend work: Total = `counts.total` (10.3c-i), Completed =
+            `counts.Completed` (10.3c-ii), Rejected = `counts.Rejected`
+            (10.3c-iii), Pending = `counts.New + counts.Accepted`
+            (10.3c-iv). One shared render gate for the whole grid — shown
+            only once `counts` has resolved, since the Orders card below
+            owns the loading/error/`noRestaurantYet` messaging and a
+            made-up `0` here would contradict it. Variants match the
+            reference's tints (orange/green/red/blue; `info` is the
+            closest existing blue-ish variant, see `StatTile`). The
+            reference's per-tile icons and sub-lines ("0 new", "0% of
+            total", "Waiting for action") are not built — `StatTile` has
+            no icon/caption slot by design (Task 10.0d). */}
+        {!noRestaurantYet && !loading && !error && counts && (
+          <div className={styles.statGrid}>
+            <StatTile count={counts.total} label="Total Orders" variant="primary" />
+            <StatTile count={counts.Completed} label="Completed" variant="success" />
+            <StatTile count={counts.Rejected} label="Rejected" variant="error" />
+            <StatTile count={counts.New + counts.Accepted} label="Pending" variant="info" />
+          </div>
+        )}
 
         {!noRestaurantYet && (
           <div className={styles.card}>
@@ -335,7 +492,7 @@ export default function OwnerDashboard() {
 
         {!salesNoRestaurantYet && (
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Sales</h2>
+            <h2 className={styles.cardTitle}>Sales Overview</h2>
             {salesLoading ? (
               <p className={styles.cardBody}>Loading sales summary…</p>
             ) : salesError ? (
@@ -347,75 +504,213 @@ export default function OwnerDashboard() {
               </div>
             ) : (
               <div className={styles.salesSummary}>
-                <div className={styles.salesRow}>
-                  <span className={styles.salesLabel}>Today</span>
-                  <span className={styles.salesAmount}>{formatPrice(sales.todayTotal)}</span>
+                {/* Task 10.3e-i — Today/All-time totals restyled from two
+                    label-left/amount-right rows into two side-by-side
+                    tinted stat blocks, per the reference's Sales
+                    Overview card. Same real data (`sales.todayTotal`/
+                    `allTimeTotal`, `formatPrice`) — no new fetch. The
+                    reference's "Today" dropdown, Total Revenue tile and
+                    chart are not built here (no period selector exists;
+                    the chart is 10.3e2). */}
+                <div className={styles.salesTotals}>
+                  <div className={styles.salesTotal}>
+                    <span className={styles.salesLabel}>Today</span>
+                    <span className={styles.salesAmount}>{formatPrice(sales.todayTotal)}</span>
+                  </div>
+                  <div className={styles.salesTotal}>
+                    <span className={styles.salesLabel}>All time</span>
+                    <span className={styles.salesAmount}>{formatPrice(sales.allTimeTotal)}</span>
+                  </div>
                 </div>
-                <div className={styles.salesRow}>
-                  <span className={styles.salesLabel}>All time</span>
-                  <span className={styles.salesAmount}>{formatPrice(sales.allTimeTotal)}</span>
+                {/* Task 10.3e-ii — the completed-order-count line, restyled
+                    the same way as the totals above (tinted block, count
+                    emphasized over its label). Same real copy: the count
+                    plus "completed order(s)" reads exactly as the old
+                    single sentence did, just split so the number can be
+                    bold — no new text. Full-width beneath the two totals
+                    rather than the reference's separate Total Revenue
+                    tile, which would duplicate the All-time total. */}
+                <div className={styles.salesCompleted}>
+                  <span className={styles.salesCompletedCount}>{sales.completedOrderCount}</span>
+                  <span className={styles.salesLabel}>
+                    {sales.completedOrderCount === 1 ? 'completed order' : 'completed orders'}
+                  </span>
                 </div>
-                <p className={styles.salesMeta}>
-                  {sales.completedOrderCount === 1
-                    ? '1 completed order'
-                    : `${sales.completedOrderCount} completed orders`}
-                </p>
+                {/* Task 10.3e2-ii — hourly line chart (the named Phase 10
+                    exception). Loads and fails independently of the totals
+                    above: the totals already rendered, so a chart problem
+                    shows a small inline message + Retry here instead of
+                    replacing them. The whole Sales card is already hidden
+                    on a 403, so no separate no-restaurant case here. */}
+                {hourlySalesLoading ? (
+                  <p className={styles.cardBody}>Loading chart…</p>
+                ) : hourlySalesError ? (
+                  <div className={styles.countsError}>
+                    <p className={styles.cardBody}>Couldn't load the hourly sales chart.</p>
+                    <button
+                      type="button"
+                      className={styles.retryButtonInline}
+                      onClick={refetchHourlySales}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : (
+                  hourlySales && <HourlySalesChart hours={hourlySales} />
+                )}
               </div>
             )}
           </div>
         )}
 
-        {!quickActionsNoRestaurantYet && (
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Quick actions</h2>
-            {restaurantLoading ? (
-              <p className={styles.cardBody}>Loading…</p>
-            ) : restaurantError ? (
-              <div className={styles.countsError}>
-                <p className={styles.cardBody}>Couldn't load your restaurant's status.</p>
-                <button
-                  type="button"
-                  className={styles.retryButtonInline}
-                  onClick={refetchRestaurant}
-                >
-                  Retry
-                </button>
-              </div>
-            ) : (
+        {/* Task 10.3f-i — Recent Order Notifications card: real
+            `notifications` rows (Task 7.5), each restyled as a tinted row
+            with the notification's own `message` (already pre-formatted
+            server-side, e.g. "New order NTR-12345 from … — 2 items — 250
+            ETB"), a short timestamp, and an unread marker. Not gated on
+            `noRestaurantYet`: notifications are scoped by the caller's
+            own user id, not a restaurant (same reasoning as the opt-in
+            card above). Loads/fails independently, with its own inline
+            error + Retry. The empty case is the shared `EmptyState`
+            (10.3f-ii, below); the reference's "0 new" pill isn't built (the header already shows the unread
+            count). **Placement:** right after the Sales card; the
+            reference orders the page differently (Quick actions before
+            Sales), and reordering existing cards isn't part of any
+            10.3f task. */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Recent order notifications</h2>
+          {recentNotificationsLoading ? (
+            <p className={styles.cardBody}>Loading notifications…</p>
+          ) : recentNotificationsError ? (
+            <div className={styles.countsError}>
+              <p className={styles.cardBody}>Couldn't load your notifications.</p>
+              <button
+                type="button"
+                className={styles.retryButtonInline}
+                onClick={refetchRecentNotifications}
+              >
+                Retry
+              </button>
+            </div>
+          ) : recentNotifications && recentNotifications.length > 0 ? (
+            <ul className={styles.notificationList}>
+              {recentNotifications.map((notification) => {
+                const unread = notification.is_read === 0;
+                return (
+                  <li
+                    key={notification.id}
+                    className={[styles.notificationRow, unread && styles.notificationRowUnread]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    <span className={styles.notificationDot} aria-hidden="true" />
+                    <div className={styles.notificationBody}>
+                      <span className={styles.notificationMessage}>
+                        {unread && <span className={styles.srOnly}>Unread: </span>}
+                        {notification.message}
+                      </span>
+                      <span className={styles.notificationTime}>
+                        {formatNotificationTime(notification.created_at)}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            // Task 10.3f-ii — the shared `EmptyState` (title + description,
+            // no icon: the reference's bell illustration has no asset in
+            // this codebase, and `EmptyState` itself documents that it
+            // reserves the icon slot rather than inventing one), replacing
+            // 10.3f-i's bare placeholder line. Title says "yet" rather than
+            // the reference's "No new notifications": this list shows
+            // recent notifications read *or* unread, so "no new" would be
+            // wrong — empty here means none at all. Description follows
+            // this app's own empty-state phrasing (`OwnerOrders.jsx`: "New
+            // orders placed with your restaurant will show up here.").
+            <EmptyState
+              title="No notifications yet"
+              description="Alerts about new orders will show up here."
+              className={styles.notificationsEmpty}
+            />
+          )}
+        </div>
+
+        {/* Task 10.3d-v — the single Quick Actions row, replacing the old
+            Quick actions card's toggle row + Add Food/View orders
+            buttons and the temporary standalone tiles 10.3d-i..iv added.
+            Tiles, in the reference's order: Open/Closed (10.3d-i, wraps
+            the real `ToggleSwitch` with `handleOpenToggle`/
+            `openToggleSaving`, Task 5.19; caption reuses the old hint
+            copy verbatim), Add Food (10.3d-ii → `/owner/restaurant/menu/
+            new`), View Orders (10.3d-iii → `/owner/orders`), Check Live
+            Status (10.3d-iv → `/owner/live-status`). No other captions/
+            icons: no existing copy/asset, and no invented text.
+
+            The card keeps the restaurant fetch's own messaging that the
+            old card owned: "Loading…", an inline error + Retry for a real
+            failure, and the `openToggleFailed` line. The first three
+            tiles need a `restaurants` row, so they render only once that
+            fetch has resolved cleanly — a 403 (`quickActionsNoRestaurantYet`,
+            a brand-new owner) or any error hides them, and 403 shows no
+            error message at all, as before (the "Get your restaurant Live"
+            card below already says what to do next). **Check Live Status
+            is always rendered**, including on 403 — the owner who most
+            needs it is the one with a pending request and no restaurant
+            row yet (see 10.3d-iv). So the card itself is never hidden
+            now, unlike the old one. */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Quick actions</h2>
+          {restaurantLoading && <p className={styles.cardBody}>Loading…</p>}
+          {restaurantError && !quickActionsNoRestaurantYet && (
+            <div className={styles.countsError}>
+              <p className={styles.cardBody}>Couldn't load your restaurant's status.</p>
+              <button type="button" className={styles.retryButtonInline} onClick={refetchRestaurant}>
+                Retry
+              </button>
+            </div>
+          )}
+          {openToggleFailed && (
+            <p className={styles.quickActionError}>
+              Couldn't update your Open/Closed status. Try again.
+            </p>
+          )}
+          <div className={styles.quickActionsRow}>
+            {!restaurantLoading && !restaurantError && restaurantData && (
               <>
-                <div className={styles.openToggleRow}>
-                  <div className={styles.openToggleStatus}>
-                    <StatusBadge status={restaurantData.restaurant.is_open ? 'Open' : 'Closed'} />
-                    <span className={styles.openToggleHint}>
-                      {restaurantData.restaurant.is_open
-                        ? 'Customers can order from you right now.'
-                        : "Customers can't place new orders while you're closed."}
-                    </span>
-                  </div>
-                  <ToggleSwitch
-                    checked={restaurantData.restaurant.is_open === 1}
-                    onChange={handleOpenToggle}
-                    disabled={openToggleSaving}
-                    label={restaurantData.restaurant.is_open ? 'Open' : 'Closed'}
-                  />
-                </div>
-                {openToggleFailed && (
-                  <p className={styles.quickActionError}>
-                    Couldn't update your Open/Closed status. Try again.
-                  </p>
-                )}
-                <div className={styles.actionRow}>
-                  <Link to="/owner/restaurant/menu/new" className={styles.primaryButton}>
-                    Add Food
-                  </Link>
-                  <Link to="/owner/orders" className={styles.secondaryButton}>
-                    View orders
-                  </Link>
-                </div>
+                <QuickActionTile
+                  label={restaurantData.restaurant.is_open ? 'Open' : 'Closed'}
+                  caption={
+                    restaurantData.restaurant.is_open
+                      ? 'Customers can order from you right now.'
+                      : "Customers can't place new orders while you're closed."
+                  }
+                  toggle={{
+                    checked: restaurantData.restaurant.is_open === 1,
+                    onChange: handleOpenToggle,
+                    disabled: openToggleSaving,
+                  }}
+                  className={styles.quickActionTile}
+                />
+                <QuickActionTile
+                  label="Add Food"
+                  to="/owner/restaurant/menu/new"
+                  className={styles.quickActionTile}
+                />
+                <QuickActionTile
+                  label="View Orders"
+                  to="/owner/orders"
+                  className={styles.quickActionTile}
+                />
               </>
             )}
+            <QuickActionTile
+              label="Check Live Status"
+              to="/owner/live-status"
+              className={styles.quickActionTile}
+            />
           </div>
-        )}
+        </div>
 
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>Get your restaurant Live</h2>
@@ -426,9 +721,6 @@ export default function OwnerDashboard() {
           <div className={styles.actionRow}>
             <Link to="/owner/request-live" className={styles.primaryButton}>
               Request to go Live
-            </Link>
-            <Link to="/owner/live-status" className={styles.secondaryButton}>
-              Check Live status
             </Link>
           </div>
         </div>

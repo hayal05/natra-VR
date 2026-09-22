@@ -1,0 +1,906 @@
+/* Task 11.1a — the header's gradient bar shell, no content yet. Same
+   full-bleed `--gradient-header` band, safe-area top padding, and
+   "no border-radius, hard edge into the white body" treatment
+   `Home.module.css`'s own `.header` uses (Task 10.2a-i's own comment
+   explains why that one differs from `DashboardHeader`'s rounded,
+   margined owner/admin version) — this is a customer screen and the
+   reference image shows the same edge-to-edge band. Bottom padding is
+   smaller than Home's own `--space-xl` for now since 11.1d's pill
+   content hasn't been measured against the reference yet; revisit once
+   that's in if it needs more/less. Horizontal padding lives on
+   `.headerInner` (11.1c) instead of here, so `.header` itself can stay
+   the plain full-bleed background. */
+.header {
+  background: var(--gradient-header);
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top));
+  padding-bottom: var(--space-md);
+}
+
+/* Task 11.1c — 640px-capped, matching `.page` below (same value) so the
+   header's own content lines up with the page column under it — the
+   reference image's back arrow/title/pill all start flush with the
+   card content beneath them. `space-between` readies this for 11.1d's
+   cart-summary pill to sit opposite `.headerLeft` once that task adds
+   it; today it's the only child, so it just sits at the left edge. */
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+/* Task 11.1c — groups the back button + title so they move as one
+   flex item against 11.1d's pill. */
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Task 11.1b — 44px min tap target (this codebase's standing rule,
+   Task 8.9a), same "icon button, no visible fill/border, just the
+   glyph" shape Modal's own close button uses. `currentColor` (white,
+   via `--color-text-on-primary`) makes the icon read against the
+   orange gradient without a separate color token. Negative margin
+   offsets the button's own (44-24)/2=10px internal inset so the glyph
+   itself, not the invisible tap-target box, lines up flush with
+   `.headerInner`'s padding edge (and so with `.page`'s content edge
+   below it). */
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: -10px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-on-primary);
+  cursor: pointer;
+}
+
+.backIcon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Task 11.1c — same `.heading` recipe every other screen's page title
+   uses (e.g. `AdminOrders.module.css`'s `.heading`: font-family/
+   size-heading/weight-bold), `--color-text-on-primary` swapped in for
+   `--color-text-primary` since this one sits on the gradient band. */
+.title {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-on-primary);
+  margin: 0;
+}
+
+/* Task 11.1d-i — the cart-summary pill's own shell: an outlined,
+   non-interactive badge (no fill, unlike `StatusBadge`'s own solid-color
+   convention — the reference shows a thin white outline against the
+   orange gradient, closer to `SearchBar`'s own `.onPrimary` treatment
+   than to a filled badge) sitting opposite `.headerLeft` via
+   `.headerInner`'s existing `space-between`. `flex-shrink: 0` so a long
+   restaurant/food name elsewhere in a future header variant could never
+   squeeze this pill — not a real risk today (this header only ever
+   holds the fixed "Checkout" title), but the same defensive shape every
+   other fixed-content-next-to-flexible-content row in this pass
+   (`RoleShell`'s own nav badge, `EntityCard`'s badge slot) already uses. */
+.cartPill {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-text-on-primary);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-on-primary);
+}
+
+/* Task 11.9az — project owner decision: below 400px the pill's text
+   ("N items • total ETB") is dropped entirely and the pill collapses to
+   an icon-only badge in the header's right corner, rather than wrapping
+   onto a second line or shrinking the text further. 400px was picked
+   over the flagged item's own two computed thresholds (≈322px for a
+   tiny "1 item • 50 ETB" cart, ≈372px for a larger/longer-price one) —
+   comfortably past both, so this single breakpoint covers every real
+   cart content length rather than needing a second, text-length-aware
+   query. `.cartPillIcon`'s own 16px size and `currentColor` need no
+   change; only the pill's own padding drops to keep the icon-only badge
+   circular instead of oval. `.cartPillText` uses the same
+   visually-hidden pattern this codebase's own accessibility pass (Task
+   8.9c) established elsewhere for icon-only controls, rather than
+   `display: none`, so the item count/total are still announced to
+   assistive tech even though they're not shown on screen at this width. */
+@media (max-width: 400px) {
+  .cartPill {
+    padding: var(--space-xs);
+  }
+
+  .cartPillText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Task 11.1d-ii — the cart icon inside the pill, sized to sit
+   comfortably next to a single line of caption text (11.1d-iii) without
+   dominating the pill the way the header's own 24px back-arrow icon
+   would. `currentColor` (via `.cartPill`'s own `color`) needs no
+   separate color token. */
+.cartPillIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Task 11.1d-iii — "N items • total ETB". `white-space: nowrap`: this
+   is a short, fixed-shape summary line (a plural word plus a formatted
+   price), not prose that should ever wrap mid-pill — same "fixed-format
+   content never needs a wrap fallback" reasoning `OwnerOrders.module.css`'s
+   own `order_code`/`OrderDetail.module.css`'s own `.header` already
+   established for comparably short, structured text. */
+.cartPillText {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+/* Task 11.0a — same 640px capped reading-width column
+   `OrderBuilder.module.css`'s own `.page` used (Task 8.1d), carried over
+   unchanged since Phase 11's reference keeps this screen a single
+   scrolling column, not a wider layout. 11.2 onward add real content
+   inside this shell. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  background: var(--color-background);
+  min-height: 100%;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Task 11.2 — "Your order" section. Its own vertical rhythm (heading,
+   item list, summary block, add-item pill) is handled by `gap` here
+   rather than per-child margins, same shape `.page` above already uses
+   one level up. */
+.orderSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Task 11.2a — section heading restyle. Deliberately its own small
+   class rather than reusing `.title` (11.1c) — that one is sized/
+   colored for the gradient header band, this sits on the plain page
+   background and is one step down in size, matching the reference's
+   "Your order" treatment (bold, `--font-size-title`, not the header's
+   larger `--font-size-heading`). */
+/* `display: flex` added for Task 11.3a — "Your details" is the first
+   section heading in this file to carry a leading icon
+   (`.sectionHeadingIcon`, below); "Your order" (11.2a) renders no icon,
+   matching the reference, and keeps working unchanged here since a
+   single text node is still a perfectly valid flex child. */
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Task 11.3a — the "Your details" heading's own person icon.
+   `currentColor` (inherited from `.sectionHeading`'s own `color`) needs
+   no separate token, same reasoning `.cartPillIcon`/`FormField.module.css`'s
+   own `.labelIcon` already use. Sized a step above `.labelIcon`'s 16px
+   to read as a section-level glyph next to the larger heading text,
+   rather than the same size as a per-field label icon. */
+.sectionHeadingIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Task 11.2 — no `EmptyState`-specific styling needed beyond the shared
+   component itself (Task 2.8); this just gives its "Browse restaurants"
+   action link a visible, on-brand look, same underlined-primary-color
+   shape every other in-page text link in this codebase uses (e.g.
+   `TrackOrder.module.css`'s own `.linkButton`).
+   Task 11.9e — real gap found during this page's tap-target sweep: every
+   other text-link-style control added in Phase 11 (`.removeButton`,
+   `.retryButtonInline`) already carries the `min-height: 44px` +
+   `inline-flex`/`align-items: center` floor Task 8.9a2 established as
+   this codebase's standing rule, but this one (added a task earlier, in
+   11.2, before that pattern had been repeated enough on this file to
+   stick) was missed — at `font-size-body`'s normal line-height it sits
+   at roughly 20px tall, well under the floor. Same fix shape, no visual
+   change to the visible underlined text itself. */
+.emptyStateLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* Task 11.2b-i — item row/card shell. `.itemList`'s own `gap` separates
+   rows instead of a border-per-row, matching the reference's plain
+   whitespace-separated rows (no visible divider line inside the card)
+   more closely than reusing `.listRow`'s bordered-box convention from
+   the owner-side pages would. */
+/* Task 11.9c — loading/error states for the cart-foods fetch
+   (`useApiQuery(fetchCartFoods, ...)`, previously destructured for
+   `data` only). Byte-for-byte the same recipe as `.paymentStatusRow`/
+   `.paymentStatusText` below, ported rather than shared since each
+   section's status row is its own scoped class in this file (same
+   convention `OwnerRestaurant.module.css`'s per-section
+   `.categoryLoadError`/`.areaLoadError`/`.paymentMethodsLoadError`
+   already established) — `.retryButtonInline` itself stays shared, it
+   was never section-named. */
+.orderStatusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.orderStatusText {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.itemRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* Task 11.2b-ii — food image placement/sizing. Fixed square box (not
+   delegated to the uploaded photo's own dimensions) — same "fixed,
+   designed size regardless of the source photo" rule Task 10.1z
+   established app-wide for every image-bearing component, applied here
+   to this new row rather than routed through `EntityCard` (this is a
+   plain row layout, not a card grid). */
+.itemImage {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Task 11.2b-iii — food name + description text block. */
+.itemName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Task 11.2c — the one-line description under the name; real
+   `food.description` (verified against `getPublicFoodById`, see this
+   file's own doc comment), clamped to 2 lines like the reference shows
+   rather than left to wrap indefinitely and push the row taller for a
+   long description. */
+.itemDescription {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Task 11.2b-iv — unit price text, matching the reference's bold orange
+   per-item price under the description. */
+.itemPrice {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: 0;
+}
+
+/* Task 11.2b-v/vi — `QuantityStepper` + Remove control placement inside
+   the row, stacked so the stepper sits above Remove the way the
+   reference shows them, right-aligned against the row's own edge. */
+.itemControls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+/* Task 11.2b-vi — Remove control. Text-only, no trash icon: unlike
+   11.0c's 8-icon set (back-arrow/cart/person/phone/pin/note/card/
+   camera), no "remove"/trash glyph is among the icons the project owner
+   asked to build for this phase, so this follows Phase 10's own
+   precedent (`docs/TASKS.md`'s 10.5c note: "stay text-only, no code
+   change" when a reference icon has no real counterpart in the
+   codebase) rather than inventing a ninth icon beyond what was decided.
+   Same underlined-red-text shape `OwnerRestaurant.module.css`'s own
+   `.categoryDeleteLink`/`.areaDeleteLink` already use for a destructive
+   text action, 44px tap-target floor included (Task 8.9a2's standing
+   rule). */
+.removeButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-error);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Task 11.2d — Subtotal/Total summary block. No delivery-fee row (the
+   project owner's decision recorded at the top of Phase 11 in
+   `docs/TASKS.md`) — just Subtotal and Total, separated by a divider,
+   matching the reference's own muted card treatment. */
+.summaryBlock {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) 0;
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-xs);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Task 11.2e — "Add another item" pill. Same outlined, full-width pill
+   shape `OwnerRestaurant.module.css`'s own `.addPill` already
+   established for an orange-outlined action, sized to this row's own
+   full-width reference treatment instead of that one's inline width. */
+.addItemButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.addItemButton:active {
+  color: var(--color-primary-pressed);
+  border-color: var(--color-primary-pressed);
+}
+
+/* Task 11.2e — the round orange "+" glyph in front of the label. Plain
+   styled `<span>`, not a new icon asset — same "typography, not an icon
+   asset" call Task 10.2d-ii already made for Home's Popular Foods CTA,
+   just filled solid (not outlined) to match this reference image's own
+   solid-orange-circle-with-white-plus treatment, which differs from
+   that Home card's pale-outline version. */
+.addItemPlus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* Task 11.3 — "Your details" section. Same `gap`-driven vertical rhythm
+   shape as `.orderSection` above (heading + content, no per-child
+   margins) — kept as its own class rather than reusing `.orderSection`
+   since a future task could reasonably want to adjust one section's own
+   rhythm without touching the other's. */
+.detailsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Task 11.3 — the four `FormField`s' own card shell, same
+   `.itemList`/`.summaryBlock` "content sits in a surfaced card on the
+   plain page background" shape every other section on this page already
+   uses, rather than the fields floating directly on `.page`'s own
+   background the way `CustomerInfo.module.css`'s original, un-carded
+   `.form` did — that screen had no sibling sections competing for the
+   same background, this page does. */
+.detailsForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* Task 11.4 — "Payment method" section. Same `.detailsSection`/
+   `.orderSection` heading+content rhythm shape as the two sections
+   above it — its own class rather than reusing one of theirs, same "a
+   later task could want to adjust one section without touching a
+   sibling's" reasoning `.detailsSection`'s own comment already gives. */
+.paymentSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Task 11.5c — "Upload payment screenshot" section. Same
+   `.paymentSection`/`.detailsSection`/`.orderSection` heading+content
+   rhythm shape as every section above it on this page — its own class
+   for the same "a later task could want to adjust one section without
+   touching a sibling's" reasoning those three already give. No extra
+   card-shell rule needed here the way `.detailsForm` adds one for
+   `.detailsSection`'s bare `FormField`s: `ImageUploadField`'s own
+   `compact` mode (`.compactShell`, Task 11.5a) already draws its own
+   bordered/rounded row, so this section's content doesn't need a
+   second surrounding card. */
+.screenshotSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Task 11.4 — loading/zero-methods/error states for the summary row,
+   shown in place of it (there's no method to summarize yet in any of
+   these three cases). Same inline "short status text (+ Retry on a real
+   error)" shape `Home.module.css`'s own `.sectionStatus`/
+   `.categoriesError`/`.retryButtonInline` already established for a
+   secondary, in-page section — ported here rather than imported, same
+   "don't reach into another page's own CSS Modules file" convention
+   `.modalMethodCardSelected` (below) already follows for the same
+   reason. */
+.paymentStatusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.paymentStatusText {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.retryButtonInline {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Task 11.4b — the summary row itself: previously-selected method, or
+   the restaurant's first active one (11.4b-i's own fallback), tappable
+   to open 11.4c's modal. Same card shell shape `.itemRow`/`.detailsForm`
+   above already use (surface/radius-lg/shadow-card), but as a single
+   `<button>` rather than a `<div>` — the whole row is the tap target,
+   not one control inside it. */
+.paymentSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Task 11.9f finding #3 — project owner decision: a plain decorative
+   dot only, no leading payment-type icon. Solid `--color-primary` fill
+   reads as "selected," matching the reference's filled radio circle,
+   without going as far as a real radio input (there's nothing to
+   toggle from this closed row — tapping it opens 11.4c's modal, where
+   `.modalMethodCardSelected` already carries the real selected-state
+   styling for each list item). `flex-shrink: 0` alongside
+   `.paymentSummaryChevron`'s own so a long method name never squeezes
+   either fixed-size element. */
+.paymentSummaryDot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.paymentSummaryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.paymentSummaryName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.paymentSummaryMeta {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Task 11.4b-iii — the ">" affordance. A real `›` character (U+203A,
+   via `&rsaquo;`), not a new icon asset — same "typography, not an icon
+   asset" call this file's own `.addItemPlus` (11.2e) and Task 10.2d-ii
+   already made elsewhere in this codebase for a directional/plus glyph
+   that has no counterpart in `11.0c`'s built icon set. */
+.paymentSummaryChevron {
+  flex-shrink: 0;
+  font-size: var(--font-size-title);
+  line-height: 1;
+  color: var(--color-text-secondary);
+}
+
+/* Task 11.4c-ii — the modal's own method list. A fresh, this-file-only
+   port of `PaymentMethod.module.css`'s own `.methodList`/`.methodCard`/
+   `.methodCardSelected`/`.methodName`/`.methodDetail`/
+   `.methodInstructions` (Task 3.13), not an import of that file — see
+   this file's own header doc comment for why (that file is one of
+   Phase 11's own eventual deletions, Task 11.8c). Sized for `Modal`'s
+   own `size="sm"` (360px cap) body rather than a full page, but
+   otherwise the identical row shape/behavior. */
+.modalMethodList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.modalMethodCard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  text-align: left;
+  font-family: var(--font-family);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  cursor: pointer;
+}
+
+.modalMethodCardSelected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.modalMethodName {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.modalMethodDetail {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.modalMethodInstructions {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+}
+
+/* Task 11.6 — "Place order" section. Same bare `flex-direction: column`
+   rhythm shape as every other section on this page (`.screenshotSection`
+   above and its own siblings), just with `gap: var(--space-sm)` rather
+   than `--space-md` — an inline error line sitting directly above its
+   own retry button reads as one tight unit, not two loosely-related
+   blocks the way a whole section heading + card normally would. */
+.placeOrderSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Same inline "short status text" shape `.paymentStatusText`/
+   `.retryButtonInline` above already use for a secondary error state on
+   this page, ported to its own class since this one sits above a
+   button rather than beside one. `role="alert"` on the element itself
+   (JSX), not here. */
+.placeOrderError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-error);
+}
+
+/* The solid, full-width primary action closing out this page — same
+   `--gradient-button-primary` fill `OwnerLogin.module.css`'s/
+   `AdminLogin.module.css`'s own primary submit buttons already use for
+   "the one action that finishes a form/flow" elsewhere in this app,
+   rather than `.buyNowButton`'s flat `--color-primary` (that one has no
+   comparable "flow now finishes" weight to carry) or `.addItemButton`'s
+   outlined pill (that one is a secondary action alongside this page's
+   real primary one). `min-height: 44px` from the start, same Task 8.9a
+   floor every other control on this page already carries. */
+.placeOrderButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-on-primary);
+  background: var(--gradient-button-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.placeOrderButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.placeOrderButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.placeOrderIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Task 11.7a — the success modal's own content, rendered inside the
+   shared `Modal` component (Task 2.15). Same visual recipe
+   `OrderConfirmation.module.css`'s own `.success`/`.successIcon`/
+   `.heading`/`.instructions`/`.orderCode`/`.primaryButton`/
+   `.secondaryButton` classes already established (Task 3.16) — ported
+   rather than imported, same "this file is one of Phase 11's own
+   eventual deletions, nothing new here should come to depend on it"
+   reasoning this file's own header comment already gives for
+   `.modalMethodCardSelected` not importing `PaymentMethod.module.css`.
+   `Modal`'s own `.dialog` (size="sm", 360px cap) already supplies the
+   card chrome (background/radius/padding) — these classes are only the
+   content inside it, not a second card shell. */
+.successModalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  text-align: center;
+}
+
+.successIcon {
+  margin: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  line-height: 3.5rem;
+  border-radius: 50%;
+  background: var(--color-success);
+  color: var(--color-text-on-primary);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+}
+
+.successHeading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.successInstructions {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.successOrderCode {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin: var(--space-md) 0;
+  overflow-wrap: anywhere;
+}
+
+.successPrimaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--gradient-button-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  min-height: 44px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.successPrimaryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.successSecondaryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  min-height: 44px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.successSecondaryButton:active {
+  background: var(--color-surface-muted);
+}
+
+/* Task 11.10b — the "removed from your order" notice for a cart item
+   whose food no longer resolved (see this file's own JSX comment and
+   `docs/PROJECT_STATUS.md`'s 11.10 entry). Tinted (`color-mix`), not a
+   solid fill — same "light-tinted, colored-text" technique
+   `StatusBadge.module.css`'s own `.info`/tinted variants (Task 10.4d-i)
+   already established for a non-blocking status pill, reused here since
+   this is informational ("here's what happened, you can dismiss it"),
+   not a blocking form error the way `.placeOrderError` above is. Built
+   from `--color-error` rather than a dedicated warning token — this
+   codebase has no warning color (checked `docs/DESIGN_TOKENS.md`, same
+   gap `.info`'s own comment already flags for blue), and "a food you
+   picked is gone" reads closer to the error family than a neutral one. */
+.removedItemNotices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.removedItemNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-error) 10%, var(--color-surface));
+}
+
+.removedItemNoticeText {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-primary);
+}
+
+/* Same plain "&times;" close-glyph convention `Modal.jsx`'s own
+   `.closeButton` already established for a dismiss control, ported
+   rather than shared since that one is sized/positioned for a modal
+   corner and this one sits inline at the end of a text row. 44px
+   `min-height`/`min-width` floor — Task 8.9a2's standing tap-target rule
+   this whole file's other interactive controls already carry (see
+   `.emptyStateLink`'s own 11.9e comment above for the same fix shape). */
+.removedItemNoticeDismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  margin: calc(var(--space-sm) * -1) calc(var(--space-md) * -1) calc(var(--space-sm) * -1) 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-title);
+  line-height: 1;
+  color: var(--color-error);
+  background: transparent;
+}

@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 import { setUnauthorizedHandler } from './api/client';
 import AddFood from './pages/AddFood';
+import AdminAccount from './pages/AdminAccount';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLiveRequestDetail from './pages/AdminLiveRequestDetail';
 import AdminLiveRequests from './pages/AdminLiveRequests';
@@ -11,15 +12,13 @@ import AdminOrders from './pages/AdminOrders';
 import AdminRestaurantDetail from './pages/AdminRestaurantDetail';
 import AdminRestaurants from './pages/AdminRestaurants';
 import AdminSettings from './pages/AdminSettings';
+import Checkout from './pages/Checkout';
 import ComponentSandbox from './pages/ComponentSandbox';
-import CustomerInfo from './pages/CustomerInfo';
 import FoodDetails from './pages/FoodDetails';
 import Home from './pages/Home';
 import LiveStatus from './pages/LiveStatus';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
-import OrderBuilder from './pages/OrderBuilder';
-import OrderConfirmation from './pages/OrderConfirmation';
 import OrderDetail from './pages/OrderDetail';
 import OrderHistory from './pages/OrderHistory';
 import OwnerAccount from './pages/OwnerAccount';
@@ -29,8 +28,6 @@ import OwnerMenu from './pages/OwnerMenu';
 import OwnerOrders from './pages/OwnerOrders';
 import OwnerRegistration from './pages/OwnerRegistration';
 import OwnerRestaurant from './pages/OwnerRestaurant';
-import PaymentMethod from './pages/PaymentMethod';
-import PaymentScreenshot from './pages/PaymentScreenshot';
 import RequestLive from './pages/RequestLive';
 import RestaurantProfile from './pages/RestaurantProfile';
 import TrackOrder from './pages/TrackOrder';
@@ -75,37 +72,32 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/restaurant/:id" element={<RestaurantProfile />} />
       <Route path="/food/:id" element={<FoodDetails />} />
-      {/* Order Builder (Task 3.10) — real screen now. Reached from Food
-          Details' (Task 3.9) Buy Now button, carrying the selected
-          foodId/restaurantId/quantity via router `state`; see
-          OrderBuilder.jsx's own doc comment for the full reasoning,
-          including why its cart is sessionStorage-backed via
-          useOrderCart rather than plain component state. */}
-      <Route path="/order/builder" element={<OrderBuilder />} />
-      {/* Customer Information (Task 3.12) — real screen now. Reads the
-          in-progress order straight out of useOrderCart (Task 3.10,
-          extended by this task with `customerInfo`) rather than needing
-          anything handed off via router `state`. */}
-      <Route path="/order/customer-info" element={<CustomerInfo />} />
-      {/* Payment method selection (Task 3.13) — real screen now. Reads
-          `cart.restaurantId` straight out of useOrderCart (Task 3.10) to
-          fetch that restaurant's active payment methods; see
-          PaymentMethod.jsx's own doc comment for the full reasoning. */}
-      <Route path="/order/payment-method" element={<PaymentMethod />} />
-      {/* Payment screenshot upload (Task 3.14) — real screen now. Reads
-          `cart.paymentMethodId`/`items` straight out of useOrderCart;
-          uploads via the new public
-          `POST /api/uploads/payment-screenshot` and commits the
-          returned URL back to the cart. See PaymentScreenshot.jsx's own
-          doc comment for the full reasoning. */}
-      <Route path="/order/payment-screenshot" element={<PaymentScreenshot />} />
-      {/* Order confirmation (Task 3.16) — real screen now. This is also
-          where the built-up order in useOrderCart is actually submitted
-          via POST /api/orders (Task 3.15) — no earlier screen does that;
-          see OrderConfirmation.jsx's own doc comment for the full
-          reasoning, including why the submit fires from this screen and
-          not from Payment Screenshot's own "Continue". */}
-      <Route path="/order/confirm" element={<OrderConfirmation />} />
+      {/* Checkout (Task 11.0a) — replaces the former OrderBuilder screen
+          at this same route, the start of Phase 11's merge of the 5
+          Phase-3 order screens (OrderBuilder, CustomerInfo,
+          PaymentMethod, PaymentScreenshot, OrderConfirmation) into one
+          scrolling page. This task is an empty shell only: it does not
+          yet render the cart or handle Food Details' (Task 3.9) Buy Now
+          hand-off (the incoming foodId/restaurantId/quantity router
+          `state`, and the sessionStorage-backed `useOrderCart` reads/
+          merges it drove) — that real logic is carried over from the
+          former OrderBuilder.jsx into Task 11.2's own job, not this
+          one's. See Checkout.jsx's own doc comment for the full
+          reasoning. */}
+      <Route path="/order/builder" element={<Checkout />} />
+      {/* Task 11.8b — the four separate Phase-3 order screens that used
+          to live at /order/customer-info, /order/payment-method,
+          /order/payment-screenshot, and /order/confirm (Customer Info,
+          Payment Method, Payment Screenshot, Order Confirmation) are
+          retired: Phase 11 folded all of their content into the single
+          merged Checkout page above (/order/builder), including the
+          former Order Confirmation success state, which is now a
+          `Modal` overlay on Checkout itself (Task 11.7) rather than a
+          separate route to navigate to. Task 11.8a confirmed nothing
+          else in the app still references any of these four paths or
+          imports any of the four components before they were removed
+          here; see docs/PROJECT_STATUS.md's 11.8 entry for the full
+          verification. */}
       {/* Track Order (Task 3.17) — real screen now. Order ID + phone form
           wired to the new GET /api/orders/track; reached from RoleShell's
           own "Orders" bottom-nav tab (already pointed at /track since
@@ -287,6 +279,18 @@ export default function App() {
           row never renders here. */}
       <Route path="/admin/orders/:id" element={<OrderDetail role="admin" />} />
       <Route path="/admin/settings" element={<AdminSettings />} />
+      {/* Task 10.4a-iii — the admin profile/password/logout screen the
+          project owner asked to build for that task's own "no real
+          destination exists yet" decision. Not one of `RoleShell`'s own
+          4 admin nav items (Task 10.4e settled the nav shape — bottom
+          tabs <768px, sidebar >=768px, unchanged — without adding a
+          fifth item) — reached instead via `DashboardHeader`'s account
+          link (`AdminDashboard.jsx`) and this direct route, same "not
+          every reachable screen has to be a nav tab" shape the owner
+          side doesn't have either exception to (owner's `/owner/account`
+          *is* one of its 4 tabs, so this is a real, deliberate
+          difference between the two roles' nav, not an oversight). */}
+      <Route path="/admin/account" element={<AdminAccount />} />
 
       {/* Dev tooling (Task 2.21) — not a customer/owner/admin screen, so it
           deliberately sits outside all three RoleShell variants rather than

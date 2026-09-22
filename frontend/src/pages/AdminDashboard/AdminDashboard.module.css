@@ -36,11 +36,13 @@
    element below. At 1024px/1280px the content area only grows.
 
    Within that 548px+ content area:
-   - `.totalsGrid`'s own `@media (min-width: 480px)` 2-col→4-col switch
-     is a *viewport*-width query (no container queries used anywhere in
-     this codebase), so it fires correctly at 768px+ regardless of the
-     sidebar's own offset — 4 short stat columns (a 2-3 digit number +
-     a one-word label like "Restaurants") fit easily inside 548px+.
+   - **Superseded by Task 10.4c:** this bullet originally described
+     `.totalsGrid`'s `@media (min-width: 480px)` 2-col→4-col switch,
+     which no longer exists — 10.4c-v replaced that whole rule with
+     `.statGrid`, a fixed 2-column grid at every width (see that rule's
+     own comment for why). The verification claim itself still holds
+     (four short stat tiles fit easily inside 548px+), just via a
+     different, simpler rule than the one this paragraph used to name.
    - `.activityRow`'s `.activityMain` (`min-width: 0`, same
      shrink-to-ellipsis pattern `.foodInfo`/`.paymentMethodInfo`
      established for the owner pass) correctly reserves space for
@@ -63,12 +65,33 @@
   margin: 0 auto;
 }
 
-.heading {
-  font-family: var(--font-family);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-xl);
+/* Task 10.4a-i — the old `.heading` ("Dashboard") is removed: replaced by
+   the shared `DashboardHeader`, which brings its own typography/color.
+   `margin-bottom` here originally kept the gap `.heading`'s own `margin: 0
+   0 var(--space-xl)` gave before the Totals card, back when
+   `DashboardHeader` was the last thing before that card. Task 10.4b now
+   inserts `Greeting` between the two, the same position `OwnerDashboard.
+   module.css`'s own 10.3a-i comment already flagged this would need
+   revisiting for — trimmed from `space-xl` to `space-sm`, identical value
+   `OwnerDashboard.module.css` uses for the same header-before-Greeting
+   gap, since `Greeting` brings its own top/bottom padding and a second
+   large margin here would double up on top of it. */
+.dashboardHeader {
+  margin-bottom: var(--space-sm);
+}
+
+/* Task 10.4b — the shared `Greeting` component (Task 10.0c), which
+   brings its own typography/color and `padding: var(--space-lg)` on
+   every side (see that component's own CSS). `margin-bottom` here is
+   the same `var(--space-sm)` value `OwnerDashboard.module.css`'s own
+   `.greeting` rule uses for the identical "gap before the next card, on
+   top of `Greeting`'s own bottom padding" purpose — this screen had no
+   `.subheading` class of its own to replace (see `AdminDashboard.jsx`'s
+   own 10.4b comment), so there's no prior margin to "top up" the way
+   10.3b's version was; the value is copied for visual consistency
+   between the two dashboards, not derived from a removed rule. */
+.greeting {
+  margin-bottom: var(--space-sm);
 }
 
 /* Same .card/.cardTitle/.cardBody/.countsError/.retryButtonInline shell
@@ -121,40 +144,26 @@
   text-decoration: underline;
 }
 
-/* Totals — a plain 4-up stat grid, per AdminDashboard.jsx's own header
-   comment on why this isn't a dedicated KPI-card component. Two
-   columns on narrow viewports (RoleShell's admin sidebar still leaves
-   less room than a bare page would), four across once there's space. */
-.totalsGrid {
+/* Task 10.4c-v — the 2×2 `StatTile` grid (Restaurants/Live/Pending/
+   Orders), replacing 6.3b's original `.totalsGrid`/`.totalItem`/
+   `.totalValue`/`.totalLabel` rules outright (all four removed, not
+   kept alongside this one). Two columns at every width, matching the
+   reference — same reasoning `OwnerDashboard.module.css`'s own
+   `.statGrid` comment already gives for its identical rule (four small
+   stats don't need to reflow to four-across, and `minmax(0, 1fr)` keeps
+   a tile from ever forcing this grid wider than `.card`'s own column).
+   No `margin-bottom` here, unlike `OwnerDashboard.module.css`'s
+   `.statGrid`: that one sits directly on the page with a sibling card
+   below it needing a gap; this one is the last child *inside* the
+   "Totals" `.card`, whose own `gap: var(--space-md)` (this file's
+   `.card` rule, above) already spaces it from the `<h2>` above it, and
+   `.card`'s own `padding`/`margin-bottom` already handle the space
+   below it — an added margin here would just double up on top of
+   that. */
+.statGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-lg);
-}
-
-@media (min-width: 480px) {
-  .totalsGrid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.totalItem {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.totalValue {
-  font-family: var(--font-family);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-  line-height: 1;
-}
-
-.totalLabel {
-  font-family: var(--font-family);
-  font-size: var(--font-size-caption);
-  color: var(--color-text-secondary);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
 }
 
 /* Recent activity feed */
@@ -203,4 +212,27 @@
   color: var(--color-text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* Task 10.4z (project owner, option (a)) — below 390px the timestamp drops
+   onto its own line under the pill + description, so the description gets
+   the whole row instead of what's left beside a ~136px nowrap timestamp.
+   Measured in a real render before this rule (visible px of the description
+   for the shortest..longest row): 320px 9-45px of 186-245px (1-3
+   characters), 360px 49-85px. At 390px it was 79-115px, which is what
+   `docs/reference_ui/phase10_admin_dashboard_reference.jpg` itself shows
+   (ellipsis at phone width), so 390px and up is deliberately left exactly
+   as it was; only the narrower phones the reference doesn't cover change.
+   Still a single-line ellipsis description (row height stays predictable,
+   see the 8.3 note at the top of this file) — it just has ~2x the room. */
+@media (max-width: 389px) {
+  .activityRow {
+    flex-wrap: wrap;
+    row-gap: var(--space-xs);
+  }
+
+  .activityMain,
+  .activityTime {
+    flex: 1 1 100%;
+  }
 }

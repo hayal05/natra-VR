@@ -138,7 +138,9 @@
 
 /* Identical sizing to OrderDetail.module.css's/AdminRestaurantDetail
    .module.css's own screenshot/logo thumbnails — small trigger,
-   ImageViewer's overlay is what lets it actually be inspected. */
+   ImageViewer's overlay is what lets it actually be inspected.
+   Task 10.1z — explicit override kept on top of ImageViewer's own new
+   96px-square default; see that file's Task 10.1z comment. */
 .screenshotThumbnail {
   width: 96px;
   height: 96px;

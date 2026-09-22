@@ -14,7 +14,7 @@ import { useApiQuery, useDebouncedValue } from '../../hooks';
 import {
   buildImageSrcSet,
   POPULAR_FOODS_GRID_SIZES,
-  SCROLLER_CARD_SIZES,
+  RESTAURANTS_GRID_SIZES,
   LOGO_SIZES,
 } from '../../utils/entityCardImages';
 import styles from './Home.module.css';
@@ -47,6 +47,30 @@ const FALLBACK_IMAGE =
   );
 
 const RESTAURANTS_ROW_LIMIT = 12;
+
+// Reinstated per project-owner request: the Restaurants row goes back to
+// a horizontally swipeable `HorizontalScroller` row (its original
+// pre-10.2b-i shape — see that task's own doc comment below, still kept
+// for history) instead of a fixed 2-column `ResponsiveGrid`. `itemWidth`
+// is required by `HorizontalScroller` for a fixed-width child like
+// `EntityCard` (see that component's own doc comment) — 72% keeps the
+// next card's edge peeking in as a swipe affordance, the same partial-
+// next-card treatment this row originally shipped with.
+const RESTAURANT_CARD_WIDTH = '72%';
+
+// Task 10.2d-i — the Popular Foods grid, per
+// docs/reference_ui/phase10_customer_home_reference.jpg, is 3 columns
+// even at phone width, not ResponsiveGrid's own 2-column default (that
+// default is still the right one for the Restaurants grid above, Task
+// 10.2b-i, and for every other ResponsiveGrid caller in this codebase —
+// RestaurantProfile's menu, none of which are Phase 10 pages — so this
+// is a per-instance override, same "don't change the shared default"
+// approach EntityCard's own `mediaAspectRatio` prop already took).
+// Carried through one tier higher at every breakpoint above the base,
+// rather than only fixing the mobile tier and leaving `md` sitting at
+// the same 3 columns the base now already has (which would mean this
+// grid never actually grows again until 1024px).
+const POPULAR_FOODS_GRID_COLUMNS = { base: 3, md: 4, lg: 5, xl: 6 };
 
 // Same reasoning as RESTAURANTS_ROW_LIMIT: the Home screen's grid wants
 // one bounded page's worth of foods, not full page-by-page navigation
@@ -85,30 +109,48 @@ const POPULAR_FOODS_GRID_LIMIT = 12;
  * via a debounced `onChange`, not `onSubmit`; what it searches; and how
  * it replaces the browse sections below while active).
  *
- * **Notification bell**: the reference image's header shows a bell icon
- * next to the brand name. Kept here as a visual-match, but rendered as a
- * plain, non-interactive (`aria-hidden`, no `onClick`) glyph rather than
- * a real button — `docs/NATRA_MASTER_PROMPT.md`'s "Customer" section is
- * explicit that customers have no accounts, and nothing in `docs/DB_SCHEMA.md`
- * gives a customer-facing notifications table or feed for a bell to open
- * (the `notifications` table, migration 0010, is scoped to "owner/admin
- * notifications only" per its own migration comment). Making it a live
- * control now would mean inventing a feature the spec doesn't describe;
- * flagged here rather than silently wired to nothing or silently dropped
- * from the layout it's visually part of.
- *
+ * **Notification bell — removed (Task 10.2z2, project owner)**: the
+ * reference image's header shows a bell icon, and Task 8.7h had added a
+ * plain, non-interactive (`aria-hidden`, no `onClick`) copy of it. It did
+ * nothing: `docs/NATRA_MASTER_PROMPT.md`'s "Customer" section is explicit
+ * that customers have no accounts, and nothing in `docs/DB_SCHEMA.md` gives
+ * a customer-facing notifications table or feed for a bell to open (the
+ * `notifications` table, migration 0010, is scoped to "owner/admin
+ * notifications only" per its own migration comment). Phase 10's governing
+ * rule drops every icon that has no real behavior behind it, so it is gone;
+ * the "Sign up" button (a real link to Owner Registration) stays. *
  * **Restaurants row (Task 3.3, this update)** — the first real section
  * below the header, wired to `GET /api/restaurants` (new this task —
  * see `backend/src/controllers/restaurantController.js`'s header comment
  * for why it's the first genuinely public endpoint in the codebase) via
- * Task 3.1's `useApiQuery`, not `usePaginatedQuery`: this is a swipeable
- * `HorizontalScroller` row, not a `ListWithPagination` screen with
- * page controls, so it just wants "one page's worth of Live restaurants"
- * (`RESTAURANTS_ROW_LIMIT`), not `page`/`setPage` state. `auth: false` is
- * passed explicitly on the request even though it's already the
+ * Task 3.1's `useApiQuery`, not `usePaginatedQuery`: it just wants "one
+ * page's worth of Live restaurants" (`RESTAURANTS_ROW_LIMIT`), not a
+ * `ListWithPagination` screen with `page`/`setPage` state. `auth: false`
+ * is passed explicitly on the request even though it's already the
  * effective behavior for a customer with no stored token (customers
  * never log in — `docs/DB_SCHEMA.md`) — this is a public endpoint by
  * design, not one that merely happens to work token-less right now.
+ *
+ * **(Task 10.2b-i, later reverted per project-owner request)** — this
+ * briefly rendered through `ResponsiveGrid` (Task 2.7) as a fixed
+ * 2-column grid, matching `docs/reference_ui/phase10_customer_home_
+ * reference.jpg` literally. The project owner asked for the row's
+ * original horizontally-swipeable behavior back (`docs/NATRA_MASTER_
+ * PROMPT.md`'s own "Restaurants are horizontally scrollable cards, not
+ * a vertical list"), so it's back on `HorizontalScroller` (`RESTAURANT_
+ * CARD_WIDTH` above) — every other 10.2b-i-and-later change (the 2/1
+ * `mediaAspectRatio`, `StatusBadge`, `location_text` meta line, etc.)
+ * is untouched. `RESTAURANTS_ROW_LIMIT` above still caps it to one
+ * bounded page either way, so the fetch itself doesn't need to change,
+ * only the layout it's rendered into.
+ *
+ * `mediaAspectRatio="2 / 1"` (Task 10.1z2) is passed on every restaurant
+ * card below (browse row + search results) — wider/shorter than
+ * `EntityCard`'s own `4 / 3` default, matching the cover-photo proportions
+ * in `docs/reference_ui/phase10_customer_home_reference.jpg` rather than
+ * the near-square box that default reads as at this card's actual
+ * rendered width. See `EntityCard.jsx`'s own doc comment for why this is
+ * a per-instance prop instead of a change to that shared default.
  *
  * Each restaurant renders through `EntityCard`'s restaurant-card slot
  * combination (Task 2.3): `image`=`cover_url`, `logo`=`logo_url` (both
@@ -166,10 +208,18 @@ const POPULAR_FOODS_GRID_LIMIT = 12;
  * back to `FALLBACK_IMAGE`), `title`=`name`, `subtitle`=
  * `restaurant_name`, `metaLine`=a formatted `price` (`"250 ETB"`, same
  * display convention `ComponentSandbox`'s own mock food data already
- * uses), and `cta`="Order Now" (still a plain styled span, not a
- * separate button — see `goToFood` below: as of Task 3.9, the whole
- * card, cta included, is a real clickable/keyboard-activatable link to
- * Food Details, since that screen now exists to link to).
+ * uses), and `cta`=a round "+" (Task 10.2d-ii; still a plain styled
+ * span, not a separate button — see `goToFood` below: as of Task 3.9,
+ * the whole card, cta included, is a real clickable/keyboard-
+ * activatable link to Food Details, since that screen now exists to
+ * link to).
+ *
+ * `mediaAspectRatio="3 / 2"` (Task 10.1z2) is passed on every food card
+ * below (this grid + search results) — same reasoning as the Restaurants
+ * row's own `mediaAspectRatio="2 / 1"` above, just a less extreme ratio:
+ * the reference image's food thumbnails read as a shallower, more subtle
+ * rectangle than the restaurant cover photos, not the same box at a
+ * different size.
  *
  * The ranking itself is a backend-side placeholder (alphabetical by food
  * name), not real popularity — `docs/NATRA_MASTER_PROMPT.md` calls for
@@ -313,7 +363,7 @@ export default function Home() {
   // above already explains for Task 3.7. Now that it exists, every place
   // a food card renders (the Popular Foods grid and the search-results
   // grid below) gets the same handler, on both the card itself and its
-  // "Order Now" cta.
+  // "+" cta.
   const goToFood = useCallback((foodId) => navigate(`/food/${foodId}`), [navigate]);
 
   return (
@@ -325,7 +375,25 @@ export default function Home() {
             instead of the orange background also getting capped and
             leaving bare page-background on either side of it on a wide
             screen. See Home.module.css's own comment on `.headerInner`
-            for the max-width value's reasoning. */}
+            for the max-width value's reasoning.
+
+            Task 10.2a-ii: re-checked against
+            docs/reference_ui/phase10_customer_home_reference.jpg —
+            "NATRA" as plain text (no logo mark, Task 8.7g), the
+            pre-existing "Sign up" button (Task 8.7h) and the search bar
+            (`variant="onPrimary"`, Task 2.22) already sit inside this
+            same band as the reference shows, so none of that needed to
+            move or change here. (This task originally also left 8.7h's
+            decorative bell icon in place; Task 10.2z2 removed it.)
+            The reference's "Good Food • Great Moments" tagline
+            and its "N" swoosh logo mark are both deliberately NOT added
+            — neither is real app data, and Phase 10's own governing
+            rule only names the "NATRA" wordmark as an allowed
+            plain-text exception, not a second line of marketing copy
+            or a new logo asset. The one real gap
+            (SearchBar's default placeholder still read
+            "Search foods, drinks, restaurants...", the old reference's
+            word order) is fixed in SearchBar.jsx itself, not here. */}
         <div className={styles.headerInner}>
           <div className={styles.brandRow}>
             {/* Task 8.7g — the circular "N" logo mark that used to sit
@@ -336,35 +404,24 @@ export default function Home() {
                 that went with removing it). */}
             <span className={styles.brandName}>NATRA</span>
 
-            <div className={styles.headerActions}>
-              {/* Task 8.7h — "Sign up" button, positioned left of the
-                  bell icon. Customers themselves have no accounts to
-                  sign up for (docs/NATRA_MASTER_PROMPT.md is explicit on
-                  that), so this routes to `/owner/register` (Task 4.1's
-                  Owner Registration screen, already wired in App.jsx) —
-                  the one actual signup flow this app has. Styled as
-                  plain white text on the orange header
-                  (`.signUpButton`, below) rather than a filled/bordered
-                  button, so it reads as a header action alongside the
-                  bell icon rather than competing with `SearchBar`'s own
-                  primary-looking chrome right below it. Grouped with
-                  `BellIcon` in its own `.headerActions` flex row (rather
-                  than left as `.brandRow`'s third child) so
-                  `.brandRow`'s `space-between` still puts exactly one
-                  gap — between the wordmark and this group — instead of
-                  spreading three items out evenly and stranding "Sign
-                  up" in the middle, away from the icon it's meant to
-                  sit next to. */}
-              <button
-                type="button"
-                className={styles.signUpButton}
-                onClick={() => navigate('/owner/register')}
-              >
-                Sign up
-              </button>
-
-              <BellIcon className={styles.bellIcon} aria-hidden="true" />
-            </div>
+            {/* Task 8.7h — "Sign up" button. Customers themselves have no
+                accounts to sign up for (docs/NATRA_MASTER_PROMPT.md is
+                explicit on that), so this routes to `/owner/register`
+                (Task 4.1's Owner Registration screen, already wired in
+                App.jsx) — the one actual signup flow this app has. A
+                filled white pill (`.signUpButton`, below) on the orange
+                band, as the reference shows. Task 10.2z2 removed the
+                decorative bell icon that used to sit beside it (and the
+                `.headerActions` wrapper that grouped the two): with one
+                item left, `.brandRow`'s `space-between` alone puts it
+                opposite the wordmark. */}
+            <button
+              type="button"
+              className={styles.signUpButton}
+              onClick={() => navigate('/owner/register')}
+            >
+              Sign up
+            </button>
           </div>
 
           <SearchBar
@@ -403,9 +460,9 @@ export default function Home() {
                   <div className={styles.searchSubsection}>
                     <h3 className={styles.searchSubheading}>Restaurants</h3>
                     <HorizontalScroller
-                      itemWidth="220px"
                       ariaLabel="Restaurants matching your search"
-                      className={styles.restaurantsScroller}
+                      className={styles.restaurantsGrid}
+                      itemWidth={RESTAURANT_CARD_WIDTH}
                     >
                       {searchResults.restaurants.map((restaurant) => (
                         <EntityCard
@@ -416,7 +473,7 @@ export default function Home() {
                             restaurant.cover_url,
                             restaurant.cover_thumbnail_url
                           )}
-                          imageSizes={SCROLLER_CARD_SIZES}
+                          imageSizes={RESTAURANTS_GRID_SIZES}
                           logo={restaurant.logo_url || undefined}
                           logoAlt={restaurant.name}
                           logoSrcSet={buildImageSrcSet(
@@ -424,6 +481,7 @@ export default function Home() {
                             restaurant.logo_thumbnail_url
                           )}
                           logoSizes={LOGO_SIZES}
+                          mediaAspectRatio="2 / 1"
                           title={restaurant.name}
                           badge={<StatusBadge status={restaurant.is_open ? 'Open' : 'Closed'} />}
                           metaLine={restaurant.location_text}
@@ -440,6 +498,7 @@ export default function Home() {
                     <ResponsiveGrid
                       ariaLabel="Foods matching your search"
                       className={styles.popularFoodsGrid}
+                      columns={POPULAR_FOODS_GRID_COLUMNS}
                     >
                       {searchResults.foods.map((food) => (
                         <EntityCard
@@ -447,11 +506,13 @@ export default function Home() {
                           image={food.image_url || FALLBACK_IMAGE}
                           imageAlt={food.name}
                           imageSrcSet={buildImageSrcSet(food.image_url, food.image_thumbnail_url)}
+                          className={styles.foodCard}
                           imageSizes={POPULAR_FOODS_GRID_SIZES}
+                          mediaAspectRatio="3 / 2"
                           title={food.name}
                           subtitle={food.restaurant_name}
                           metaLine={formatPrice(food.price)}
-                          cta={<span className={styles.orderNowCta}>Order Now</span>}
+                          cta={<span className={styles.addCta} aria-hidden="true">+</span>}
                           onClick={() => goToFood(food.id)}
                         />
                       ))}
@@ -489,9 +550,9 @@ export default function Home() {
                 />
               ) : (
                 <HorizontalScroller
-                  itemWidth="220px"
                   ariaLabel="Restaurants"
-                  className={styles.restaurantsScroller}
+                  className={styles.restaurantsGrid}
+                  itemWidth={RESTAURANT_CARD_WIDTH}
                 >
                   {restaurants.map((restaurant) => (
                     <EntityCard
@@ -502,7 +563,7 @@ export default function Home() {
                         restaurant.cover_url,
                         restaurant.cover_thumbnail_url
                       )}
-                      imageSizes={SCROLLER_CARD_SIZES}
+                      imageSizes={RESTAURANTS_GRID_SIZES}
                       logo={restaurant.logo_url || undefined}
                       logoAlt={restaurant.name}
                       logoSrcSet={buildImageSrcSet(
@@ -510,6 +571,7 @@ export default function Home() {
                         restaurant.logo_thumbnail_url
                       )}
                       logoSizes={LOGO_SIZES}
+                      mediaAspectRatio="2 / 1"
                       title={restaurant.name}
                       badge={<StatusBadge status={restaurant.is_open ? 'Open' : 'Closed'} />}
                       metaLine={restaurant.location_text}
@@ -580,18 +642,24 @@ export default function Home() {
                   description="Check back soon — restaurants are still building out their menus."
                 />
               ) : (
-                <ResponsiveGrid ariaLabel="Popular Foods" className={styles.popularFoodsGrid}>
+                <ResponsiveGrid
+                  ariaLabel="Popular Foods"
+                  className={styles.popularFoodsGrid}
+                  columns={POPULAR_FOODS_GRID_COLUMNS}
+                >
                   {popularFoods.map((food) => (
                     <EntityCard
                       key={food.id}
                       image={food.image_url || FALLBACK_IMAGE}
                       imageAlt={food.name}
                       imageSrcSet={buildImageSrcSet(food.image_url, food.image_thumbnail_url)}
+                      className={styles.foodCard}
                       imageSizes={POPULAR_FOODS_GRID_SIZES}
+                      mediaAspectRatio="3 / 2"
                       title={food.name}
                       subtitle={food.restaurant_name}
                       metaLine={formatPrice(food.price)}
-                      cta={<span className={styles.orderNowCta}>Order Now</span>}
+                      cta={<span className={styles.addCta} aria-hidden="true">+</span>}
                       onClick={() => goToFood(food.id)}
                     />
                   ))}
@@ -619,21 +687,4 @@ function formatPrice(price) {
   if (!Number.isFinite(value)) return null;
   const hasFraction = !Number.isInteger(value);
   return `${value.toFixed(hasFraction ? 2 : 0)} ETB`;
-}
-
-function BellIcon(props) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10Z" />
-      <path d="M10 19.5a2 2 0 0 0 4 0" />
-    </svg>
-  );
 }

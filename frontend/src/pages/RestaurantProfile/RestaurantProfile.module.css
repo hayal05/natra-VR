@@ -60,6 +60,10 @@
   pointer-events: none;
 }
 
+/* Task 10.1z — re-verified: `.cover`'s `height: 200px` and `.logo`'s
+   72x72px below are both fixed values on this page's own CSS, not
+   inherited from the uploaded photo's own dimensions — already correct,
+   no change needed. */
 .cover {
   width: 100%;
   height: 200px;

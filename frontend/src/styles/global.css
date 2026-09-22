@@ -88,6 +88,18 @@
   --radius-lg: 16px;
   --radius-pill: 9999px;
 
+  /* Task 10.0a — redesign gradient tokens. See docs/DESIGN_TOKENS.md's
+     Task 10.0a section for the pixel sampling behind these. Both reuse
+     existing colors (no new brand hex beyond color-page-glow below) so
+     they stay in sync automatically if color-primary/tint ever change. */
+  --gradient-header: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-tint) 100%);
+  --color-page-glow: #fcf1e8;
+  --gradient-page-preauth: radial-gradient(ellipse 140% 100% at top left, var(--color-page-glow) 0%, var(--color-surface-muted) 55%, var(--color-background) 100%);
+  /* Task 10.1d — primary CTA gradient (login "Log in" button). Reuses the
+     existing primary -> primary-pressed pair, so it tracks those tokens
+     automatically. See docs/DESIGN_TOKENS.md's Task 10.1d section. */
+  --gradient-button-primary: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-pressed) 100%);
+
   /* Elevation — subtle lift for cards sitting on the page background
      (EntityCard etc.), so they read as raised surfaces rather than flat
      color blocks, per the reference cards (560d4168...png) having a

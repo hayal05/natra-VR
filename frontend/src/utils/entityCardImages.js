@@ -47,17 +47,33 @@ export function buildImageSrcSet(mainUrl, thumbnailUrl) {
 // standard practice for this attribute), so these don't need to be
 // pixel-exact, just in the right ballpark per breakpoint.
 
-// `HorizontalScroller`'s Restaurants row — every caller passes a fixed
-// `itemWidth="220px"` regardless of viewport (Home.jsx x2, RestaurantProfile
-// doesn't use this one), so the card's rendered width never varies.
-export const SCROLLER_CARD_SIZES = '220px';
-
+// Task 10.2b-i replaced Home.jsx's Restaurants row from a
+// `HorizontalScroller` (fixed `itemWidth="220px"`) to a `ResponsiveGrid`,
+// matching `docs/reference_ui/phase10_customer_home_reference.jpg`'s
+// 2-column layout — the old `SCROLLER_CARD_SIZES` constant it used
+// (a flat `'220px'`, never viewport-dependent) no longer describes any
+// real caller and is removed rather than left as dead code.
+//
 // `ResponsiveGrid`'s Popular Foods / search-results-foods grid — that
 // component's own 2/3/4/5-column, 768/1024/1280px breakpoints (Task 2.7),
 // capped by Home.module.css's own 1280px page max-width at the xl tier
 // (5 columns of a 1280px-wide page ≈ 256px each; below that tier the page
 // is effectively full-viewport width, so `vw` tracks it directly).
 export const POPULAR_FOODS_GRID_SIZES =
+  '(min-width: 1280px) 256px, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw';
+
+// Task 10.2b-i — Restaurants section grid. Same `ResponsiveGrid` default
+// column progression as `POPULAR_FOODS_GRID_SIZES` above (2/3/4/5
+// columns, same breakpoints, same 1280px page max-width — neither
+// reference image shows a restaurant grid past phone width, so this
+// reuses the same already-established default rather than inventing a
+// separate progression). Kept as its own named export rather than
+// reusing `POPULAR_FOODS_GRID_SIZES` directly: the two match today
+// because both grids happen to use `ResponsiveGrid`'s defaults, not
+// because they're the same grid — if either's column counts are tuned
+// independently later, this stays correct without the other one's name
+// describing the wrong section.
+export const RESTAURANTS_GRID_SIZES =
   '(min-width: 1280px) 256px, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw';
 
 // RestaurantProfile's single-column menu list — capped at 640px

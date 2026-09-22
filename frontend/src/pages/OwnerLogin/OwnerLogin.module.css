@@ -4,12 +4,32 @@
    (including the `successBanner`, which wraps normally since it has
    no fixed width or `white-space` override) already reflows correctly
    from mobile through large-desktop. */
+/* Task 10.1a — pre-auth page/card shell restyle. Reference:
+   docs/UI_REDESIGN_ROADMAP.md's login card image ("Zoble Chat" mock).
+   Shell only — heading/instructions/banners/form/link classes below are
+   untouched here, that's 10.1c-h's job.
+
+   - `.page` now uses `--gradient-page-preauth` (Task 10.0a) instead of
+     flat `--color-background` — the soft peach-to-neutral radial glow
+     visible behind the card in the reference.
+   - `.card`'s `border-radius` bumped from `--radius-md` to `--radius-lg`
+     to match the reference's more generously-rounded corners, and its
+     `1px solid --color-border` outline is dropped — the reference shows
+     no visible card border, just the shadow-lift already provided by
+     `--shadow-card`, so keeping the old flat border under the new
+     rounder corners would look like an unintended leftover rather than
+     a deliberate restyle choice.
+   - `.card::before` adds the orange top accent bar — an absolutely-
+     positioned pseudo-element rather than a new DOM node, since it's
+     pure decoration with no content/semantics of its own. `overflow:
+     hidden` on `.card` means the bar's own corners don't need separate
+     rounding logic; the card's own clip handles it. */
 .page {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  background: var(--color-background);
+  background: var(--gradient-page-preauth);
   padding: var(--space-xl) var(--space-lg);
 }
 
@@ -20,10 +40,34 @@
   flex-direction: column;
   gap: var(--space-lg);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: var(--space-xl) var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--color-primary);
+}
+
+/* Task 10.1b — the "NATRA" wordmark. Dark/near-black rather than
+   orange: the reference's "Zoble Chat" text itself is dark, with only
+   the (dropped) dot mark carrying the brand color — matching that text
+   treatment exactly, minus the dot, is closer to the reference than
+   inventing an orange wordmark it doesn't show. */
+.brandName {
+  font-family: var(--font-family-brand);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.04em;
 }
 
 .heading {
@@ -41,32 +85,52 @@
   color: var(--color-text-secondary);
 }
 
+/* Task 10.1e — banners restyled to the redesign palette. The reference
+   image shows no banner, so this follows its visual language instead of
+   copying a shape: same 12px rounding and 12px/16px padding as the
+   restyled inputs, a soft tinted fill, a tinted 1px border.
+   Text is `--color-text-primary`, NOT green: green text (#188738) is
+   only 4.60:1 on plain white and drops under the 4.5:1 AA bar on any
+   visible green tint (4.04:1 at 10%, still 4.37:1 at 4%), so the
+   success meaning is carried by the tint + border color instead, and the
+   text stays readable (>15:1). `--color-success-subtle` (the old
+   fallback var) never existed as a token, so it is replaced by a
+   `color-mix()` off the real `--color-success`, same technique as
+   StatTile (10.0d). */
 .successBanner {
   margin: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-success);
-  background: var(--color-success-subtle, var(--color-surface));
-  border: 1px solid var(--color-success);
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-success) 35%, var(--color-surface));
   border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-md) var(--space-lg);
 }
 
-/* Task 8.7e — a neutral (not success-green, not error-red) banner for
-   "you were logged out, log back in" — genuinely a different tone than
-   either existing message type this screen shows, so it gets its own
-   class rather than reusing `.successBanner`'s color. */
+/* Task 8.7e — a banner for "you were logged out, log back in" —
+   genuinely a different tone than either other message type this screen
+   shows (success-green, error-red), so it gets its own class rather than
+   reusing `.successBanner`'s color.
+   Task 10.1e — restyled to the redesign palette: the peach
+   `--color-page-glow` (Task 10.0a, sampled from the login reference
+   itself) fill with a soft brand-orange-tinted border, so it reads as
+   part of the same page rather than a generic gray box, and still
+   clearly different from the green success banner. Text goes
+   `--color-text-secondary` -> `--color-text-primary` (15.7:1 on the
+   peach fill; the old gray text would have been a weaker pairing). Same
+   shape values as `.successBanner` above. */
 .noticeBanner {
   margin: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  background: var(--color-page-glow);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-surface));
   border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-md) var(--space-lg);
 }
 
 .form {
@@ -75,22 +139,103 @@
   gap: var(--space-lg);
 }
 
+/* Task 10.1c-i / 10.1c-ii — rounded, filled-gray input style, applied
+   via `className={styles.inputField}` on the Email `FormField` (10.1c-i)
+   and the Password `FormField` (10.1c-ii) — the same one rule, opted
+   into per field so each task stayed one concern. Reference:
+   docs/reference_ui/phase10_login_reference.jpg
+   — sampled fill `#F3F4F6`, 1px border ~`#E8E9EC`, corner radius ~9px
+   and height ~42px at the capture's 2x scale.
+
+   Scoped here rather than edited in `FormField.module.css` on purpose:
+   FormField is shared by checkout, registration, settings and every
+   other form in the app, and docs/UI_REDESIGN_ROADMAP.md's rule 5 says
+   a shared-component change that other screens depend on gets named
+   and sequenced explicitly, not patched in passing. `FormField` already
+   forwards `className` onto its wrapper `<div>`, so a descendant
+   `input` selector reaches the control without touching that file (and
+   without needing to know its hashed `.control` class name).
+
+   Only the properties that actually differ from FormField's base style
+   are overridden:
+   - `background`: `--color-surface` -> `--color-surface-muted` (#F4F6F6,
+     within ~1 step per channel of the sampled #F3F4F6, so no new token).
+   - `padding` + `min-height`: 12px/16px padding gives ~43px, matching
+     the reference's ~42px; `min-height: 44px` keeps the 44px touch
+     target Task 8.9a set as the app-wide floor.
+   - `border` is deliberately NOT re-declared: the existing 1px
+     `--color-border` (#DDE1E6) is a touch darker than the reference's
+     ~#E8E9EC but close enough not to warrant a new token, and leaving
+     the shorthand alone means FormField's own `.controlError` and
+     `:focus-visible` border/ring rules keep winning where they should.
+     `border-radius` likewise already equals `--radius-md` (12px), the
+     nearest existing step to the reference's ~9px.
+   Placeholder contrast on the new fill: #687180 on #F4F6F6 = 4.54:1
+   (was 4.93:1 on white) — still clears the 4.5:1 AA bar Task 8.9b2
+   set, narrowly. */
+.inputField input {
+  min-height: 44px;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface-muted);
+}
+
+/* Task 10.1f2 — inline credentials/server error (`role="alert"`)
+   restyled from bare red text to the tinted-banner family, identical
+   values to `AdminLogin.module.css`'s `.formError` (Task 10.1f; see its
+   comment for the full reasoning) so the two login screens match: 8%
+   `--color-error` fill, 30% border via `color-mix()`, 12px radius,
+   12px/16px padding, semibold. Text is `--color-text-primary`, not red:
+   red (#EC0708) is 4.56:1 on white but 3.97:1 on the 8% tint, under the
+   4.5:1 AA bar, so fill + border carry "error" and text stays at
+   15.2:1.
+   Long messages: normal text wraps on its own, but a long *unbroken*
+   token in a server message (an ID, URL, etc.) does not — found in the
+   10.1f2 stress test, where such a message spilled out of the banner at
+   every viewport width, even 1920px. `overflow-wrap: break-word` (broad
+   support, incl. older Android WebViews) plus `anywhere` (newer, also
+   fixes min-content sizing) lets it break mid-token instead. */
 .formError {
   margin: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
-  color: var(--color-error);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-error) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-error) 30%, var(--color-surface));
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
+/* Task 10.1d — bold orange full-width submit button. Reference:
+   docs/reference_ui/phase10_login_reference.jpg — measured 533x83px
+   (same width and ~same height as the inputs, so `min-height: 44px`
+   matches the 44px inputs from 10.1c), a vertical gradient
+   #FF691C -> #E75D12, corner radius ~15px (same rounding as the
+   inputs, NOT a full pill — a pill would be ~41px), bold label ~1.18x
+   the field-label size (-> 16px/700), and a faint orange-tinted glow
+   just under the button.
+   - `background`: new `--gradient-button-primary` (primary -> pressed,
+     existing colors, no new hex).
+   - `border-radius` stays `--radius-md`, deliberately, to match the
+     reference's rounded-rectangle rather than the task list's "pill"
+     wording (see PROJECT_STATUS.md's 10.1d entry).
+   - Contrast: white on this gradient is 3.09:1 (top) to 3.89:1
+     (bottom); the old flat fill was 3.09:1, so nothing gets worse. It
+     is still under 4.5:1 — that is the standing Task 9.1 brand-color
+     decision, not reopened here. */
 .primaryButton {
   font-family: var(--font-family);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-on-primary);
-  background: var(--color-primary);
+  background: var(--gradient-button-primary);
   border: none;
   border-radius: var(--radius-md);
   padding: var(--space-md) var(--space-lg);
+  min-height: 44px;
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--color-primary) 25%, transparent);
   cursor: pointer;
   width: 100%;
 }
@@ -102,19 +247,47 @@
 .primaryButton:disabled {
   background: var(--color-border);
   color: var(--color-text-secondary);
+  box-shadow: none;
   cursor: not-allowed;
+}
+
+/* Task 10.1e — "Don't have an account? <link>" row. Reference: plain gray
+   text (sampled ~#63666F, -> `--color-text-secondary`) followed by a bold
+   orange link, no underline, centered on one line, ~14px (-> body size;
+   was 12px caption). A wrapping flex row rather than inline text: the
+   link button keeps its 44px tap height (Task 8.9a2 below), which would
+   distort the line box of ordinary inline text, and on narrow screens
+   (256px content column at 320px) the link wraps onto its own centered
+   line instead of overflowing. */
+.altAction {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  column-gap: var(--space-xs);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
 }
 
 /* Task 8.9a2 — `min-height`/`display: inline-flex`/`align-items: center`
    added on top of the original `padding: 0;` text-link styling: 8.9a's
    own audit found this class's tap height was just the caption text's
-   own line height, well under the 44×44px minimum, despite this being a
-   real cross-link action. `align-self: center` is untouched (still
-   works on a flex/grid item regardless of its own display value); the
-   extra height is invisible padding around the same visually-unchanged
-   underlined text. */
+   own line height, well under the 44x44px minimum, despite this being a
+   real cross-link action. The extra height is invisible padding around
+   the same visually-unchanged text.
+   Task 10.1e — restyled to the reference: bold (700) `--color-primary`
+   at body size, underline dropped at rest (reference shows none) and
+   `align-self: center` removed (the button now sits in `.altAction`'s
+   flex row, not directly in the card's column). Underline returns on
+   hover and keyboard focus: with no underline the orange link differs
+   from its gray neighbour text by only 1.60:1 in color, so boldness plus
+   a hover/focus underline is the non-color cue (WCAG 1.4.1). Orange
+   text on white is 3.09:1 — the same standing Task 9.1 brand-color
+   tradeoff as the old link, not reopened here. */
 .linkButton {
-  align-self: center;
   background: none;
   border: none;
   padding: 0;
@@ -122,9 +295,14 @@
   display: inline-flex;
   align-items: center;
   font-family: var(--font-family);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
-  text-decoration: underline;
+  text-decoration: none;
   cursor: pointer;
+}
+
+.linkButton:hover,
+.linkButton:focus-visible {
+  text-decoration: underline;
 }

@@ -202,7 +202,12 @@
    details" wording — deliberately compact, unlike FoodDetails.jsx's own
    full-width `.image` (that screen's photo *is* the subject; here it's
    one supporting field among many). ImageViewer's own full-screen
-   overlay (Task 2.6) is what actually lets it be inspected closely. */
+   overlay (Task 2.6) is what actually lets it be inspected closely.
+   Task 10.1z — this remains the deliberate size override on top of
+   `ImageViewer.module.css`'s own new 96px-square default (see that
+   file's Task 10.1z comment); happens to match that default exactly
+   here, kept as an explicit rule rather than removed so this screen
+   doesn't silently depend on ImageViewer's own default staying 96px. */
 .screenshotThumbnail {
   width: 96px;
   height: 96px;

@@ -105,6 +105,11 @@
   height: 160px;
   object-fit: cover;
   margin: calc(var(--space-lg) * -1) calc(var(--space-lg) * -1) 0;
+  /* Task 10.1z — explicit override kept on top of ImageViewer's own new
+     96px-square default (see that file's Task 10.1z comment); this
+     screen's cover/live-request-screenshot use is intentionally wider
+     and shorter than the default, not a size this page can drop and
+     inherit. */
 }
 
 .header {

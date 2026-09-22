@@ -1,9 +1,24 @@
 /* The orange header block from the reference UI
    (docs/reference_ui/1000065033.jpg): brand row on top, search bar
    sitting inside the same colored block below it — not a separate
-   white-background search row. */
+   white-background search row.
+
+   Task 10.2a-i: background swapped from the flat `--color-primary` to
+   `--gradient-header` — that token was already measured against this
+   exact screen's own reference image, `docs/reference_ui/
+   phase10_customer_home_reference.jpg` (see DESIGN_TOKENS.md's Task
+   10.0a section: "Header gradient (Customer Home band, Owner/Admin
+   DashboardHeader)" explicitly lists this screen as one of the three
+   sampled), it just hadn't been wired into this file yet — `.header`
+   was still on the pre-Phase-10 flat color from Task 8.1a. No
+   `border-radius` added here unlike `DashboardHeader`'s own header
+   (Task 10.0b-i): that header sits inside a page with visible margin
+   around it, but this one stays full-bleed edge-to-edge at every width
+   (see `.headerInner` below), and the reference image itself shows a
+   hard flat edge into the white body at that full-bleed width, not a
+   rounded one. */
 .header {
-  background: var(--color-primary);
+  background: var(--gradient-header);
   padding-bottom: var(--space-xl);
   /* A little extra top padding covers a phone's own status bar area on
      devices that don't already inset it via the browser chrome. */
@@ -53,9 +68,9 @@
    the mark itself: `.brandRow` now holds `.brandName` directly, so an
    intermediate flex wrapper with nothing else in it would be dead
    markup. `.brandName` picks up `.brandRow`'s own `align-items: center`
-   for vertical position (unchanged, still centered against the bell
-   icon on the same row) and gets a touch more `letter-spacing` here,
-   now that it's the leftmost thing in the header instead of sitting
+   for vertical position (still centered against the "Sign up" button on
+   the same row; it was the bell icon until Task 10.2z2) and gets a touch
+   more `letter-spacing` here, now that it's the leftmost thing in the header instead of sitting
    next to a 32px icon box — the wordmark reads slightly tighter/smaller
    on its own than it did with that box's visual weight balancing it out
    on the left, so this compensates rather than just deleting the icon
@@ -66,24 +81,6 @@
   font-weight: var(--font-weight-bold);
   color: var(--color-text-on-primary);
   letter-spacing: 0.04em;
-}
-
-.bellIcon {
-  width: 24px;
-  height: 24px;
-  color: var(--color-text-on-primary);
-  flex-shrink: 0;
-}
-
-/* Task 8.7h — groups the new "Sign up" button with the bell icon so
-   `.brandRow`'s `justify-content: space-between` puts its one gap
-   between the wordmark and this pair, not between three separately
-   spread-out items (see the JSX comment on `.headerActions` for the
-   full reasoning). */
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
 }
 
 /* Filled white pill sitting on `.header`'s own orange background —
@@ -139,20 +136,19 @@
   color: var(--color-text-primary);
 }
 
-/* Passed to HorizontalScroller's own `className` prop (it merges this
-   onto its scroller `<div>`, per HorizontalScroller.jsx) rather than
-   applied via a CSS Modules `:global()` selector targeting that
-   component's internal class name from outside its own module — CSS
-   Modules hashes class names per-file, so there is no real global
-   `.scroller` class to select here. This keeps the row's left/right
-   padding matched to the section title above it while still letting the
-   row's own scroll area (not a wrapper around it) own the padding, so a
-   card can still scroll flush to the viewport edge. */
-.restaurantsScroller {
+/* Task 10.2b-i — renamed from `.restaurantsScroller`: this now passes
+   to `ResponsiveGrid`'s own `className` prop instead of
+   `HorizontalScroller`'s (same "component merges it onto its own root
+   element, not a `:global()` reach-in" reasoning as before — CSS
+   Modules hashes class names per-file, so there's no real global class
+   to select here either way). Same padding-inline value as before, for
+   the same reason: matches the row's left/right edge to the section
+   title above it. */
+.restaurantsGrid {
   padding-inline: var(--space-lg);
 }
 
-/* Same reasoning as .restaurantsScroller above — FilterBar's own chip
+/* Same reasoning as .restaurantsGrid above — FilterBar's own chip
    row composes HorizontalScroller internally, so this keeps its
    left/right padding matched to the section title rather than reaching
    into FilterBar's own CSS Modules file from outside it. */
@@ -201,25 +197,83 @@
 
 /* ResponsiveGrid renders its own grid element directly (no extra
    wrapper — see ResponsiveGrid.jsx), so this class lands on that same
-   element; matches .restaurantsScroller/.categoriesFilterBar's own
+   element; matches .restaurantsGrid/.categoriesFilterBar's own
    "match the section title's left/right padding" reasoning above. */
 .popularFoodsGrid {
   padding-inline: var(--space-lg);
 }
 
-/* EntityCard's own `cta` slot takes a node, not a real button (Food
-   Details, Task 3.9, doesn't exist yet for it to link to — see
-   Home.jsx's own doc comment) — styled to read as an affordance anyway
-   rather than plain text, same visual weight as .retryButton above. */
-.orderNowCta {
-  display: inline-block;
+/* Task 10.2d-ii, corrected same session: re-zoomed the reference photo
+   (previous measurement — sampled from the earlier full-page view, not
+   pixel-cropped — misread this as solid `--color-primary` fill with
+   white text; a tight crop of a single card's cta shows a pale peach
+   circle with a solid-orange "+", not an inverted-fill button) — per
+   docs/reference_ui/phase10_customer_home_reference.jpg, every Popular
+   Food card shows a small pale-peach circle with a plain "+" glyph
+   sitting to the right of the price. Still just a styled `<span>`, not
+   a real `<button>`: same reason as before (EntityCard's `cta` slot
+   takes a node so it doesn't assume button markup) and the underlying
+   navigation is still the whole card's own `onClick` (Task 3.9) — this
+   cta has no independent `onClick` of its own, so it isn't a
+   separately-tabbable control and isn't in scope for Task 8.9a2's 44px
+   tap-target audit the way a real button would be.
+
+   Background reuses `--color-page-glow` (`#FCF1E8`) rather than a new
+   hex — same token `10.2c-i`'s category-tile restyle already reused for
+   this exact pale-peach fill, and it measures near-identically to this
+   circle's own sampled background. Glyph color: the sampled orange
+   (~`#EC6C25`) sits between the two darkened Task 8.9b2 tokens, and
+   `--color-primary` itself only clears 4.16:1 against this lighter
+   background (below the 4.5:1 text threshold, since a 16px bold glyph
+   doesn't reach WCAG's "large text" size exemption) — `--color-primary-
+   pressed` (5.42:1) is used instead, the same "step to the next darker
+   token when the lighter one doesn't clear the bar on this particular
+   background" call `color-text-secondary`'s own 8.9b2 fix already made.
+   Sized at 32px (visually matches the reference's button-to-price
+   proportion) with `--radius-pill` for the circle. */
+/* Task 10.2z (project owner, option (b)) — the "+" is hidden below 520px.
+   At 390px a Popular Foods card is 109px wide, leaving 77px of text column;
+   the 32px "+" and its gap took 40 of that, so the price got 37px of the 58
+   it needs ("12…"), and 13px at 320px. The "+" was never separately
+   interactive (aria-hidden, no onClick) — the whole card is the link to
+   FoodDetails — so hiding it loses no function, only the reference's
+   affordance cue. 520px is where the "+" fits again beside even a
+   fractional price ("130.50 ETB", 80px): a card is (viewport − 64px)/3
+   wide, so 152px there, a 120px column for 80px + 8px gap + 32px "+".
+   Done through `EntityCard`'s `--entity-card-cta-display` hook (see its
+   `.ctaSlot`), not by hiding `.addCta` alone, so the empty slot's flex gap
+   goes too.
+
+   Also below 520px the card's side padding drops from `--space-lg` (16px)
+   to `--space-md` (12px) via `--entity-card-pad-x`: hiding the "+" alone
+   still left a 3-digit price 5px short at 320px (53px column, "120 ETB" needs
+   58px). Not part of the owner's option (b) as worded — added because
+   option (b) doesn't finish the job at 320px on its own; remove the
+   `--entity-card-pad-x` line to undo it. */
+.foodCard {
+  --entity-card-cta-display: block;
+}
+
+@media (max-width: 519px) {
+  .foodCard {
+    --entity-card-cta-display: none;
+    --entity-card-pad-x: var(--space-md);
+  }
+}
+
+.addCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   font-family: var(--font-family);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-on-primary);
-  background: var(--color-primary);
-  border-radius: var(--radius-md);
-  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  color: var(--color-primary-pressed);
+  background: var(--color-page-glow);
+  border-radius: var(--radius-pill);
 }
 
 /* Task 3.6 — Search results section. `.searchSubsection`/
@@ -229,7 +283,7 @@
    do — a search hit is one screen's worth of content, not three separate
    browsable rows, so its two subgroups ("Restaurants", "Foods") read as
    a lighter sub-heading under one heading rather than three co-equal
-   page sections. `.restaurantsScroller`/`.popularFoodsGrid` above are
+   page sections. `.restaurantsGrid`/`.popularFoodsGrid` above are
    reused as-is for the actual result rows/grid — a search result card
    should look exactly like the card it's a hit for, so there's no
    separate spacing rule to define for it. */
@@ -259,7 +313,7 @@
    needing to touch those declarations themselves. */
 @media (min-width: 768px) {
   .sectionTitle,
-  .restaurantsScroller,
+  .restaurantsGrid,
   .categoriesFilterBar,
   .categoriesError,
   .sectionStatus,
@@ -271,7 +325,7 @@
 
 @media (min-width: 1024px) {
   .sectionTitle,
-  .restaurantsScroller,
+  .restaurantsGrid,
   .categoriesFilterBar,
   .categoriesError,
   .sectionStatus,

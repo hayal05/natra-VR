@@ -70,19 +70,89 @@
   margin: 0 auto;
 }
 
-.heading {
-  font-family: var(--font-family);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-sm);
+/* Task 10.3a-i — the old `.heading` ("Dashboard") is removed: replaced
+   by the shared `DashboardHeader` component, which brings its own
+   typography/color (see that component's own CSS) rather than reusing
+   this page-local class. `margin-bottom` here fills the gap `.heading`'s
+   own `margin: 0 0 var(--space-sm)` used to provide before `.subheading`
+   — `DashboardHeader` itself has no bottom margin of its own, since it's
+   a shared component with no opinion on what follows it. */
+.dashboardHeader {
+  margin-bottom: var(--space-sm);
 }
 
-.subheading {
-  font-family: var(--font-family);
-  font-size: var(--font-size-body);
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-xl);
+/* Task 10.3b — the old `.subheading` (a plain `<p>`) is replaced by the
+   shared `Greeting` component (Task 10.0c), which brings its own
+   typography/color and its own `padding: var(--space-lg)` on every
+   side (see that component's own CSS) rather than reusing this
+   page-local class. `.subheading`'s own `margin: 0 0 var(--space-xl)`
+   (24px) is dropped along with the class itself; `margin-bottom:
+   var(--space-sm)` here (8px) tops that up to roughly the same total
+   gap before the Orders card, on top of `Greeting`'s own 16px bottom
+   padding, rather than leaving whatever gap its unmodified padding
+   alone happens to produce. */
+.greeting {
+  margin-bottom: var(--space-sm);
+}
+
+/* Task 10.3c-v — the 2×2 stat grid (Total/Completed/Rejected/Pending).
+   Two columns at every width, matching the reference, rather than
+   collapsing to one column on phones: `minmax(0, 1fr)` lets each track
+   shrink below its content's min-content so a tile can never force the
+   grid wider than `.page`'s column. Worst case is 320px: `.page` leaves a
+   288px column, minus the `space-md` gap, so ~138px per tile; minus
+   `StatTile`'s own 16px side padding leaves ~106px for content, enough for
+   the 22px bold count and the longest label ("Total Orders", 14px,
+   ~80px). If a label ever did run longer it wraps inside its tile
+   (`StatTile`'s `.label` has no `nowrap`). Above 640px the page cap keeps
+   the grid at the same 2 columns — four small stats don't need more, and
+   it matches the capped single-column shell (Task 8.2b-i). `margin-bottom`
+   is the same `space-lg` gap `.card` uses between siblings, so the grid
+   doesn't fuse into the Orders card below it. Replaces 10.3c-i..iv's
+   temporary per-tile `.statTile` margin. */
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+/* Task 10.3d-v — the Quick Actions tile row (Open/Closed, Add Food, View
+   Orders, Check Live Status), inside the "Quick actions" `.card`.
+   Responsive: **2 columns by default, 4 from 640px up** — the reference
+   shows four across, but four tiles in a 288px phone column would be
+   ~50px each, too narrow for a toggle plus a wrapping caption. 640px is
+   where `.page`'s own `max-width` cap is reached, so from there the
+   tiles have a constant width: (640 − 2×16 page padding − 2×16 card
+   padding − 3×12 gaps) / 4 ≈ 135px each, ~111px of content after the
+   tile's own `space-md` padding — enough for the `ToggleSwitch` (~95px)
+   and one-word labels; the caption and "Check Live Status" wrap
+   (`QuickActionTile` sets no `nowrap`). At 320px the 2-column tracks are
+   ~118px each (256px card column − gap, ÷2), ~94px of content: the
+   toggle+label (~95px) is right at the edge, but `ToggleSwitch`'s
+   `justify-content: center` row can wrap its label below the track
+   rather than overflow, and `minmax(0, 1fr)` stops a track forcing the
+   grid wider than its card. Replaces the old Quick actions card's
+   `.openToggleRow`/`.openToggleStatus`/`.openToggleHint` rules (Task
+   5.19/8.2b-vi, removed as dead with this task) and the temporary
+   per-tile margin/shadow 10.3d-i added. */
+.quickActionsRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .quickActionsRow {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Each tile: the shared `QuickActionTile` has only a white surface, so
+   this adds the reference's thin border (same token as `.card`). Sizing
+   comes from the grid track, not the tile. */
+.quickActionTile {
+  border: 1px solid var(--color-border);
 }
 
 /* Task 8.2b-vii — cross-card pass (the four 8.2b-iii..vi verifications
@@ -172,7 +242,15 @@
 }
 
 .primaryButton {
-  display: inline-block;
+  /* Task 10.3h — `min-height: 44px` + centered flex: this screen's own copy
+     of the button pattern used `space-sm` vertical padding (~32px tall),
+     unlike the `space-md` copies Task 8.9a measured at ~44px. Same
+     min-height technique as 8.9a2's `.linkButton` family: text and
+     horizontal padding unchanged, only the box grows. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
@@ -190,7 +268,11 @@
 }
 
 .secondaryButton {
-  display: inline-block;
+  /* Task 10.3h — see `.primaryButton`: ~34px -> 44px. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
@@ -270,6 +352,15 @@
 }
 
 .retryButtonInline {
+  /* Task 10.3h — was `padding: 0` (~43x16 tap area). Same 8.9a2
+     `.linkButton` technique: the underlined text is visually unchanged,
+     its clickable box grows to 44px. Safe in flow: every use sits in a
+     `.countsError` row (`align-items: center`), so the row just centers a
+     taller box; nothing sits close enough below it to be crowded. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
@@ -310,11 +401,33 @@
   gap: var(--space-xs);
 }
 
-.salesRow {
+.salesTotals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-md);
+}
+
+/* Task 10.3e-i — the Today/All-time totals as two tinted stat blocks
+   (label above, large bold amount below), replacing the old
+   `.salesRow` label-left/amount-right rows (removed as dead with this
+   task; the 8.2b-v comment above describes them historically).
+   Responsive: `auto-fit, minmax(140px, 1fr)` puts the two blocks side by
+   side when the card column has room for both (>= 2×140 + 12 = 292px,
+   e.g. a 390px phone leaves ~324px) and stacks them full-width below
+   that — so at 320px (256px column) they stack instead of being squeezed
+   to ~120px, where a bold 22px amount like "1250 ETB" (~100px) would
+   overflow the ~88px of content. `minmax(0, …)` isn't needed: the 140px
+   floor is what prevents shrinking, and `overflow-wrap: anywhere` on the
+   amount is the last-resort fallback for a very large total.
+   Colors reuse the existing muted surface token (same tint `StatTile`'s
+   neutral variant uses), no new tokens. */
+.salesTotal {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-sm);
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
 }
 
 .salesLabel {
@@ -325,80 +438,144 @@
 
 .salesAmount {
   font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+/* Task 10.3e-ii — the completed-orders count as a third tinted block,
+   same fill/radius/padding as `.salesTotal` (10.3e-i), replacing the old
+   plain `.salesMeta` caption line (removed as dead; the 8.2b-v comment
+   above describes it historically). Count and label sit on one baseline
+   row (`flex-wrap: wrap` so a huge count drops the label below instead of
+   overflowing, e.g. at 320px's ~256px column). `.salesLabel` is reused
+   for the label so the two blocks' secondary text can't drift apart. */
+.salesCompleted {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+}
+
+.salesCompletedCount {
+  font-family: var(--font-family);
   font-size: var(--font-size-title);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
+  overflow-wrap: anywhere;
 }
 
-.salesMeta {
-  font-family: var(--font-family);
-  font-size: var(--font-size-caption);
-  color: var(--color-text-secondary);
-  margin: var(--space-xs) 0 0;
-}
-
-/* Task 5.19 — Quick actions card. No border/background of its own
-   (unlike OwnerRestaurant.module.css's own .openToggleRow, which sits
-   directly on the page): this row already lives inside .card, which
-   provides that chrome.
-
-   Task 8.2b-vi — verified/adjusted at all 4 `ResponsiveGrid` breakpoints
-   (Task 2.7). Unlike every other row on this page (`.statusSummaryRow`,
-   8.2b-iii; `.salesRow`, 8.2b-v), this one doesn't hold up with margin
-   to spare at the narrowest supported 320px width (~256px card column,
-   8.2b-ii) — it's the first row combining two *separately* nowrap-ish
-   min-content chunks against a fixed-size control:
-   - `.openToggleStatus` (badge + `.openToggleHint`) has `min-width: 0`
-     but is itself a `display: flex` row, so *its* min-content is the
-     `StatusBadge` (`white-space: nowrap`, ~55-65px for "Open"/"Closed")
-     plus `space-md` plus the hint sentence's own min-content — the
-     longest unbreakable word, "Customers", not the full sentence
-     (~60-65px at `font-size-caption`).
-   - `ToggleSwitch`'s wrapper has no `flex-shrink: 0` of its own, so it
-     can shrink, but not below its *own* min-content: the 44px track
-     (itself `flex-shrink: 0` in `ToggleSwitch.module.css`) plus
-     `space-sm` plus its one-word "Open"/"Closed" label (~35-45px at
-     `font-size-body`).
-   Summed with this row's own `space-lg` gap between the two items, that
-   worst case (~145px + 16px + ~95px ≈ 256px) lands right at the edge of
-   the ~256px column with only a few px of slack — not overflowing today
-   given the actual measured copy, but one `font-family` fallback or
-   translation with a longer "Customers"/"Closed" equivalent away from
-   doing so, and this row (unlike `.actionRow` below, which already has
-   `flex-wrap: wrap`) had no fallback if it ever did.
-   Fix: added `flex-wrap: wrap` here too, so a too-tight width drops the
-   `ToggleSwitch` to its own line under the status block instead of
-   forcing the row wider than its column (the same failure mode
-   `.countsError`'s min-content reasoning, 8.2b-iii, relies on `<p>`
-   text wrapping to avoid — this row needed the wrap declared explicitly
-   since `ToggleSwitch` itself doesn't wrap). No visual difference at any
-   of the 4 verified breakpoints' actual widths/copy, since none of them
-   currently trip it — this is a safety margin, not a fix to an observed
-   break. */
-.openToggleRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-lg);
-}
-
-.openToggleStatus {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  min-width: 0;
-}
-
-.openToggleHint {
-  font-family: var(--font-family);
-  font-size: var(--font-size-caption);
-  color: var(--color-text-secondary);
-}
-
+/* Task 5.19 — inline error under the Open/Closed toggle; now sits at the
+   top of the Quick actions card (Task 10.3d-v). */
 .quickActionError {
   margin: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-caption);
   color: var(--color-error);
 }
+
+/* Task 10.3f-i — Recent Order Notifications rows. Each row is a tinted
+   block (same `surface-muted` fill/`radius-lg` as `.salesTotal`, 10.3e-i),
+   with unread rows given a light brand-orange tint plus a filled dot and
+   semibold text. Unread is **not** conveyed by color alone: the message
+   is bold and screen readers get a visually-hidden "Unread: " prefix
+   (`.srOnly`), so it also holds for color-blind users (WCAG 1.4.1). The
+   dot is a plain CSS circle, not an icon asset (none exists for it); read
+   rows keep the dot's space but hide it (`visibility: hidden`), so the
+   text column doesn't shift between read and unread rows.
+
+   Responsive: a full-width column of blocks with no fixed widths.
+   `.notificationBody` has `min-width: 0` and the message
+   `overflow-wrap: anywhere`, so a long unbroken location string in a
+   message wraps inside the row instead of overflowing at 320px (~256px
+   card column, ~220px of text after the row's own padding + dot). */
+.notificationList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.notificationRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+}
+
+.notificationRowUnread {
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+}
+
+.notificationDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  visibility: hidden;
+}
+
+.notificationRowUnread .notificationDot {
+  visibility: visible;
+}
+
+.notificationBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.notificationMessage {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.notificationRowUnread .notificationMessage {
+  font-weight: var(--font-weight-semibold);
+}
+
+.notificationTime {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Standard visually-hidden text (still read by screen readers). */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Task 10.3f-ii — the notifications card's empty state. `EmptyState`'s own
+   `padding: var(--space-2xl) var(--space-lg)` is sized for a whole-screen
+   empty region; inside an already-padded `.card` it would double up and
+   leave a tall, mostly-empty box, so this trims it to a modest vertical
+   pad and no side pad (the card supplies that). `.card .notificationsEmpty`
+   (two classes) so it wins over `EmptyState`'s single-class rule regardless
+   of which stylesheet the bundler injects last. Centered text with
+   `EmptyState`'s own 32ch description cap wraps at any width, so nothing
+   here can overflow at 320px. */
+.card .notificationsEmpty {
+  padding: var(--space-lg) 0;
+}
+

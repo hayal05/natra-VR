@@ -1,0 +1,124 @@
+/* Task 10.4a-iii — identical shell to `OwnerAccount.module.css` (Task
+   8.2f-verified: two stacked `FormField` forms plus one `width: 100%`
+   logout button, nothing ever sharing a row, `.page` matching every
+   other admin/owner screen's 640px cap). Duplicated rather than shared
+   across the owner/admin CSS-module boundary, same "no shared
+   stylesheet mechanism across screens" precedent every other
+   duplicated-shell page in this codebase already sets for itself
+   (e.g. `AdminDashboard.module.css`'s own `.card`/`.cardTitle` comment). */
+.page {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-lg);
+}
+
+.status {
+  padding: var(--space-xl) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.retryButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+}
+
+.retryButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.section {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--color-border);
+}
+
+.sectionHeading {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-lg);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.formError {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-error);
+}
+
+.successBanner {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+  background: var(--color-success-subtle, var(--color-surface));
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.submitButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.submitButton:active {
+  background: var(--color-primary-pressed);
+}
+
+.submitButton:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.logoutButton {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-error);
+  background: none;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  width: 100%;
+}
+
+.logoutButton:active {
+  background: var(--color-surface-muted);
+}

@@ -1,35 +1,38 @@
-/* Task 8.3a — verified at all 4 breakpoints (320/768/1024/1280px). No
-   changes needed: `.page` already centers a `width:100%; max-width:420px`
-   `.card`, and every child control (`FormField`'s inputs, the
-   `width:100%` `.primaryButton`) already fills that card — the exact
-   same "centered, capped single column, bordered card since this screen
-   sits outside RoleShell" shape Task 8.2a already verified for
-   `OwnerLogin.jsx` (and, before that, `OwnerRegistration.jsx`), same
-   420px cap and all. `FormField` itself is the same shared,
-   already-verified (8.1e) component — nothing screen-specific to
-   re-check there. At mobile widths the card fills out toward the
-   viewport edges via `.page`'s own `space-lg`/`space-xl` padding; above
-   420px it just stays centered, same "no reference/spec describes a
-   wider treatment for an auth-style screen" reasoning 8.2a's own
-   comment gives.
+/* Task 10.1a — pre-auth page/card shell restyle. Reference:
+   docs/UI_REDESIGN_ROADMAP.md's login card image ("Zoble Chat" mock).
+   Shell only — heading/instructions/banners/form/link classes below are
+   untouched here, that's 10.1c-h's job.
 
-   One thing worth flagging while here, though it's cleanup rather than
-   a responsive-pass finding: `.successBanner` and `.linkButton` below
-   are copy-pasted over from `OwnerLogin.module.css` (Task 4.2) but are
-   dead code in this file — `AdminLogin.jsx`'s own doc comment is
-   explicit that admin has no self-registration flow and therefore no
-   `justRegistered` banner state or a "register" link to render, unlike
-   `OwnerLogin.jsx` which genuinely uses both classes. Left in place
-   rather than removed: unused CSS isn't a layout bug this task's scope
-   covers, and deleting it is a one-line judgment call for whoever next
-   has reason to touch this file's actual markup, not something to fold
-   into a verification-only session. */
+   - `.page` now uses `--gradient-page-preauth` (Task 10.0a) instead of
+     flat `--color-background` — the soft peach-to-neutral radial glow
+     visible behind the card in the reference.
+   - `.card`'s `border-radius` bumped from `--radius-md` to `--radius-lg`
+     to match the reference's more generously-rounded corners, and its
+     `1px solid --color-border` outline is dropped — the reference shows
+     no visible card border, just the shadow-lift already provided by
+     `--shadow-card`, so keeping the old flat border under the new
+     rounder corners would look like an unintended leftover rather than
+     a deliberate restyle choice.
+   - `.card::before` adds the orange top accent bar — an absolutely-
+     positioned pseudo-element rather than a new DOM node, since it's
+     pure decoration with no content/semantics of its own. `overflow:
+     hidden` on `.card` means the bar's own corners don't need separate
+     rounding logic; the card's own clip handles it.
+
+   Superseded note (kept for history, see Task 8.3a's fuller writeup in
+   AdminLogin.module.css for the shared reasoning): the previous flat
+   `--color-background`/bordered-card shell was verified responsive at
+   all 4 breakpoints under Task 8.3a. Nothing about that verification's
+   actual layout math (centered `width:100%; max-width:420px` card)
+   changed here — only the background/border/radius values above did —
+   so that responsive conclusion still holds; re-verifying is 10.1h's
+   job once 10.1's other sub-tasks land. */
 .page {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  background: var(--color-background);
+  background: var(--gradient-page-preauth);
   padding: var(--space-xl) var(--space-lg);
 }
 
@@ -40,10 +43,31 @@
   flex-direction: column;
   gap: var(--space-lg);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: var(--space-xl) var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--color-primary);
+}
+
+/* Task 10.1b — same wordmark treatment as OwnerLogin.module.css; see
+   that file's own comment for the reasoning. */
+.brandName {
+  font-family: var(--font-family-brand);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.04em;
 }
 
 .heading {
@@ -61,6 +85,13 @@
   color: var(--color-text-secondary);
 }
 
+/* Note (predates Task 10.1, still true): `.successBanner` and
+   `.linkButton` below are copy-pasted over from `OwnerLogin.module.css`
+   but are dead code in this file — `AdminLogin.jsx`'s own doc comment is
+   explicit that admin has no self-registration flow and therefore no
+   `justRegistered` banner state or a "register" link to render, unlike
+   `OwnerLogin.jsx` which genuinely uses both classes. Left in place —
+   removing unused CSS isn't this task's scope either. */
 .successBanner {
   margin: 0;
   font-family: var(--font-family);
@@ -73,20 +104,25 @@
   padding: var(--space-sm) var(--space-md);
 }
 
-/* Task 8.7e — same neutral (not success-green, not error-red) banner
-   `OwnerLogin.module.css` gained, for "you were logged out, log back
-   in" — a genuinely different tone than either message type this
-   screen already showed. */
+/* Task 8.7e — same banner `OwnerLogin.module.css` gained, for "you were
+   logged out, log back in" — a genuinely different tone than either
+   message type this screen already showed (error).
+   Task 10.1f — restyled to the redesign palette, identical values to
+   `OwnerLogin.module.css`'s `.noticeBanner` (Task 10.1e; see its comment
+   for the full reasoning): peach `--color-page-glow` fill, soft
+   brand-orange-tinted border, 12px radius + 12px/16px padding to match
+   the restyled inputs, and `--color-text-primary` text (15.7:1 on the
+   fill; the old gray text was a weaker pairing). */
 .noticeBanner {
   margin: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  background: var(--color-page-glow);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-surface));
   border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-md) var(--space-lg);
 }
 
 .form {
@@ -95,22 +131,104 @@
   gap: var(--space-lg);
 }
 
+/* Task 10.1c-i / 10.1c-ii — rounded, filled-gray input style, applied
+   via `className={styles.inputField}` on the Email `FormField` (10.1c-i)
+   and the Password `FormField` (10.1c-ii) — the same one rule, opted
+   into per field so each task stayed one concern. Reference:
+   docs/reference_ui/phase10_login_reference.jpg
+   — sampled fill `#F3F4F6`, 1px border ~`#E8E9EC`, corner radius ~9px
+   and height ~42px at the capture's 2x scale.
+
+   Scoped here rather than edited in `FormField.module.css` on purpose:
+   FormField is shared by checkout, registration, settings and every
+   other form in the app, and docs/UI_REDESIGN_ROADMAP.md's rule 5 says
+   a shared-component change that other screens depend on gets named
+   and sequenced explicitly, not patched in passing. `FormField` already
+   forwards `className` onto its wrapper `<div>`, so a descendant
+   `input` selector reaches the control without touching that file (and
+   without needing to know its hashed `.control` class name).
+
+   Only the properties that actually differ from FormField's base style
+   are overridden:
+   - `background`: `--color-surface` -> `--color-surface-muted` (#F4F6F6,
+     within ~1 step per channel of the sampled #F3F4F6, so no new token).
+   - `padding` + `min-height`: 12px/16px padding gives ~43px, matching
+     the reference's ~42px; `min-height: 44px` keeps the 44px touch
+     target Task 8.9a set as the app-wide floor.
+   - `border` is deliberately NOT re-declared: the existing 1px
+     `--color-border` (#DDE1E6) is a touch darker than the reference's
+     ~#E8E9EC but close enough not to warrant a new token, and leaving
+     the shorthand alone means FormField's own `.controlError` and
+     `:focus-visible` border/ring rules keep winning where they should.
+     `border-radius` likewise already equals `--radius-md` (12px), the
+     nearest existing step to the reference's ~9px.
+   Placeholder contrast on the new fill: #687180 on #F4F6F6 = 4.54:1
+   (was 4.93:1 on white) — still clears the 4.5:1 AA bar Task 8.9b2
+   set, narrowly. */
+.inputField input {
+  min-height: 44px;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface-muted);
+}
+
+/* Task 10.1f — inline error (invalid credentials / wrong-role message,
+   both `role="alert"`) restyled from bare red text to the same tinted-
+   banner shape as `.noticeBanner` above, so the screen's message types
+   read as one family: 8% `--color-error` fill, 30% border via
+   `color-mix()`, 12px radius, 12px/16px padding, semibold. Text is
+   `--color-text-primary`, not red: red text (#EC0708) is 4.56:1 on plain
+   white but only 3.97:1 on an 8% red tint (4.12:1 even at 6%), under the
+   4.5:1 AA bar, so the fill and border carry "error" and the text stays
+   at 15.2:1 — same reasoning as `.successBanner` in 10.1e.
+   Correction (Task 10.1f2): this comment originally claimed a long
+   message "can't overflow the card at 320px". True for ordinary text,
+   false for a long *unbroken* token (ID, URL) in a server message, which
+   spilled out of the banner at every width when stress-tested on the
+   owner screen in 10.1f2. Fixed here too with `overflow-wrap:
+   break-word` (broad support, incl. older Android WebViews) plus
+   `anywhere` (newer, also fixes min-content sizing). */
 .formError {
   margin: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
-  color: var(--color-error);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-error) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-error) 30%, var(--color-surface));
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
+/* Task 10.1d — bold orange full-width submit button. Reference:
+   docs/reference_ui/phase10_login_reference.jpg — measured 533x83px
+   (same width and ~same height as the inputs, so `min-height: 44px`
+   matches the 44px inputs from 10.1c), a vertical gradient
+   #FF691C -> #E75D12, corner radius ~15px (same rounding as the
+   inputs, NOT a full pill — a pill would be ~41px), bold label ~1.18x
+   the field-label size (-> 16px/700), and a faint orange-tinted glow
+   just under the button.
+   - `background`: new `--gradient-button-primary` (primary -> pressed,
+     existing colors, no new hex).
+   - `border-radius` stays `--radius-md`, deliberately, to match the
+     reference's rounded-rectangle rather than the task list's "pill"
+     wording (see PROJECT_STATUS.md's 10.1d entry).
+   - Contrast: white on this gradient is 3.09:1 (top) to 3.89:1
+     (bottom); the old flat fill was 3.09:1, so nothing gets worse. It
+     is still under 4.5:1 — that is the standing Task 9.1 brand-color
+     decision, not reopened here. */
 .primaryButton {
   font-family: var(--font-family);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-on-primary);
-  background: var(--color-primary);
+  background: var(--gradient-button-primary);
   border: none;
   border-radius: var(--radius-md);
   padding: var(--space-md) var(--space-lg);
+  min-height: 44px;
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--color-primary) 25%, transparent);
   cursor: pointer;
   width: 100%;
 }
@@ -122,6 +240,7 @@
 .primaryButton:disabled {
   background: var(--color-border);
   color: var(--color-text-secondary);
+  box-shadow: none;
   cursor: not-allowed;
 }
 

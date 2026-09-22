@@ -1,0 +1,48 @@
+/* Task 10.3e2-ii / 10.3z — hourly sales chart. `HourlySalesChart.jsx` sets
+   the viewBox to the SVG's own measured width (1 unit = 1 CSS px), so
+   `width: 100%; height: auto` here yields exactly the viewBox height and the
+   12px `.tick` labels render at 12px at every width. The SVG is still never
+   wider than its card column (`width: 100%`), so it can't overflow at any
+   viewport width. `display: block` removes the inline-SVG baseline gap under
+   it. */
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.baseline {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.dot {
+  fill: var(--color-primary);
+}
+
+/* Area gradient stops — SVG `stop-color` accepts CSS variables via CSS
+   (not the attribute), so they live here rather than inline. Fades the
+   brand orange to transparent under the line, like the reference. */
+.areaStart {
+  stop-color: var(--color-primary);
+  stop-opacity: 0.22;
+}
+
+.areaEnd {
+  stop-color: var(--color-primary);
+  stop-opacity: 0;
+}
+
+.tick {
+  font-family: var(--font-family);
+  font-size: 12px;
+  fill: var(--color-text-secondary);
+}

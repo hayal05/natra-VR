@@ -113,6 +113,10 @@ export default function AdminLogin() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
+        {/* Task 10.1b — "NATRA" wordmark, the named exception. See
+            OwnerLogin.jsx's fuller comment on this same addition for the
+            full reasoning; identical here. */}
+        <span className={styles.brandName}>NATRA</span>
         <h1 className={styles.heading}>Admin login</h1>
         <p className={styles.instructions}>
           Log in to manage restaurants, orders, and platform settings.
@@ -126,6 +130,7 @@ export default function AdminLogin() {
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <FormField
+            className={styles.inputField}
             label="Email"
             type="email"
             required
@@ -138,6 +143,7 @@ export default function AdminLogin() {
           />
 
           <FormField
+            className={styles.inputField}
             label="Password"
             type="password"
             required
