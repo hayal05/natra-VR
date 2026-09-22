@@ -1,0 +1,73 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+  text-decoration: none;
+}
+
+.linkable:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.count {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.label {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.linkAffordance {
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Variant backgrounds/accents — tinted via color-mix() rather than new
+   hardcoded hex tokens, so they stay derived from the existing brand/
+   status colors (Task 10.0a's reuse-first approach) instead of adding
+   4 more one-off values to DESIGN_TOKENS.md for a background tint. */
+.primary {
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+}
+.primary .count,
+.primary .linkAffordance {
+  color: var(--color-primary);
+}
+
+.success {
+  background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
+}
+.success .count,
+.success .linkAffordance {
+  color: var(--color-success);
+}
+
+.error {
+  background: color-mix(in srgb, var(--color-error) 14%, var(--color-surface));
+}
+.error .count,
+.error .linkAffordance {
+  color: var(--color-error);
+}
+
+.info {
+  background: color-mix(in srgb, var(--color-primary-tint) 18%, var(--color-surface));
+}
+.info .count,
+.info .linkAffordance {
+  color: var(--color-primary-pressed);
+}
+
+.neutral .linkAffordance {
+  color: var(--color-text-secondary);
+}

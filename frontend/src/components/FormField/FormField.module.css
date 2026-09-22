@@ -6,9 +6,33 @@
 }
 
 .label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
+}
+
+/* Task 11.3 — the optional `icon` prop's own small glyph, sized to sit
+   comfortably beside `--font-size-body` label text without dominating
+   it. `currentColor` (inherited from `.label`'s own `color`) needs no
+   separate color token, same "no separate token" reasoning
+   `Checkout.module.css`'s own `.cartPillIcon` already uses. */
+.labelIcon {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Sizes whatever icon element the caller passed (e.g. `<PersonIcon />`
+   with no `className` of its own, Task 11.3) without requiring every
+   call site to also pass its own sizing className — `.labelIcon` itself
+   owns the size, the same "component decides its own dimensions, caller
+   just supplies the glyph" split `EntityCard`'s own image slots already
+   use. */
+.labelIcon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .required {

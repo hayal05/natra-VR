@@ -15,6 +15,11 @@
   color: var(--color-error);
 }
 
+/* Task 10.1z — re-verified: `.preview`'s `aspect-ratio: 4 / 3` (plus
+   `max-width: 240px`) is this component's own base rule, not something
+   each caller has to supply — so the owner-side cover/logo/food-photo
+   upload preview already stays a fixed box no matter how large the
+   selected file's own pixel dimensions are. No change needed. */
 .preview {
   display: flex;
   align-items: center;
@@ -78,6 +83,322 @@
   border-color: var(--color-border);
   color: var(--color-text-secondary);
   cursor: not-allowed;
+}
+
+/* Task 10.5a-i — overlay variant (opt-in via the `overlay` prop; every
+   pre-existing call site is unaffected, since none of these rules apply
+   without it). `.fieldOverlay` drops the base `.field`'s column `gap`
+   (the image and button are visually one unit here, not stacked blocks
+   with breathing room between them) but keeps `.field` itself for the
+   shared `display:flex; flex-direction:column` shell, so the
+   error/helper message below the hero still gets its own line with no
+   extra rule needed. */
+.fieldOverlay {
+  gap: var(--space-sm);
+}
+
+/* Visually hidden but still a real, focusable-target `<label>` — same
+   shape as `RoleShell.module.css`'s/`OwnerDashboard.module.css`'s own
+   `.srOnly` (Task 8.2h / 10.3f-i), not a new pattern. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Full-width hero box, not the capped 240px square `.preview` uses —
+   `max-width`/`aspect-ratio` are reset here so the caller's own
+   `mediaClassName` (passed alongside this class, so it wins the cascade
+   at equal specificity by source order) is what actually sizes the box,
+   same "component supplies the hook, caller supplies the CSS" split
+   `EntityCard`'s own `mediaAspectRatio`/logo-slot props already use. */
+.previewOverlay {
+  position: relative;
+  max-width: none;
+  aspect-ratio: auto;
+  border-radius: var(--radius-lg);
+}
+
+/* Small overlaid pill in the photo's bottom-right corner, translucent
+   dark fill so it stays legible over any photo — text-only, no camera
+   icon (no such asset exists anywhere in this codebase, same "real
+   assets only" rule every other Phase 10 task has already followed).
+   `min-height: 44px` keeps this inside the Task 8.9a touch-target floor
+   even though the reference's own button reads visually smaller — the
+   padding, not the label copy, is what gets it there. */
+.buttonOverlay {
+  position: absolute;
+  right: var(--space-sm);
+  bottom: var(--space-sm);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.buttonOverlay:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Task 10.5a-ii — badge variant (opt-in via the `badge` prop; every
+   pre-existing call site is unaffected, none of these rules apply without
+   it). The whole tile is one <button>, so its tap target is the tile
+   itself — the caller sizes it (OwnerRestaurant floors it at 72px, well
+   over the Task 8.9a 44px minimum) and `aspect-ratio` keeps it square at
+   any width, so nothing here hard-codes a pixel size.
+
+   Look, from docs/reference_ui/phase10_owner_restaurant_reference.jpg's
+   logo badge: rounded square, light border separating it from the photo
+   behind it, soft lift. The border is `--color-surface` (white), not
+   `--color-border`: it has to read as a cut-out against a *photo*, where
+   the light-grey `--color-border` used on plain-background previews
+   above would vanish. */
+.fieldBadge {
+  gap: 0;
+}
+
+.badgeButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 3px solid var(--color-surface);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  font-family: var(--font-family);
+  cursor: pointer;
+}
+
+.badgeButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.badgeButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Absolutely filled (not `height: 100%`): the button's height comes from
+   `aspect-ratio`, and filling via `inset: 0` doesn't depend on whether
+   a browser treats that ratio-derived height as definite for percentage
+   resolution. */
+.badgeImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The always-visible edit affordance. The reference's badge shows none,
+   but this tile is the *only* way to change the logo (the standalone
+   "Change image" button it replaces is gone), so a badge with no visible
+   cue would silently remove a real capability. Same translucent-dark
+   text-only treatment as `.buttonOverlay` on the cover, minus the pill
+   shape. May wrap onto a second line on the narrowest badge
+   (`overflow-wrap`), which is fine — it's a caption, not a control. */
+.badgeCaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 2px var(--space-xs);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* No image yet: the label itself ("Add logo") fills the tile, so the
+   empty state and its call to action are the same element. */
+.badgePlaceholder {
+  padding: var(--space-xs);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Task 11.5a-i — compact variant shell (opt-in via the `compact` prop;
+   every pre-existing call site, including `overlay`/`badge` ones, is
+   unaffected — none of these rules apply without it). `.fieldCompact`
+   drops the base `.field`'s column `gap` the same reason
+   `.fieldOverlay`/`.fieldBadge` already do: the row below is one visual
+   unit, not a stack of separate blocks.
+
+   Groundwork only: the icon (11.5a-ii), title/subtitle text block
+   (11.5a-iii) and trailing chevron (11.5a-iv) are each their own later
+   task, so `.compactShell` renders with no visible content yet — just
+   its own border/radius/background chrome. `min-height: 44px` keeps it
+   inside the Task 8.9a tap-target floor from the start, same as
+   `.buttonOverlay`'s own note, even though there's nothing to tap on
+   but a blank row until those later tasks land. */
+.fieldCompact {
+  gap: 0;
+}
+
+.compactShell {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-family);
+  cursor: pointer;
+}
+
+.compactShell:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.compactShell:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Dashed instead of solid when there's no image yet — `.placeholder`/
+   `.badgePlaceholder` mark an empty state with visible text elsewhere;
+   a one-line compact row has no room for that, so the border itself is
+   what tells an unfilled row apart from a filled one until 11.5a-iii's
+   real content exists. */
+.compactShellEmpty {
+  border-style: dashed;
+}
+
+/* Task 11.5a-ii — icon slot, left-aligned inside the compact row (the
+   button is `display: flex` via `.compactShell`, so this is simply the
+   row's first child; `margin-right` gives it breathing room ahead of
+   11.5a-iii's title/subtitle text block, which doesn't exist yet).
+   Fixed square tile with a tinted background, matching the reference's
+   own small rounded square behind the camera glyph, rather than a bare
+   glyph the way `FormField`'s own `.labelIcon` renders — reusing the
+   same `color-mix()` primary-tint approach `StatTile`/`StatusBadge`
+   already use instead of a new flat hex token. */
+.compactIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-right: var(--space-sm);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+  color: var(--color-primary);
+}
+
+.compactIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Task 11.5b-i — thumbnail slot, swapped in for `.compactIcon` once
+   `displayedPreview` exists (see the JSX comment at the same task).
+   Same 36×36 footprint/`margin-right` as `.compactIcon` so the icon-vs-
+   thumbnail swap doesn't shift `.compactText`/`.compactChevron` next to
+   it — only the tile's *contents* change, not the row's layout. No
+   tint background (a photo doesn't need one the way a bare glyph does)
+   but `--color-surface-muted` still backs it, same as `.preview`'s own
+   background, in case the image is still loading or has transparency. */
+.compactThumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-right: var(--space-sm);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+.compactThumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Task 11.5a-iii — title/subtitle text block, the row's second child
+   after `.compactIcon`. `flex: 1` claims the remaining row width so
+   11.5a-iv's trailing chevron (not built yet) has a fixed slot after it
+   instead of the text pushing it off; `min-width: 0` alongside that lets
+   the title/subtitle actually truncate instead of overflowing, same
+   fix `.itemName`/`.itemDescription`-style flex text columns elsewhere
+   in this app need. `text-align: left` because the row is a `<button>`,
+   which centers text by default. */
+.compactText {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+/* Bold title — same weight/color as `FormField`'s own `.label`, since
+   this text plays the same role (this control's name) just inside a
+   compact row instead of a standalone `<label>`. */
+.compactTitle {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Subtitle — same size/color as `.helperMessage` below, since it's the
+   same `helperText` copy just relocated into the row instead of a
+   trailing `<p>`. */
+.compactSubtitle {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Task 11.5a-iv — trailing chevron, the row's third/last child after
+   `.compactIcon` and `.compactText`. `flex-shrink: 0` so a long title/
+   subtitle (which already truncates via `.compactTitle`/
+   `.compactSubtitle`'s own `text-overflow: ellipsis`) can never squeeze
+   this out of view; `margin-left` gives it breathing room off
+   `.compactText`'s `flex: 1`, same spacing role `.compactIcon`'s own
+   `margin-right` plays on the row's other side. */
+.compactChevron {
+  flex-shrink: 0;
+  margin-left: var(--space-sm);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
 }
 
 .helperMessage {

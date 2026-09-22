@@ -40,6 +40,17 @@ import styles from './FormField.module.css';
  * reference it) and forcing one on every usage would just be boilerplate.
  * Pass an explicit `id` when something external does need to target the
  * control (e.g. a `<label>` elsewhere, or an autofill/test hook).
+ *
+ * `icon` (added for Task 11.3, Phase 11's "Your details" section) is an
+ * optional element rendered inline before the label text — e.g.
+ * `<PersonIcon />` from `components/icons` (Task 11.0c). Purely additive:
+ * every existing caller across the app omits it and renders exactly as
+ * before. Not a general-purpose "icon anywhere on the field" slot — just
+ * the one placement `docs/reference_ui/phase11_checkout_reference.jpg`
+ * shows (a small glyph directly left of each field's own label), matching
+ * how `icon` is passed as a pre-built node rather than a name/type string,
+ * the same "caller supplies markup, this component doesn't guess its
+ * shape" approach `EntityCard`'s own `badge`/`cta` slots already use.
  */
 export default function FormField({
   as = 'input',
@@ -47,6 +58,7 @@ export default function FormField({
   id,
   name,
   label,
+  icon,
   value,
   onChange,
   onBlur,
@@ -89,6 +101,11 @@ export default function FormField({
     <div className={[styles.field, className].filter(Boolean).join(' ')}>
       {label && (
         <label htmlFor={fieldId} className={styles.label}>
+          {icon && (
+            <span className={styles.labelIcon} aria-hidden="true">
+              {icon}
+            </span>
+          )}
           {label}
           {required && (
             <span className={styles.required} aria-hidden="true">

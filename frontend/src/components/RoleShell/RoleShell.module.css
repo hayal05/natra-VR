@@ -132,6 +132,51 @@
   color: var(--color-primary);
 }
 
+/* Task 10.3g — owner bottom nav's active-tab treatment. Compared against
+   `docs/reference_ui/phase10_owner_dashboard_reference.jpg`'s own bar
+   (fresh crop, not assumed from the customer one): icons and labels
+   already match (orange icon + semibold orange label when active, gray
+   otherwise — real `DashboardIcon`/`OrdersIcon`/`StorefrontIcon`/
+   `ProfileIcon`, real labels Dashboard/Orders/Restaurant/Account), and the
+   one thing missing is a short rounded orange bar under the active tab's
+   label. (The dark bar at the very bottom of the reference is the phone's
+   home indicator, not part of the app.)
+
+   Opt-in per role, via `.navInnerOwner` / `.navInnerAdmin` on `.navInner`,
+   because the customer reference (Task 10.2e) has no such bar — adding it
+   to `.navItemActive` itself would have changed customer too. Admin was
+   added in Task 10.4e/f: `docs/reference_ui/phase10_admin_dashboard_
+   reference.jpg`'s bottom bar shows the same short orange bar under
+   Dashboard, and admin's mobile tabs (Task 8.3g) share these classes, so
+   they'd been missing it until then.
+
+   Geometry: the tab is `position: relative`; the bar is a pseudo-element,
+   so it adds no markup and doesn't affect the icon/label layout or the
+   badge (which is positioned against `.iconWrap`, not the tab). Bar
+   `width: min(56px, 70%)` so it stays proportionate inside a ~80px tab at
+   320px and doesn't outgrow the tab at any width (tabs cap at 120px:
+   `.navInner`'s 480px ÷ 4); 3px tall, `bottom: 4px`. Content is centered
+   in a 56px bar: icon 22 + gap 2 + label 12 = 36px, i.e. it ends 10px
+   above the bottom, so the bar (from 4px to 7px up) leaves a ~3px gap
+   below the label and never overlaps it. Purely decorative — the active
+   state is still announced by `NavLink`'s own `aria-current="page"`. */
+.navItem {
+  position: relative;
+}
+
+.navInnerOwner .navItemActive::after,
+.navInnerAdmin .navItemActive::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: min(56px, 70%);
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: var(--color-primary);
+}
+
 .icon {
   width: 22px;
   height: 22px;
@@ -216,6 +261,19 @@
   background: var(--color-background);
 }
 
+/* Task 10.4f — sidebar restyle (the >=768px half of Task 10.4e's decision:
+   bottom tabs stay the <768px fallback, this rail stays the >=768px
+   chrome, restyled to the Phase 10 language). Restyle only — same four
+   real links, same real icons, same "NATRA Admin" text, no new elements.
+   The admin reference image is phone-width and shows only the bottom bar,
+   so there's no sidebar to copy: this carries that bar's own vocabulary
+   across instead — rounded shapes (`--radius-md`), the primary tint used
+   by `StatTile`/`StatusBadge`'s `primary` tone
+   (`color-mix(... 14%, surface)`, no new hex), orange icon + semibold
+   label when active, and a short rounded orange bar (the bottom bar's
+   underline turned vertical). `padding` moved from the rail's edge onto
+   the links' own inset so each link reads as a rounded pill rather than
+   a full-bleed row. */
 .sidebar {
   position: fixed;
   top: 0;
@@ -227,7 +285,7 @@
   flex-direction: column;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
-  padding: var(--space-lg) 0;
+  padding: var(--space-xl) var(--space-md);
   overflow-y: auto;
 }
 
@@ -262,7 +320,7 @@
 }
 
 .sidebarBrand {
-  padding: 0 var(--space-lg) var(--space-xl);
+  padding: 0 var(--space-md) var(--space-xl);
   font-family: var(--font-family-brand);
   font-size: var(--font-size-title);
   font-weight: var(--font-weight-bold);
@@ -279,26 +337,54 @@
 }
 
 .sidebarLink {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
+  /* 44px floor (Task 8.9a): 12px + 20px icon + 12px. `min-height` keeps it
+     true even if a label ever wraps to a second line. */
+  min-height: 44px;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   text-decoration: none;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
-  /* Transparent border-left (rather than adding it only on the active
-     state) keeps the active link's own colored border from shifting the
-     label's horizontal position by its own width when it appears. */
-  border-left: 3px solid transparent;
 }
 
-.sidebarLinkActive {
-  color: var(--color-primary);
+.sidebarLink:hover {
   background: var(--color-surface-muted);
-  border-left-color: var(--color-primary);
+}
+
+.sidebarLink:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Active: primary tint + orange icon/label + a short rounded bar on the
+   pill's left edge. The bar is a pseudo-element (no markup), 20px tall and
+   centered in the 44px link, so it sits entirely on the pill's straight
+   left edge (the 12px corner radius only curves the first/last 12px).
+   Declared after `:hover` at equal specificity so an active link keeps its
+   tint under the pointer instead of flipping to the hover gray. */
+.sidebarLinkActive,
+.sidebarLinkActive:hover {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
   font-weight: var(--font-weight-semibold);
+}
+
+.sidebarLinkActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 20px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--color-primary);
 }
 
 .sidebarIcon {

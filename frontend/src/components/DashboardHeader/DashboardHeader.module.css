@@ -1,0 +1,100 @@
+.header {
+  background: var(--gradient-header);
+  padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.brandBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.brandName {
+  font-family: var(--font-family-brand);
+  font-size: var(--font-size-heading);
+  color: var(--color-text-on-primary);
+  line-height: 1;
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-on-primary);
+  opacity: 0.9;
+}
+
+.actions {
+  /* Named so the hit-area rules below can reference the same gap the two
+     links are actually laid out with (Task 10.3h). */
+  --actions-gap: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--actions-gap);
+  flex-shrink: 0;
+}
+
+.notificationLink,
+.accountLink {
+  position: relative;
+  font-family: var(--font-family);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.notificationLink:focus-visible,
+.accountLink:focus-visible {
+  outline: 2px solid var(--color-text-on-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* Task 10.3h — 44px touch-target floor (Task 8.9a) for the two header
+   links. Measured in a real render, each is only ~14px tall (one caption
+   line), and they sit one `--actions-gap` (8px) apart, so their text lines
+   are ~22px apart. Two *disjoint* 44px boxes can't fit in that pitch, and
+   growing the links themselves would make the header ~40px taller than
+   the reference — so, like Modal's close button and SearchBar's clear
+   button (Task 8.9a2), the visible text is left exactly as it was and an
+   invisible `::after` supplies the hit area.
+   The two hit areas split the space between the links at the midpoint of
+   the gap (each `::after` reaches half a gap past its own link toward the
+   other one) and each extends 44px away from that split line, so they
+   never overlap and each is exactly 44px tall: the notification one
+   reaches up past the header's top padding, the account one down into its
+   bottom padding — both empty space. Width is left at the link's own
+   (already >= 44px) width. A click on a pseudo-element dispatches to its
+   link, so no markup/JS change; focus-visible still outlines the link's
+   own box. Anchored to `--actions-gap` and not a hard-coded 4px so it
+   stays correct if that gap is ever retuned. */
+.notificationLink::after,
+.accountLink::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 44px;
+}
+
+.notificationLink::after {
+  bottom: calc(var(--actions-gap) / -2);
+}
+
+.accountLink::after {
+  top: calc(var(--actions-gap) / -2);
+}

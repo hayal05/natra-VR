@@ -35,6 +35,24 @@
   outline-offset: 2px;
 }
 
+/* Task 10.1z — re-verified as part of the project-wide "images shouldn't
+   expand to the uploaded photo's own size" audit: `.media` already bakes
+   a fixed `aspect-ratio: 4 / 3` into its own base class (not delegated to
+   whatever places this card), so both restaurant and food cards already
+   render at a fixed box regardless of the source photo's dimensions. No
+   change needed here — see `ImageViewer.module.css`'s own Task 10.1z
+   comment for the one component that *didn't* already do this.
+
+   Task 10.1z2 — this 4/3 is still the right *default* (RestaurantProfile's
+   menu, FoodDetails' hero, OwnerOrders — none of those are in the Phase 10
+   reference images), but the Home page's restaurant/food cards need a
+   wider, less-square box to match `docs/reference_ui/
+   phase10_customer_home_reference.jpg`. Rather than change the shared
+   default and risk every other caller's layout, EntityCard's new
+   `mediaAspectRatio` prop sets an inline `aspect-ratio` on this element
+   that overrides this rule per-instance (see EntityCard.jsx's own doc
+   comment) — this declaration remains the fallback for every caller that
+   doesn't pass one. */
 .media {
   position: relative;
   width: 100%;
@@ -57,54 +75,65 @@
      it — only the top corners are actually rounded. */
 }
 
-/* Positioned per docs/NATRA_MASTER_PROMPT.md's Open/Closed status on
-   restaurant cards. Corrected Task 2.22 (see DESIGN_TOKENS.md's Task
-   2.22 section): a closer crop of all four cards in
-   560d4168...png shows this sitting in the card body below the image,
-   left-aligned, above the title — never overlaid on the photo the way
-   Task 2.3's original top-left guess assumed (that guess was made before
-   this closer inspection; neither reference image had been cropped
-   tightly enough yet to see it clearly). Now a normal in-flow element,
-   not absolutely positioned. */
+/* Task 10.2b-iii: moved back to an absolutely-positioned overlay on
+   `.media`, top-right — the opposite corner from `.logo` (top-left).
+   This reverses Task 2.22's own "badge sits in the card body, not on
+   the photo" correction, but that correction was measured against the
+   *old* `560d4168...png` reference; both restaurant cards in the new
+   `docs/reference_ui/phase10_customer_home_reference.jpg` clearly show
+   the Open/Closed pill sitting on top of the photo's top-right corner,
+   not below it in the white body — re-measured fresh rather than
+   assumed still correct, same "old reference doesn't govern the new
+   one" reasoning `10.2b-ii`'s own `.logo`/`.title`/`.metaLine` changes
+   already used. `StatusBadge`'s own solid-fill-plus-white-text styling
+   (its own Task 2.22 comment) already reads fine directly on a photo,
+   so no change was needed there — only where this wrapper places it. */
 .badgeSlot {
-  margin-bottom: var(--space-xs);
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
 }
 
-/* Circular restaurant logo "overlapping image" per the master prompt.
-   Horizontally centered on the card (corrected Task 2.22 — see
-   DESIGN_TOKENS.md's Task 2.22 section: all four reference cards show the
-   logo centered on the card's midpoint, not anchored to the left side),
-   straddling the image's bottom edge: half in the media area, half over
-   the card body below it. */
+/* Task 10.2b-ii: repositioned per
+   docs/reference_ui/phase10_customer_home_reference.jpg — that image's
+   two restaurant cards both show a small square logo badge sitting
+   inside the photo's top-left corner, not the circular avatar straddling
+   the image/body seam Task 2.22 had measured off the *old*
+   560d4168...png reference. Since this component is shared with the
+   Popular Foods card (which never passes `logo`), this only affects
+   restaurant cards. Sized/positioned relative to `.media` (its own
+   `position: relative` parent) rather than the card as a whole. */
 .logo {
   position: absolute;
-  bottom: calc(var(--space-md) * -1);
-  left: 50%;
-  transform: translateX(-50%);
+  top: var(--space-sm);
+  left: var(--space-sm);
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   border: 2px solid var(--color-surface);
   object-fit: cover;
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .body {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-  padding: var(--space-md) var(--space-lg) var(--space-lg);
-  /* Clears the logo, which overlaps into the top of this area. Only
-     matters when a logo is actually present, but a fixed reserve keeps
-     badge/title position from jumping between logo/no-logo cards in the
-     same row. */
-  padding-top: var(--space-lg);
+  /* Task 10.2z — the side padding is a hook (`--entity-card-pad-x`) so the
+     Home food cards can tighten it on phones; unset for every other
+     caller, which keeps `--space-lg`. */
+  padding: var(--space-md) var(--entity-card-pad-x, var(--space-lg)) var(--space-lg);
 }
 
+/* Task 10.2b-ii: bumped semibold -> bold to match the reference's
+   noticeably heavier restaurant-card name weight (still shared with the
+   Popular Foods card's own title, which the same reference shows at the
+   same weight). */
 .title {
   margin: 0;
   font-size: var(--font-size-title);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -121,13 +150,69 @@
   text-overflow: ellipsis;
 }
 
+/* Task 10.2b-ii: this is the restaurant card's `location_text` line (and
+   the Popular Food card's price line, its other caller) — bumped caption
+   (12px) -> body (14px) to match the reference's more readable size for
+   this row. Still real-field-only: no star rating/review count is added
+   here (docs/UI_REDESIGN_ROADMAP.md's own "Star rating / review count"
+   deviation note — no ratings/reviews column anywhere in the schema),
+   and no location-pin icon either, since no such icon asset exists in
+   this codebase and the redesign's own governing rule is restyle-only,
+   no invented icons. */
+/* Task 10.2d-ii: `.metaLine` and `.ctaSlot` now sit inside this shared
+   row instead of `.metaLine` being the last item in `.body`'s own
+   column flow — see EntityCard.jsx's own doc comment. `space-between`
+   pushes a lone `.metaLine` (restaurant card, no `cta`) flush left same
+   as before; with both present (Popular Food card) it puts the price
+   on the left and the cta on the right, matching
+   docs/reference_ui/phase10_customer_home_reference.jpg. */
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
 .metaLine {
   margin: 0;
-  font-size: var(--font-size-caption);
+  /* Task 10.2f — the responsive pass at this project's 4 breakpoints
+     (320/768/1024/1280, ResponsiveGrid's own scale) found a real
+     overflow risk `.metaRow`'s own 10.2d-ii comment above didn't
+     account for: at 320px in the Popular Foods grid's 3-column base
+     (`POPULAR_FOODS_GRID_COLUMNS`, Home.jsx), the card's own content
+     column is only ~53px, and `.ctaSlot`'s fixed 32px + this row's
+     `--space-sm` gap alone already claims 40px of that — leaving only
+     ~13px for this price text, less than even "ETB"'s own min-content
+     word width. Without `min-width: 0`, a flex item's default
+     `min-width: auto` is its content's min-content size, so the row
+     would be forced wider than its container and get visibly clipped
+     by `.card`'s own `overflow: hidden` instead of laying out cleanly.
+     `min-width: 0` + the three properties below (same ellipsis
+     treatment `.title`/`.subtitle` already use) let it shrink and
+     truncate instead — consistent, not a new pattern. This also
+     changes the restaurant card's own (cta-less) `metaLine` behavior:
+     a long `location_text` now ellipsis-truncates on one line instead
+     of wrapping to two, which is a real behavior change but one that
+     matches `.title`/`.subtitle`'s existing convention for this same
+     card, not a regression. At the extreme 320px/3-column case a food
+     price can still truncate down to a near-illegible sliver (e.g. a
+     single digit) — flagged as a genuine rough edge of the 10.2d-i
+     "3 columns even at phone width" decision, not something this
+     verification-pass task's own scope extends to re-deciding. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: var(--color-text-secondary);
 }
 
 .ctaSlot {
-  margin-top: var(--space-sm);
+  flex-shrink: 0;
+  /* Task 10.2z — lets a caller hide the CTA at narrow widths by setting
+     `--entity-card-cta-display: none` on the card's own `className` (a
+     hidden slot has no box, so it also drops out of `.metaRow`'s gap).
+     Unset for every other caller, which keeps the default `block`. */
+  display: var(--entity-card-cta-display, block);
 }

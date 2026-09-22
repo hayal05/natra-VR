@@ -9,6 +9,15 @@ import styles from './SearchBar.module.css';
  * only presents/edits the query string, same separation FormField keeps
  * from whatever validates/submits it.
  *
+ * Task 10.2a-ii: default `placeholder` reordered to "Search restaurants,
+ * foods, drinks..." to match the Phase 10 reference image
+ * (`docs/reference_ui/phase10_customer_home_reference.jpg`) exactly —
+ * same three real search targets as the original copy, just the word
+ * order the newer reference actually shows. Only `Home.jsx` relies on
+ * this default (`AdminRestaurants`/`AdminOrders` both pass their own
+ * `placeholder`; `ComponentSandbox`'s demo usage just follows whatever
+ * the default is).
+ *
  * **`variant` (added Task 2.22's visual QA pass):** the bar in the
  * reference image is NOT the plain white pill Task 2.13 originally
  * assumed — a clean-pixel sample of it (`docs/DESIGN_TOKENS.md`'s Task
@@ -47,7 +56,7 @@ export default function SearchBar({
   value,
   onChange,
   onSubmit,
-  placeholder = 'Search foods, drinks, restaurants...',
+  placeholder = 'Search restaurants, foods, drinks...',
   disabled = false,
   autoFocus = false,
   ariaLabel = 'Search',

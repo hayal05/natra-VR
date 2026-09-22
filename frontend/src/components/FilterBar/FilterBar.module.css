@@ -12,18 +12,44 @@
    minimum. `space-md` × 2 + ~20px ≈ 44px. Horizontal padding
    (`space-lg`) is untouched — width was never the gap here, every chip
    label is already comfortably wider than 44px. */
+/* Task 10.2c-i: restyled from the pill shape above to a squarer,
+   text-only tile — docs/reference_ui/phase10_customer_home_reference.jpg's
+   own Categories row shows compact rounded-rectangle tiles (icon on top,
+   label below), not pills. No per-category icon exists anywhere in this
+   codebase to draw one (see docs/TASKS.md's own struck-through 10.0f
+   entry — dropped for exactly this reason), so per the redesign's
+   "restyle with real data/icons only, never invent one" rule this
+   collapses to a text-only tile: `--radius-pill` → `--radius-md`,
+   horizontal padding trimmed from `space-lg` to `space-md` so a short
+   label ("All", "Pizza") reads closer to square instead of a wide pill,
+   and the inactive fill switched from the gray `--color-surface-muted`
+   to the redesign's own peach `--color-page-glow` (Task 10.0a) — sampled
+   close enough to this reference's own light peach tile fill, and
+   already a real token rather than a new one invented for this task.
+   Layout-shell only (Task 10.2c-i's own scope) — the real category data/
+   active-state wiring this renders is unchanged, already real since
+   Task 3.4 (verified fresh in 10.2c-ii, not re-built here). Vertical
+   padding (`space-md`) is untouched, preserving the Task 8.9a2 44px
+   touch-target fix this class already carries. */
+/* Phase 10 exit check — the ≈44px above was a paper estimate (20px line
+   height); measured in a real render the chip is 40px tall (14px text has a
+   ~16px line box), 4px under the 44px floor. `min-height`/`min-width` make
+   the floor true regardless of line-height (the "All" chip was also 44x40). */
 .chip {
   flex-shrink: 0;
-  padding: var(--space-md) var(--space-lg);
+  min-height: 44px;
+  min-width: 44px;
+  padding: var(--space-md);
   border: none;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-muted);
+  border-radius: var(--radius-md);
+  background: var(--color-page-glow);
   color: var(--color-text-primary);
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   cursor: pointer;
   white-space: nowrap;
+  text-align: center;
 }
 
 .chip:hover {
@@ -57,7 +83,10 @@
 /* Task 8.9a2 — same `space-sm` → `space-md` vertical-padding bump as
    `.chip` above, same reasoning: ~36px measured tall, `space-md` gets it
    to ~44px. */
+/* Phase 10 exit check — same paper-estimate gap as `.chip`; `min-height`
+   makes the 44px floor real. */
 .dropdown {
+  min-height: 44px;
   padding: var(--space-md) var(--space-lg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);

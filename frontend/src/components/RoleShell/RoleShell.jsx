@@ -209,9 +209,18 @@ export default function RoleShell({ role = 'customer', children, className }) {
             with no admin equivalent named anywhere in
             docs/NATRA_MASTER_PROMPT.md's "Admin" section, so this
             admin tab bar renders plain icon+label tabs only, same as
-            it would for any role without that badge. */}
+            it would for any role without that badge.
+
+            Task 10.4e (project owner, decided) — this two-render split
+            stays as is: bottom tabs <768px, sidebar >=768px, one shared
+            breakpoint. The alternative (bottom tabs at every width)
+            was considered and not chosen. The sidebar's own restyle
+            and this bar's active-tab underline were Task 10.4f. */}
         <nav className={[styles.nav, styles.adminMobileNav].join(' ')} aria-label="Primary">
-          <div className={styles.navInner}>
+          {/* Task 10.4f — `.navInnerAdmin` opts this bar into the same
+              short orange active-tab bar the owner bar has (10.3g); the
+              admin reference image shows it too. */}
+          <div className={[styles.navInner, styles.navInnerAdmin].join(' ')}>
             {navItems.map(({ key, label, mobileLabel, to, icon: Icon }) => (
               <NavLink
                 key={key}
@@ -250,7 +259,16 @@ export default function RoleShell({ role = 'customer', children, className }) {
           `role="owner"` both use it), so the same fix covers both;
           Task 8.2h just re-verifies it against the owner screens. */}
       <nav className={styles.nav} aria-label="Primary">
-        <div className={styles.navInner}>
+        {/* Task 10.3g — owner-only active-tab underline (see
+            `.navInnerOwner` in the CSS). The reference's owner bar shows
+            a short orange bar under the active tab; the customer
+            reference (Task 10.2e) shows none, so it's opt-in per role
+            rather than added to the shared `.navItemActive` rule. */}
+        <div
+          className={[styles.navInner, role === 'owner' ? styles.navInnerOwner : null]
+            .filter(Boolean)
+            .join(' ')}
+        >
           {navItems.map(({ key, label, to, icon: Icon, end }) => {
             // Task 5.21 — only the owner role's "Orders" tab ever shows
             // this; customer/owner other tabs and every admin sidebar link

@@ -10,7 +10,7 @@ import styles from './EntityCard.module.css';
  *   - Restaurant card:  image + logo + title + badge (Open/Closed) + metaLine
  *                       (distance/service-area text), no cta.
  *   - Popular Food card: image + title + subtitle (restaurant name) +
- *                        metaLine (price) + cta ("Order Now"), no logo/badge.
+ *                        metaLine (price) + cta (round "+"), no logo/badge.
  *
  * `badge` and `cta` are passed as nodes rather than being built in here on
  * purpose: StatusBadge (Task 2.4) doesn't exist yet, and there's no generic
@@ -33,6 +33,27 @@ import styles from './EntityCard.module.css';
  * `logoSizes` exist for the same reason even though the circular logo's
  * fixed 40x40 display size (see `.logo` below) makes it a less likely
  * candidate for this than the main image.
+ *
+ * `metaLine`/`cta` (Task 10.2d-ii) now share one flex row (`.metaRow`)
+ * instead of stacking as separate lines — the Popular Food card's own
+ * reference (`docs/reference_ui/phase10_customer_home_reference.jpg`)
+ * shows the price and the round "+" cta side by side, price left/cta
+ * right, not the old cta-below-price stack the plain-text "Order Now"
+ * bar used. Wrapping is conditional on either slot actually being
+ * passed, so the restaurant card (`metaLine` only, no `cta`) renders
+ * the same single-line look it already had — `.metaRow`'s
+ * `justify-content: space-between` on one child is a no-op.
+ *
+ * `mediaAspectRatio` (Task 10.1z2) is an optional override of `.media`'s
+ * own default `aspect-ratio: 4 / 3` (Task 10.1z), passed as an inline
+ * style so it wins over the CSS Modules class without needing `!important`
+ * or class-order tricks. Left undefined, every existing caller keeps
+ * today's 4:3 box unchanged. Home.jsx's restaurant row and Popular Foods
+ * grid are the first callers to pass one — the reference image
+ * (`docs/reference_ui/phase10_customer_home_reference.jpg`) shows both
+ * card types noticeably wider/shorter than 4:3, and the two aren't the
+ * same ratio as each other, so this is a per-instance override rather
+ * than a second hardcoded value in `.media` itself.
  */
 export default function EntityCard({
   image,
@@ -50,6 +71,7 @@ export default function EntityCard({
   cta,
   onClick,
   className,
+  mediaAspectRatio,
 }) {
   const isInteractive = typeof onClick === 'function';
 
@@ -69,7 +91,10 @@ export default function EntityCard({
       role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
     >
-      <div className={styles.media}>
+      <div
+        className={styles.media}
+        style={mediaAspectRatio ? { aspectRatio: mediaAspectRatio } : undefined}
+      >
         <img
           className={styles.image}
           src={image}
@@ -88,14 +113,18 @@ export default function EntityCard({
             loading="lazy"
           />
         )}
+        {badge && <div className={styles.badgeSlot}>{badge}</div>}
       </div>
 
       <div className={styles.body}>
-        {badge && <div className={styles.badgeSlot}>{badge}</div>}
         <h3 className={styles.title}>{title}</h3>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-        {metaLine && <p className={styles.metaLine}>{metaLine}</p>}
-        {cta && <div className={styles.ctaSlot}>{cta}</div>}
+        {(metaLine || cta) && (
+          <div className={styles.metaRow}>
+            {metaLine && <p className={styles.metaLine}>{metaLine}</p>}
+            {cta && <div className={styles.ctaSlot}>{cta}</div>}
+          </div>
+        )}
       </div>
     </article>
   );

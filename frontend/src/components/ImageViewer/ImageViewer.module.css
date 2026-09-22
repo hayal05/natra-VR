@@ -5,6 +5,13 @@
   background: none;
   cursor: pointer;
   border-radius: var(--radius-md);
+  /* Task 10.1z — the trigger wrapper had no width/height of its own
+     either, so even a correctly-sized `.thumbnail` image could still be
+     stretched by an ancestor flex/grid row that gives this inline-block
+     button room to grow. `max-width: 100%` keeps it from ever exceeding
+     its container; the actual box size still comes from `.thumbnail`
+     below (this component's own default, or a caller's override). */
+  max-width: 100%;
 }
 
 .thumbnailButton:focus-visible {
@@ -12,10 +19,45 @@
   outline-offset: 2px;
 }
 
+/* Task 10.1z — real gap found and fixed here: every other image-bearing
+   component in this codebase (EntityCard's `.media`, ImageUploadField's
+   `.preview`, RestaurantProfile's `.cover`/`.logo`, FoodDetails' `.image`,
+   OrderBuilder's `.itemImage`) bakes its own fixed dimensions/aspect-ratio
+   into its OWN base class, so it's sized correctly even if a caller never
+   passes a sizing className. `.thumbnail` was the one exception: it only
+   ever had `object-fit: cover` with no width/height/aspect-ratio of its
+   own, relying entirely on every caller supplying a `className`/
+   `thumbnailClassName` with its own fixed size (`OrderDetail.jsx`'s/
+   `AdminLiveRequestDetail.jsx`'s `.screenshotThumbnail`,
+   `AdminRestaurantDetail.jsx`'s `.coverThumbnail`/`.logoThumbnail`).
+   `object-fit` has no effect at all on an `<img>` with no resolved
+   width/height, so — worse than just "unstyled" — this was a real path
+   to the "renders at the size of whatever photo was uploaded" bug the
+   project owner reported: today's callers do all pass a sizing class, so
+   the reported bug wasn't reproducible from this file's own callers as
+   currently wired, but that safety depended entirely on the caller's
+   class actually winning the cascade against this file's own (previously
+   absent) rule — a CSS-module bundle can reorder which stylesheet loads
+   last, and a future caller that forgets the sizing className would have
+   had no fallback at all. Fixed by giving `.thumbnail` its own real
+   default (96px square, `object-fit: cover` already present) — the same
+   pattern every other image component already uses. Every current caller
+   still passes its own sizing class (`screenshotThumbnail`/
+   `coverThumbnail`/`logoThumbnail`, all more specific to that screen's own
+   proportions) as a deliberate override; this default is now the safety
+   net if one is ever missing, not a change to how any of today's screens
+   look. `flex-shrink: 0` added so a flex-row caller (e.g. a future one
+   placing this next to text) can't compress it either. */
 .thumbnail {
   display: block;
+  width: 96px;
+  height: 96px;
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
   border-radius: var(--radius-md);
   object-fit: cover;
+  flex-shrink: 0;
+  background: var(--color-surface-muted);
 }
 
 .overlay {

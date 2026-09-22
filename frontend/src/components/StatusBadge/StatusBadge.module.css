@@ -36,3 +36,30 @@
   background: var(--color-surface-muted);
   color: var(--color-text-secondary);
 }
+
+/* Task 10.4d-i — tinted tones (color-mix, same technique StatTile's own
+   variants already use, Task 10.0d), not solid fills like .success/
+   .error above: matches `docs/reference_ui/phase10_admin_dashboard_
+   reference.jpg`'s own "New"/"Approved" activity-feed pills, which read
+   as light-tinted, colored-text badges rather than solid ones. Only
+   used where nothing needs the solid fill's on-photo contrast (see
+   StatusBadge.jsx's own comment on why .success/.error stay solid).
+
+   .info is the reference's blue "New" pill; this codebase has no real
+   blue token (checked global.css), so — same "closest existing
+   blue-ish variant" call StatTile.jsx's own 10.0d comment already made
+   for its own `info` variant (used for this same screen's "Pending"
+   stat tile) — it reuses the primary-tint-derived color instead of
+   inventing a new blue hex. Flagged, not fixed: "New" and "Approved"
+   (.primary, below) end up visually close (both orange-derived) where
+   the reference shows blue vs. orange; a real blue token is a design
+   decision for whoever picks that up, not guessed here. */
+.info {
+  background: color-mix(in srgb, var(--color-primary-tint) 18%, var(--color-surface));
+  color: var(--color-primary-pressed);
+}
+
+.primary {
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+  color: var(--color-primary);
+}

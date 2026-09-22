@@ -1,0 +1,21 @@
+.greeting {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-lg);
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}

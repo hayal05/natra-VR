@@ -5,14 +5,18 @@ import styles from './FilterBar.module.css';
  * FilterBar — one or more filter groups, each rendered as either a chip
  * row or a dropdown, per docs/TASKS.md's "dropdowns/chips" description.
  *
- * The chip style comes straight from the reference UI's Categories row
- * (`docs/reference_ui/1000065033.jpg`: "All"/"Breakfast"/"Lunch"/
- * "Dinner"/"Drinks" pills, active one filled `--color-primary`, inactive
- * ones `--color-surface-muted`) — same measured tokens HorizontalScroller
- * and StatusBadge already use, not a fresh guess. A chip group composes
- * the existing `HorizontalScroller` (2.6) rather than reimplementing
- * horizontal-scroll-with-snap, matching that component's own doc comment
- * that it's specifically meant for the Categories row.
+ * The chip style originally came from the pre-redesign reference UI's
+ * Categories row (`docs/reference_ui/1000065033.jpg`: "All"/"Breakfast"/
+ * "Lunch"/"Dinner"/"Drinks" pills, active one filled `--color-primary`,
+ * inactive ones muted) — since superseded for its one real caller
+ * (`Home.jsx`'s Categories row) by Task 10.2c-i's own restyle to a
+ * squarer, text-only tile per
+ * `docs/reference_ui/phase10_customer_home_reference.jpg` (see
+ * `.chip`'s own comment in `FilterBar.module.css` for the full
+ * reasoning). A chip group composes the existing `HorizontalScroller`
+ * (2.6) rather than reimplementing horizontal-scroll-with-snap, matching
+ * that component's own doc comment that it's specifically meant for the
+ * Categories row.
  *
  * The dropdown style has no reference-image equivalent — neither image
  * shows one — so it's a plain native `<select>` styled as a pill to at

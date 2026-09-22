@@ -23,7 +23,15 @@ export const STATUS_TONE = {
   closed: 'error',
 };
 
-const TONES = new Set(['success', 'error', 'neutral']);
+// Task 10.4d-i — 'info'/'primary' added, additive only: `success`/`error`/
+// `neutral` are unchanged (still solid fills — several callers, e.g.
+// EntityCard's Open/Closed badge, Task 10.2b-iii, sit this badge directly
+// on a photo and rely on that solid-fill contrast). 'info'/'primary' are
+// tinted instead (color-mix, same technique StatTile's own variants use,
+// Task 10.0d) since nothing today places them over a photo — only
+// AdminDashboard.jsx's recent-activity feed uses them so far, for the
+// reference's blue "New" / orange "Approved" pills.
+const TONES = new Set(['success', 'error', 'neutral', 'info', 'primary']);
 
 function defaultLabel(status) {
   return String(status)
@@ -39,7 +47,7 @@ function defaultLabel(status) {
  *   as the neutral tone rather than throwing or guessing.
  * @param {string} [label] - display text override. Defaults to `status`
  *   reformatted from snake_case/lowercase into Title Case.
- * @param {'success'|'error'|'neutral'} [tone] - force a specific tone,
+ * @param {'success'|'error'|'neutral'|'info'|'primary'} [tone] - force a specific tone,
  *   bypassing STATUS_TONE. Useful for a status not yet in the map once its
  *   color has actually been decided, without editing this file.
  */
