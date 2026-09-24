@@ -53,14 +53,47 @@
    that overrides this rule per-instance (see EntityCard.jsx's own doc
    comment) — this declaration remains the fallback for every caller that
    doesn't pass one. */
+/* CORRECTION (2026-09-24, Task 10.2z3) to the Task 10.1z note above: its
+   "no change needed ... already render at a fixed box regardless of the
+   source photo's dimensions" was wrong. 10.1z verified this by reading
+   the CSS, not by rendering it; a real render showed the box followed the
+   photo's own shape (see the comments on `.media` and `.image` below and
+   `docs/PROJECT_STATUS.md`). The note above is left in place as the
+   record of what was believed then. */
+
+/* Task 10.2z3 — `overflow: hidden` added: the image below is now
+   absolutely positioned inside this box, so this is what clips it (and
+   guarantees the box's size can never come from the photo).
+
+   Task 10.2z5-8 — `flex` hook, for a caller that gives the whole card a
+   fixed shape (Home's square food card, 10.2z5-9) and wants this box to be
+   the part that grows/shrinks to fill what the text block leaves. The
+   default is `0 1 auto`, the value a flex item already has when `flex`
+   isn't set at all — deliberately NOT `none`, which is `0 0 auto`
+   (shrinking switched off) and would be a change for other callers. So
+   with the hook unset, nothing moves. */
 .media {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
+  flex: var(--entity-card-media-flex, 0 1 auto);
+  overflow: hidden;
   background: var(--color-surface-muted);
 }
 
+/* Task 10.2z3 — the image is taken out of layout entirely (absolute,
+   filling `.media`) instead of sitting in flow with `height: 100%`.
+   Reproduced before this change (real Chromium, 390px): with an in-flow
+   image the box followed each photo's own shape — a portrait (2:3),
+   square (1:1) and landscape (3:2) photo gave three different box sizes,
+   because the image's own height set this box's minimum size and beat
+   `aspect-ratio` (which is only a preferred size). An absolutely
+   positioned image contributes nothing to its parent's size, so the box
+   is now decided by the card alone and `object-fit: cover` crops any
+   photo to it. */
 .image {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -90,8 +123,11 @@
    so no change was needed there — only where this wrapper places it. */
 .badgeSlot {
   position: absolute;
-  top: var(--space-sm);
-  right: var(--space-sm);
+  /* Task 10.2z4 — offset hook (default = the old --space-sm), so the
+     Home restaurant row's 3-up cards can tuck the badge closer to the
+     corner without changing any other card. */
+  top: var(--entity-card-badge-offset, var(--space-sm));
+  right: var(--entity-card-badge-offset, var(--space-sm));
 }
 
 /* Task 10.2b-ii: repositioned per
@@ -105,10 +141,14 @@
    `position: relative` parent) rather than the card as a whole. */
 .logo {
   position: absolute;
-  top: var(--space-sm);
-  left: var(--space-sm);
-  width: 40px;
-  height: 40px;
+  /* Task 10.2z4 — size and offset hooks (defaults = the old 40px and
+     --space-sm, so every other card is unchanged). The Home restaurant
+     row's cards are ~114px wide at 390px (3-up), where a 40px logo plus
+     the Open/Closed badge no longer fit side by side. */
+  top: var(--entity-card-logo-offset, var(--space-sm));
+  left: var(--entity-card-logo-offset, var(--space-sm));
+  width: var(--entity-card-logo-size, 40px);
+  height: var(--entity-card-logo-size, 40px);
   border-radius: var(--radius-md);
   border: 2px solid var(--color-surface);
   object-fit: cover;
@@ -123,7 +163,13 @@
   /* Task 10.2z — the side padding is a hook (`--entity-card-pad-x`) so the
      Home food cards can tighten it on phones; unset for every other
      caller, which keeps `--space-lg`. */
-  padding: var(--space-md) var(--entity-card-pad-x, var(--space-lg)) var(--space-lg);
+  /* Task 10.2z5-17 — top/bottom padding are hooks too
+     (`--entity-card-pad-top` / `--entity-card-pad-bottom`), defaults equal
+     to the old fixed values so every other caller is unchanged. */
+  padding:
+    var(--entity-card-pad-top, var(--space-md))
+    var(--entity-card-pad-x, var(--space-lg))
+    var(--entity-card-pad-bottom, var(--space-lg));
 }
 
 /* Task 10.2b-ii: bumped semibold -> bold to match the reference's
@@ -132,7 +178,10 @@
    same weight). */
 .title {
   margin: 0;
-  font-size: var(--font-size-title);
+  /* Task 10.2z5-14 — size hook (default = the same token as before, so
+     every other card is unchanged), for Home's square food card, whose
+     text strip has to fit inside a ~136-189px square. */
+  font-size: var(--entity-card-title-size, var(--font-size-title));
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -142,7 +191,11 @@
 
 .subtitle {
   margin: 0;
-  font-size: var(--font-size-body);
+  /* Task 10.2z5-15 — size hook (default = the same token as before, so
+     every other card is unchanged), for Home's square food card, where
+     this line is the restaurant name. Same idea as `--entity-card-title-size`
+     above. */
+  font-size: var(--entity-card-subtitle-size, var(--font-size-body));
   font-weight: var(--font-weight-regular);
   color: var(--color-text-secondary);
   white-space: nowrap;
@@ -203,8 +256,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-regular);
+  /* Task 10.2z5-16 — size hook (default = the same token as before, so
+     the restaurant card's `location_text` line is unchanged), for Home's
+     square food card, where this line is the price. */
+  font-size: var(--entity-card-meta-size, var(--font-size-body));
+  /* Task 10.2z5-19 (owner decision) — weight hook (default = the same
+     regular weight as before, so the restaurant card's `location_text`
+     line, this class's other caller, is unchanged). Home's food card
+     sets this to bold so the price reads with the same emphasis as the
+     (already-bold) title. Costs no extra line height, so it doesn't
+     grow the text strip. */
+  font-weight: var(--entity-card-meta-weight, var(--font-weight-regular));
   color: var(--color-text-secondary);
 }
 
