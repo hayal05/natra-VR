@@ -53,24 +53,33 @@ const RESTAURANTS_ROW_LIMIT = 12;
 // pre-10.2b-i shape — see that task's own doc comment below, still kept
 // for history) instead of a fixed 2-column `ResponsiveGrid`. `itemWidth`
 // is required by `HorizontalScroller` for a fixed-width child like
-// `EntityCard` (see that component's own doc comment) — 72% keeps the
-// next card's edge peeking in as a swipe affordance, the same partial-
-// next-card treatment this row originally shipped with.
-const RESTAURANT_CARD_WIDTH = '72%';
+// `EntityCard` (see that component's own doc comment).
+//
+// Task 10.2z4 — exactly 3 cards are in view at a time, at every screen
+// width (owner decision; it was `72%`, ~1.3 cards with the next one
+// peeking in), and the 4th is clipped rather than peeking. Both values
+// below are references to CSS variables defined once on `.restaurantsGrid`
+// in Home.module.css, not literals here, because the width has to be
+// computed from the same gap (3 cards + 2 gaps = the row) and the row's
+// side padding changes per breakpoint there — an inline style set from
+// this file couldn't follow either.
+const RESTAURANT_CARD_WIDTH = 'var(--restaurant-card-width)';
+const RESTAURANT_ROW_GAP = 'var(--restaurant-row-gap)';
 
-// Task 10.2d-i — the Popular Foods grid, per
-// docs/reference_ui/phase10_customer_home_reference.jpg, is 3 columns
-// even at phone width, not ResponsiveGrid's own 2-column default (that
-// default is still the right one for the Restaurants grid above, Task
-// 10.2b-i, and for every other ResponsiveGrid caller in this codebase —
-// RestaurantProfile's menu, none of which are Phase 10 pages — so this
-// is a per-instance override, same "don't change the shared default"
-// approach EntityCard's own `mediaAspectRatio` prop already took).
-// Carried through one tier higher at every breakpoint above the base,
-// rather than only fixing the mobile tier and leaving `md` sitting at
-// the same 3 columns the base now already has (which would mean this
-// grid never actually grows again until 1024px).
-const POPULAR_FOODS_GRID_COLUMNS = { base: 3, md: 4, lg: 5, xl: 6 };
+// Task 10.2d-i — the Popular Foods grid is a per-instance override of
+// ResponsiveGrid's column counts (that default is still the right one for
+// every other ResponsiveGrid caller in this codebase — RestaurantProfile's
+// menu, none of which are Phase 10 pages — so this is the same "don't
+// change the shared default" approach EntityCard's own `mediaAspectRatio`
+// prop already took).
+//
+// Task 10.2z5-1 (owner request) — the phone tier is now 2 columns; it was
+// 3 (per docs/reference_ui/phase10_customer_home_reference.jpg, Task
+// 10.2d-i) and 2 is what ResponsiveGrid's own default would give. The
+// tiers above the base stay as 10.2d-i left them (one higher than the
+// default at every breakpoint: 4 / 5 / 6). This one constant feeds both
+// the browse grid and the search-results grid.
+const POPULAR_FOODS_GRID_COLUMNS = { base: 2, md: 4, lg: 5, xl: 6 };
 
 // Same reasoning as RESTAURANTS_ROW_LIMIT: the Home screen's grid wants
 // one bounded page's worth of foods, not full page-by-page navigation
@@ -463,6 +472,7 @@ export default function Home() {
                       ariaLabel="Restaurants matching your search"
                       className={styles.restaurantsGrid}
                       itemWidth={RESTAURANT_CARD_WIDTH}
+                      gap={RESTAURANT_ROW_GAP}
                     >
                       {searchResults.restaurants.map((restaurant) => (
                         <EntityCard
@@ -481,9 +491,15 @@ export default function Home() {
                             restaurant.logo_thumbnail_url
                           )}
                           logoSizes={LOGO_SIZES}
+                          className={styles.restaurantCard}
                           mediaAspectRatio="2 / 1"
                           title={restaurant.name}
-                          badge={<StatusBadge status={restaurant.is_open ? 'Open' : 'Closed'} />}
+                          badge={
+                            <StatusBadge
+                              status={restaurant.is_open ? 'Open' : 'Closed'}
+                              className={styles.restaurantBadge}
+                            />
+                          }
                           metaLine={restaurant.location_text}
                           onClick={() => goToRestaurant(restaurant.id)}
                         />
@@ -508,7 +524,6 @@ export default function Home() {
                           imageSrcSet={buildImageSrcSet(food.image_url, food.image_thumbnail_url)}
                           className={styles.foodCard}
                           imageSizes={POPULAR_FOODS_GRID_SIZES}
-                          mediaAspectRatio="3 / 2"
                           title={food.name}
                           subtitle={food.restaurant_name}
                           metaLine={formatPrice(food.price)}
@@ -553,6 +568,7 @@ export default function Home() {
                   ariaLabel="Restaurants"
                   className={styles.restaurantsGrid}
                   itemWidth={RESTAURANT_CARD_WIDTH}
+                  gap={RESTAURANT_ROW_GAP}
                 >
                   {restaurants.map((restaurant) => (
                     <EntityCard
@@ -571,9 +587,15 @@ export default function Home() {
                         restaurant.logo_thumbnail_url
                       )}
                       logoSizes={LOGO_SIZES}
+                      className={styles.restaurantCard}
                       mediaAspectRatio="2 / 1"
                       title={restaurant.name}
-                      badge={<StatusBadge status={restaurant.is_open ? 'Open' : 'Closed'} />}
+                      badge={
+                        <StatusBadge
+                          status={restaurant.is_open ? 'Open' : 'Closed'}
+                          className={styles.restaurantBadge}
+                        />
+                      }
                       metaLine={restaurant.location_text}
                       onClick={() => goToRestaurant(restaurant.id)}
                     />
@@ -655,7 +677,6 @@ export default function Home() {
                       imageSrcSet={buildImageSrcSet(food.image_url, food.image_thumbnail_url)}
                       className={styles.foodCard}
                       imageSizes={POPULAR_FOODS_GRID_SIZES}
-                      mediaAspectRatio="3 / 2"
                       title={food.name}
                       subtitle={food.restaurant_name}
                       metaLine={formatPrice(food.price)}

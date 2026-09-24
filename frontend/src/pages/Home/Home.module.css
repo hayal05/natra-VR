@@ -10,19 +10,32 @@
    10.0a section: "Header gradient (Customer Home band, Owner/Admin
    DashboardHeader)" explicitly lists this screen as one of the three
    sampled), it just hadn't been wired into this file yet — `.header`
-   was still on the pre-Phase-10 flat color from Task 8.1a. No
-   `border-radius` added here unlike `DashboardHeader`'s own header
-   (Task 10.0b-i): that header sits inside a page with visible margin
-   around it, but this one stays full-bleed edge-to-edge at every width
-   (see `.headerInner` below), and the reference image itself shows a
-   hard flat edge into the white body at that full-bleed width, not a
-   rounded one. */
+   was still on the pre-Phase-10 flat color from Task 8.1a.
+
+   Task 10.2z7 (owner request) — the note that used to sit here said no
+   `border-radius` was added because the reference image shows a hard
+   flat edge into the white body at this full-bleed width. That is now a
+   deliberate, owner-requested deviation from the reference rather than
+   an oversight: the header's bottom corners are rounded and it casts a
+   shadow that overlaps the body content below it, giving it a raised,
+   floating-card look instead of sitting flush with the page. `position:
+   relative` + `z-index: 1` make sure the shadow paints over `.body`'s
+   content rather than being hidden by it if a later element ever gets
+   its own stacking context. Radius uses the existing `--radius-lg`
+   token (the same one every card container already uses) rather than a
+   new one-off value, so the header's curve reads as part of the same
+   design language as the cards beneath it. */
 .header {
   background: var(--gradient-header);
   padding-bottom: var(--space-xl);
   /* A little extra top padding covers a phone's own status bar area on
      devices that don't already inset it via the browser chrome. */
   padding-top: calc(var(--space-lg) + env(safe-area-inset-top));
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 20px rgba(14, 26, 43, 0.16);
 }
 
 /* Task 8.1a — the brand row + search bar's own centered, width-capped
@@ -146,12 +159,91 @@
    title above it. */
 .restaurantsGrid {
   padding-inline: var(--space-lg);
+  /* Task 10.2z4 — exactly 3 restaurant cards in view at a time, at every
+     screen width (owner decision; the row was 72% wide, ~1.3 cards).
+     `100%` resolves against the scroller's own content box (the padding
+     above is outside it), so 3 cards + 2 gaps fill the row exactly. The
+     gap is --space-sm (8px, was --space-lg 16px) so each card keeps as
+     much width as possible (~114px at 390px). Both values are read by
+     Home.jsx (RESTAURANT_CARD_WIDTH / RESTAURANT_ROW_GAP) and defined
+     here, not there. Cards therefore grow with the screen (~235px at
+     768px, ~400px at 1280px); `.restaurantCard` below puts the logo/badge
+     back to their normal size from 768px up to keep them in proportion. */
+  --restaurant-row-gap: var(--space-sm);
+  --restaurant-card-width: calc((100% - 2 * var(--restaurant-row-gap)) / 3);
+  /* The row's side padding, as a variable so the two properties below
+     stay equal to it at every breakpoint (the padding itself is set in
+     the grouped @media rules at the bottom of this file). */
+  --restaurant-row-pad: var(--space-lg);
+  /* Task 10.2z4 — found while measuring this row in a real render: the
+     scroller snaps cards to `start` (HorizontalScroller.module.css), and
+     without a matching scroll-padding the browser snaps the first card to
+     the scroller's raw edge, ignoring the padding — so the row loaded
+     scrolled by that padding (16px at phone width): card 1 flush against
+     the screen edge and card 3 cut off. Already true with the old
+     72%-wide cards (scrollLeft 16 measured on the old layout too).
+     Scoped to this row rather than editing the shared HorizontalScroller. */
+  scroll-padding-inline: var(--restaurant-row-pad);
+  /* Task 10.2z4 (owner request: clip the peeking 4th card) — a scroller
+     draws its content through its own side padding, so the next card
+     showed as a sliver in the right gutter. Clipped to just inside that
+     padding. 6px of the gutter is left visible on purpose: cards sit 8px
+     apart, so a neighbouring card never reaches the 6px, while the card
+     shadow (--shadow-card) and the 2px focus outline + 2px offset on the
+     first/last card are not cut off. */
+  clip-path: inset(0 calc(var(--restaurant-row-pad) - 6px));
 }
 
 /* Same reasoning as .restaurantsGrid above — FilterBar's own chip
    row composes HorizontalScroller internally, so this keeps its
    left/right padding matched to the section title rather than reaching
    into FilterBar's own CSS Modules file from outside it. */
+/* Task 10.2z4 — the Restaurants row's card, shrunk to ~114px wide at
+   390px so 3 fit in view. The logo and Open/Closed badge are scaled down
+   with it (owner request: "proportionately"). Strict proportion would be
+   illegible — the card went from ~258px to ~114px wide (x0.44), which
+   would make the 40px logo ~18px and the 12px badge text ~5px — so these
+   are scaled down with legibility floors instead: logo 40px -> 28px,
+   badge text 12px -> 10px with slimmer padding, both offsets 8px -> 4px.
+   All through EntityCard's --entity-card-* hooks (defaults unchanged for
+   every other card), not by editing EntityCard's own rules. */
+.restaurantCard {
+  --entity-card-logo-size: 28px;
+  --entity-card-logo-offset: var(--space-xs);
+  --entity-card-badge-offset: var(--space-xs);
+  /* Side padding of the text block 16px -> 8px (existing hook, same one
+     the food cards use): at ~91-114px wide, 16px each side took roughly a
+     third of the card and cut names after ~8 characters. */
+  --entity-card-pad-x: var(--space-sm);
+}
+
+/* Descendant selector on purpose: StatusBadge.module.css's own `.badge`
+   sets font-size/padding at single-class specificity, so which sheet wins
+   would otherwise depend on stylesheet load order. This is two classes,
+   so it always wins, and StatusBadge itself stays untouched. */
+.restaurantCard .restaurantBadge {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+/* From 768px up the card is ~235px+ wide (a third of the row, no cap), the
+   size the original 40px logo and 12px badge were designed for, so they go
+   back to normal — keeping the phone-sized ones would leave a tiny logo on
+   a ~400px card at desktop width. Same "proportionate" rule, other
+   direction. */
+@media (min-width: 768px) {
+  .restaurantCard {
+    --entity-card-logo-size: 40px;
+    --entity-card-logo-offset: var(--space-sm);
+    --entity-card-badge-offset: var(--space-sm);
+    --entity-card-pad-x: var(--space-lg);
+  }
+  .restaurantCard .restaurantBadge {
+    font-size: var(--font-size-caption);
+    padding: var(--space-xs) var(--space-sm);
+  }
+}
+
 .categoriesFilterBar {
   padding-inline: var(--space-lg);
 }
@@ -249,9 +341,68 @@
    still left a 3-digit price 5px short at 320px (53px column, "120 ETB" needs
    58px). Not part of the owner's option (b) as worded — added because
    option (b) doesn't finish the job at 320px on its own; remove the
-   `--entity-card-pad-x` line to undo it. */
+   `--entity-card-pad-x` line to undo it.
+
+   Task 10.2z5-21 — re-checked after the grid went to 2 columns (cards
+   136-236px wide, text column 104-204px, not 53px): the reason above (a
+   3-digit price short of room) is gone — the widest price tried,
+   "12,500.50 ETB", needs 88px, and even at 16px padding the narrowest
+   column is 104px. The line is KEPT anyway because it still does one
+   visible thing: at 360px the 12px padding leaves a 132px column, enough
+   for a ~129px restaurant name ("Habesha Home Kitchen") on one line,
+   while 16px leaves 124px and adds an ellipsis. Remove it if that stops
+   mattering. */
 .foodCard {
   --entity-card-cta-display: block;
+  /* Task 10.2z5-7 (owner request) — the whole food card, image and text
+     strip together, is a square. Measured in a real render right after
+     adding this: the card is square (171x171 at 390px, 136x136 at 320px)
+     because `.media` has had `overflow: hidden` since 10.2z3, so its
+     minimum height is 0 and it simply shrinks to whatever the text strip
+     leaves. That is not yet a good result — the strip is still full-size
+     (~87px), so the image is only ~84px tall at 390px (49% of the card)
+     and ~49px at 320px (36%). 10.2z5-8/-9 make the image box the
+     explicit flexible part (rather than an accident of shrinking from
+     4:3), and 10.2z5-14..17 compact the strip, which is what gives the
+     image most of the square.
+
+     Task 10.2z5-9 — that explicit flexible part: the hook below makes
+     `EntityCard`'s photo box `flex: 1 1 0`, so it takes exactly the space
+     the text strip leaves (grows into it if the strip is short, shrinks
+     if it is tall) instead of keeping a 4:3 shape of its own. The task
+     also named `min-height: 0`; it isn't set because it isn't needed —
+     `.media` has `overflow: hidden` (10.2z3), which already makes a flex
+     item's automatic minimum height 0 — and `.media` can't be targeted
+     from this file anyway (CSS Modules hashes the class name). */
+  --entity-card-media-flex: 1 1 0;
+  /* Task 10.2z5-14 — title 16px -> 13px so the text strip leaves the
+     photo more of the square. At every width, not only phones: this card
+     is never wider than ~189px (136px at 320px), so it is always the
+     small-card case. */
+  --entity-card-title-size: 13px;
+  /* Task 10.2z5-15 — restaurant name 14px -> 11px, same reasoning as the
+     title above (always the small-card case, so at every width). */
+  --entity-card-subtitle-size: 11px;
+  /* Task 10.2z5-16 — price 14px -> 12px, same reasoning as the title and
+     restaurant name above (always the small-card case, so at every width). */
+  --entity-card-meta-size: 12px;
+  /* Task 10.2z5-19 (owner decision, revised) — price bumped to bold to
+     match the title's weight and read with more emphasis (0px cost: bold
+     text at the same size/line-height doesn't grow the strip). */
+  --entity-card-meta-weight: var(--font-weight-bold);
+  /* Task 10.2z5-17 — strip top/bottom padding 12px/16px -> 6px/6px, so
+     the text strip is as short as its three lines allow. At every width,
+     same reasoning as the type sizes above.
+
+     Task 10.2z5-19 (owner decision, option C) — tightened further,
+     6px/6px -> 4px/4px, to push the 320px photo share from 54.4% toward
+     the 55-60% expected range without touching the title/name/price
+     sizes or the line gap between them (kept at their 10.2z5-14..17
+     values). Saves 4px total (2px top + 2px bottom), same measured
+     effect as options A/C logged in 10.2z5-19. */
+  --entity-card-pad-top: 4px;
+  --entity-card-pad-bottom: 4px;
+  aspect-ratio: 1 / 1;
 }
 
 @media (max-width: 519px) {
@@ -312,6 +463,9 @@
    `padding: 0 var(--space-lg)` (or equivalent) shorthand above without
    needing to touch those declarations themselves. */
 @media (min-width: 768px) {
+  .restaurantsGrid {
+    --restaurant-row-pad: var(--space-xl);
+  }
   .sectionTitle,
   .restaurantsGrid,
   .categoriesFilterBar,
@@ -324,6 +478,9 @@
 }
 
 @media (min-width: 1024px) {
+  .restaurantsGrid {
+    --restaurant-row-pad: var(--space-2xl);
+  }
   .sectionTitle,
   .restaurantsGrid,
   .categoriesFilterBar,
