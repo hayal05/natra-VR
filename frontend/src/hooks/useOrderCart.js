@@ -44,7 +44,12 @@ function readCart() {
 
 function writeCart(cart) {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    const serialized = JSON.stringify(cart);
+    console.trace('[NATRA TRACE] sessionStorage.setItem(natra_order_cart)', {
+      cart,
+      serialized,
+    });
+    sessionStorage.setItem(STORAGE_KEY, serialized);
   } catch {
     // Storage disabled or quota exceeded — the cart just won't survive a
     // reload/navigation in that case rather than crashing the order flow.
