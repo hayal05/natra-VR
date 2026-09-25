@@ -372,14 +372,7 @@ export default function Checkout() {
     buyNowHandledRef.current = true;
     const incoming = location.state;
     if (incoming && incoming.foodId != null && incoming.restaurantId != null) {
-      const incomingQuantity = incoming.quantity || 1;
-      console.trace('[NATRA TRACE] Checkout addItem called', {
-        foodId: incoming.foodId,
-        restaurantId: incoming.restaurantId,
-        quantity: incomingQuantity,
-        locationState: incoming,
-      });
-      addItem(incoming.restaurantId, incoming.foodId, incomingQuantity);
+      addItem(incoming.restaurantId, incoming.foodId, incoming.quantity || 1);
       navigate('/order/builder', { replace: true, state: null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
