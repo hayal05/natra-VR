@@ -383,7 +383,7 @@ export default function Checkout() {
   const fetchCartFoods = useCallback(
     (signal) =>
       foodIds.length === 0
-        ? Promise.resolve([])
+        ? Promise.resolve({ foodIdsKey, foods: [] })
         : Promise.all(
             foodIds.map((foodId) =>
               api
@@ -411,7 +411,7 @@ export default function Checkout() {
                   throw err;
                 })
             )
-          ),
+          ).then((foods) => ({ foodIdsKey, foods })),
     // foodIds itself is intentionally left out — foodIdsKey (below) is
     // the real dependency, same "join to a stable primitive" reasoning
     // this file's own header comment gives for why useApiQuery is keyed
@@ -420,7 +420,7 @@ export default function Checkout() {
     [foodIdsKey]
   );
   const {
-    data: cartFoods,
+    data: cartFoodsResult,
     loading: cartFoodsLoading,
     error: cartFoodsError,
     refetch: refetchCartFoods,
@@ -434,10 +434,20 @@ export default function Checkout() {
   // produces for a food that 404'd, so this map only ever holds real,
   // currently-resolvable foods; a cart line whose food isn't in here is
   // exactly the "ghost item" case 11.10's whole fix plan is about.
+  //
+  // IMPORTANT: the result carries the foodIdsKey it was fetched for.
+  // This prevents a stale empty result from the previous cart state from
+  // being interpreted as "all current foods are missing" during the
+  // render/effect gap before useApiQuery flips loading back to true.
+  const cartFoods =
+    cartFoodsResult?.foodIdsKey === foodIdsKey
+      ? cartFoodsResult.foods
+      : null;
+
   const foodsById = useMemo(() => {
-    if (!cartFoods) return null;
+    if (cartFoodsLoading || cartFoods === null) return null;
     return new Map(cartFoods.filter(Boolean).map((food) => [food.id, food]));
-  }, [cartFoods]);
+  }, [cartFoods, cartFoodsLoading]);
 
   // Task 11.10b — a small last-known-name cache, keyed by food id,
   // updated every time `foodsById` resolves with a real food. Lets the
