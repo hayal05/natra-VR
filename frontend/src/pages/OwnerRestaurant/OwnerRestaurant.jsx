@@ -291,14 +291,11 @@ export default function OwnerRestaurant() {
   return (
     <RoleShell role="owner">
       <div className={styles.page}>
-        <h1 className={styles.heading}>Restaurant</h1>
-
         {noRestaurantYet ? (
           <EmptyState
             title="No restaurant set up yet"
             description="Your account isn't linked to a restaurant yet, so there's nothing here to edit."
-          />
-        ) : error ? (
+          />        ) : error ? (
           <EmptyState
             title="Couldn't load your restaurant"
             description="Check your connection and try again."
