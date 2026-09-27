@@ -56,14 +56,48 @@ export default function DashboardHeader({
         {(notificationHref || accountHref) && (
           <div className={styles.actions}>
             {notificationHref && (
-              <Link to={notificationHref} className={styles.notificationLink}>
-                Notifications
-                {typeof notificationCount === 'number' ? ` (${notificationCount})` : ''}
+              <Link
+                to={notificationHref}
+                className={styles.notificationLink}
+                aria-label={
+                  typeof notificationCount === 'number'
+                    ? `Notifications (${notificationCount})`
+                    : 'Notifications'
+                }
+                title="Notifications"
+              >
+                <svg
+                  className={styles.icon}
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                  <path d="M10 21h4" />
+                </svg>
+                {typeof notificationCount === 'number' && notificationCount > 0 && (
+                  <span className={styles.notificationBadge} aria-hidden="true">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
               </Link>
             )}
             {accountHref && (
-              <Link to={accountHref} className={styles.accountLink}>
-                {accountLabel ?? 'Account'}
+              <Link
+                to={accountHref}
+                className={styles.accountLink}
+                aria-label={accountLabel ?? 'Account'}
+                title={accountLabel ?? 'Account'}
+              >
+                <svg
+                  className={styles.icon}
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5 20c.8-3.4 3.2-5.2 7-5.2s6.2 1.8 7 5.2" />
+                </svg>
               </Link>
             )}
           </div>
