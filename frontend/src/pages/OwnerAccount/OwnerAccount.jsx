@@ -7,6 +7,7 @@ import EmptyState from '../../components/EmptyState';
 import FormField from '../../components/FormField';
 import RoleShell from '../../components/RoleShell';
 import { clearOwnerOrderBadge, useApiQuery, useMutation } from '../../hooks';
+import { logoutToRoleLogin } from '../../utils/authNavigation';
 import styles from './OwnerAccount.module.css';
 
 // Same "client cap mirrors the real DB column" reasoning every other
@@ -229,9 +230,8 @@ export default function OwnerAccount() {
   };
 
   const handleLogout = () => {
-    tokenStorage.clear();
     clearOwnerOrderBadge();
-    navigate('/owner/login');
+    logoutToRoleLogin(navigate, 'owner');
   };
 
   const emailConflict =
