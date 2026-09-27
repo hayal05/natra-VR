@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 import { setUnauthorizedHandler } from './api/client';
@@ -31,6 +31,7 @@ import OwnerRestaurant from './pages/OwnerRestaurant';
 import RequestLive from './pages/RequestLive';
 import RestaurantProfile from './pages/RestaurantProfile';
 import TrackOrder from './pages/TrackOrder';
+import PageLoader from './components/PageLoader';
 
 // Task 8.7d replaced the `*` route's own element (see the `<Route
 // path="*">` below) with a real `NotFound` screen (`src/pages/NotFound`)
@@ -47,6 +48,13 @@ import TrackOrder from './pages/TrackOrder';
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  useEffect(() => {
+    setIsPageLoading(true);
+    const timer = window.setTimeout(() => setIsPageLoading(false), 500);
+    return () => window.clearTimeout(timer);
+  }, [location.key]);
 
   // Task 8.7e — registers what `api/client.js`'s `request()` calls when
   // any authenticated request comes back 401 (expired/invalid/missing
@@ -67,7 +75,9 @@ export default function App() {
   }, [navigate, location]);
 
   return (
-    <Routes>
+    <>
+      {isPageLoading && <PageLoader />}
+      <Routes>
       {/* Customer routes (Phase 3) */}
       <Route path="/" element={<Home />} />
       <Route path="/restaurant/:id" element={<RestaurantProfile />} />
@@ -306,6 +316,7 @@ export default function App() {
           `RoleShell` variant and links to `/` rather than back in
           history. */}
       <Route path="*" element={<NotFound />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
