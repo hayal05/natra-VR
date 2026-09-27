@@ -8,6 +8,7 @@ import FormField from '../../components/FormField';
 import RoleShell from '../../components/RoleShell';
 import { useApiQuery, useMutation } from '../../hooks';
 import styles from './AdminAccount.module.css';
+import { logoutToRoleLogin } from '../../utils/authNavigation';
 
 // Same "client cap mirrors the real DB column" reasoning `OwnerAccount.jsx`
 // already follows (this screen is a straight port of that one, see its
@@ -193,8 +194,7 @@ export default function AdminAccount() {
   };
 
   const handleLogout = () => {
-    tokenStorage.clear();
-    navigate('/admin/login');
+    logoutToRoleLogin(navigate, 'admin');
   };
 
   const emailConflict =
