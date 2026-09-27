@@ -465,7 +465,7 @@ export default function OwnerDashboard() {
                   className={[styles.quickActionTile, styles.addFoodAction].join(' ')}
                 />
                 <QuickActionTile
-                  label="Request to go Live"
+                  label="Request Live"
                   to="/owner/request-live"
                   className={[styles.quickActionTile, styles.requestLiveAction].join(' ')}
                 />
