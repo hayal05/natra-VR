@@ -411,42 +411,81 @@ export default function OwnerDashboard() {
           </div>
         )}
 
-        {!noRestaurantYet && (
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Orders</h2>
-            {loading ? (
-              <p className={styles.cardBody}>Loading order counts…</p>
-            ) : error ? (
-              <div className={styles.countsError}>
-                <p className={styles.cardBody}>Couldn't load your order counts.</p>
-                <button type="button" className={styles.retryButtonInline} onClick={refetch}>
-                  Retry
-                </button>
-              </div>
-            ) : (
+        {/* Task 10.3d-v — the single Quick Actions row, replacing the old
+            Quick actions card's toggle row + Add Food/View orders
+            buttons and the temporary standalone tiles 10.3d-i..iv added.
+            Tiles, in the reference's order: Open/Closed (10.3d-i, wraps
+            the real `ToggleSwitch` with `handleOpenToggle`/
+            `openToggleSaving`, Task 5.19; caption reuses the old hint
+            copy verbatim), Add Food (10.3d-ii → `/owner/restaurant/menu/
+            new`), View Orders (10.3d-iii → `/owner/orders`), Check Live
+            Status (10.3d-iv → `/owner/live-status`). No other captions/
+            icons: no existing copy/asset, and no invented text.
+
+            The card keeps the restaurant fetch's own messaging that the
+            old card owned: "Loading…", an inline error + Retry for a real
+            failure, and the `openToggleFailed` line. The first three
+            tiles need a `restaurants` row, so they render only once that
+            fetch has resolved cleanly — a 403 (`quickActionsNoRestaurantYet`,
+            a brand-new owner) or any error hides them, and 403 shows no
+            error message at all, as before (the "Get your restaurant Live"
+            card below already says what to do next). **Check Live Status
+            is always rendered**, including on 403 — the owner who most
+            needs it is the one with a pending request and no restaurant
+            row yet (see 10.3d-iv). So the card itself is never hidden
+            now, unlike the old one. */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Quick actions</h2>
+          {restaurantLoading && <p className={styles.cardBody}>Loading…</p>}
+          {restaurantError && !quickActionsNoRestaurantYet && (
+            <div className={styles.countsError}>
+              <p className={styles.cardBody}>Couldn't load your restaurant's status.</p>
+              <button type="button" className={styles.retryButtonInline} onClick={refetchRestaurant}>
+                Retry
+              </button>
+            </div>
+          )}
+          {openToggleFailed && (
+            <p className={styles.quickActionError}>
+              Couldn't update your Open/Closed status. Try again.
+            </p>
+          )}
+          <div className={styles.quickActionsRow}>
+            {!restaurantLoading && !restaurantError && restaurantData && (
               <>
-                <div className={styles.newOrdersHeadline}>
-                  <span className={styles.newOrdersCount}>{counts.New}</span>
-                  <span className={styles.newOrdersLabel}>
-                    {counts.New === 1 ? 'new order' : 'new orders'}
-                  </span>
-                </div>
-                <div className={styles.statusSummary}>
-                  {ORDER_STATUS_LABELS.map((status) => (
-                    <div key={status} className={styles.statusSummaryRow}>
-                      <StatusBadge status={status} tone={ORDER_STATUS_TONE[status.toLowerCase()]} />
-                      <span className={styles.statusSummaryCount}>{counts[status]}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.actionRow}>
-                  <Link to="/owner/orders" className={styles.secondaryButton}>
-                    View orders
-                  </Link>
-                </div>
+                <QuickActionTile
+                  label={restaurantData.restaurant.is_open ? 'Open' : 'Closed'}
+                  caption={
+                    restaurantData.restaurant.is_open
+                      ? 'Customers can order from you right now.'
+                      : "Customers can't place new orders while you're closed."
+                  }
+                  toggle={{
+                    checked: restaurantData.restaurant.is_open === 1,
+                    onChange: handleOpenToggle,
+                    disabled: openToggleSaving,
+                  }}
+                  className={styles.quickActionTile}
+                />
+                <QuickActionTile
+                  label="Add Food"
+                  to="/owner/restaurant/menu/new"
+                  className={styles.quickActionTile}
+                />
+                <QuickActionTile
+                  label="View Orders"
+                  to="/owner/orders"
+                  className={styles.quickActionTile}
+                />
               </>
             )}
+            <QuickActionTile
+              label="Check Live Status"
+              to="/owner/live-status"
+              className={styles.quickActionTile}
+            />
           </div>
+
         )}
 
         {/* Task 5.20b, un-gated from `noRestaurantYet` as of Task 7.5c —
@@ -636,80 +675,6 @@ export default function OwnerDashboard() {
           )}
         </div>
 
-        {/* Task 10.3d-v — the single Quick Actions row, replacing the old
-            Quick actions card's toggle row + Add Food/View orders
-            buttons and the temporary standalone tiles 10.3d-i..iv added.
-            Tiles, in the reference's order: Open/Closed (10.3d-i, wraps
-            the real `ToggleSwitch` with `handleOpenToggle`/
-            `openToggleSaving`, Task 5.19; caption reuses the old hint
-            copy verbatim), Add Food (10.3d-ii → `/owner/restaurant/menu/
-            new`), View Orders (10.3d-iii → `/owner/orders`), Check Live
-            Status (10.3d-iv → `/owner/live-status`). No other captions/
-            icons: no existing copy/asset, and no invented text.
-
-            The card keeps the restaurant fetch's own messaging that the
-            old card owned: "Loading…", an inline error + Retry for a real
-            failure, and the `openToggleFailed` line. The first three
-            tiles need a `restaurants` row, so they render only once that
-            fetch has resolved cleanly — a 403 (`quickActionsNoRestaurantYet`,
-            a brand-new owner) or any error hides them, and 403 shows no
-            error message at all, as before (the "Get your restaurant Live"
-            card below already says what to do next). **Check Live Status
-            is always rendered**, including on 403 — the owner who most
-            needs it is the one with a pending request and no restaurant
-            row yet (see 10.3d-iv). So the card itself is never hidden
-            now, unlike the old one. */}
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Quick actions</h2>
-          {restaurantLoading && <p className={styles.cardBody}>Loading…</p>}
-          {restaurantError && !quickActionsNoRestaurantYet && (
-            <div className={styles.countsError}>
-              <p className={styles.cardBody}>Couldn't load your restaurant's status.</p>
-              <button type="button" className={styles.retryButtonInline} onClick={refetchRestaurant}>
-                Retry
-              </button>
-            </div>
-          )}
-          {openToggleFailed && (
-            <p className={styles.quickActionError}>
-              Couldn't update your Open/Closed status. Try again.
-            </p>
-          )}
-          <div className={styles.quickActionsRow}>
-            {!restaurantLoading && !restaurantError && restaurantData && (
-              <>
-                <QuickActionTile
-                  label={restaurantData.restaurant.is_open ? 'Open' : 'Closed'}
-                  caption={
-                    restaurantData.restaurant.is_open
-                      ? 'Customers can order from you right now.'
-                      : "Customers can't place new orders while you're closed."
-                  }
-                  toggle={{
-                    checked: restaurantData.restaurant.is_open === 1,
-                    onChange: handleOpenToggle,
-                    disabled: openToggleSaving,
-                  }}
-                  className={styles.quickActionTile}
-                />
-                <QuickActionTile
-                  label="Add Food"
-                  to="/owner/restaurant/menu/new"
-                  className={styles.quickActionTile}
-                />
-                <QuickActionTile
-                  label="View Orders"
-                  to="/owner/orders"
-                  className={styles.quickActionTile}
-                />
-              </>
-            )}
-            <QuickActionTile
-              label="Check Live Status"
-              to="/owner/live-status"
-              className={styles.quickActionTile}
-            />
-          </div>
         </div>
 
         <div className={styles.card}>
