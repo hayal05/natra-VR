@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 import { setUnauthorizedHandler } from './api/client';
@@ -49,6 +49,55 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const roleRootGuardRef = useRef(null);
+
+  // Owner/admin dashboards are the history boundary for an authenticated
+  // session. Once the dashboard is reached, browser Back must not expose
+  // login/registration/home pages from before the session. A guarded
+  // duplicate history entry lets normal Back navigation work inside the
+  // role area, then closes the app/tab at the dashboard boundary.
+  useEffect(() => {
+    const isRoleDashboard =
+      location.pathname === '/owner/dashboard' ||
+      location.pathname === '/admin/dashboard';
+
+    if (!isRoleDashboard || roleRootGuardRef.current === location.pathname) return;
+
+    const rootPath = location.pathname;
+    const guardedState = {
+      ...(window.history.state ?? {}),
+      natraRoleRoot: rootPath,
+    };
+
+    window.history.replaceState(guardedState, '', window.location.href);
+    window.history.pushState(
+      { ...guardedState, natraRoleRootSentinel: true },
+      '',
+      window.location.href
+    );
+    roleRootGuardRef.current = rootPath;
+
+    const handleRoleRootBack = () => {
+      if (window.history.state?.natraRoleRoot !== rootPath) return;
+
+      // Browsers only allow window.close() for tabs/windows that were
+      // opened by script. Try it first; if the browser blocks it, restore
+      // the sentinel so Back cannot escape into older pages.
+      window.close();
+      window.setTimeout(() => {
+        if (!document.hidden) {
+          window.history.pushState(
+            { ...guardedState, natraRoleRootSentinel: true },
+            '',
+            window.location.href
+          );
+        }
+      }, 0);
+    };
+
+    window.addEventListener('popstate', handleRoleRootBack);
+    return () => window.removeEventListener('popstate', handleRoleRootBack);
+  }, [location.pathname]);
 
   useEffect(() => {
     setIsPageLoading(true);
