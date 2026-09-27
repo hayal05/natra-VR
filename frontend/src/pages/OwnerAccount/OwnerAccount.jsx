@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { api, ApiError } from '../../api/client';
-import { tokenStorage } from '../../api/tokenStorage';
 import EmptyState from '../../components/EmptyState';
 import FormField from '../../components/FormField';
 import RoleShell from '../../components/RoleShell';
