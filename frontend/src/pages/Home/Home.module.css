@@ -157,6 +157,50 @@
    to select here either way). Same padding-inline value as before, for
    the same reason: matches the row's left/right edge to the section
    title above it. */
+.restaurantTitle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.restaurantName {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+}
+
+.serviceAreas {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-size: 9px;
+  font-weight: var(--font-weight-regular);
+  line-height: 1.25;
+}
+
+@media (min-width: 768px) {
+  .restaurantName {
+    font-size: var(--font-size-body);
+  }
+
+  .serviceAreas {
+    font-size: var(--font-size-caption);
+  }
+}
+
 .restaurantsGrid {
   padding-inline: var(--space-lg);
   /* Task 10.2z4 — exactly 3 restaurant cards in view at a time, at every
