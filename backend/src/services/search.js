@@ -85,13 +85,13 @@ async function searchFoodsAndRestaurants({ q, limit } = {}) {
 
     const [foodsResult, restaurantsResult] = await Promise.all([
       connection.execute(
-        `SELECT f.id AS id,
-                f.name AS name,
-                f.price AS price,
-                f.image_url AS image_url,
-                f.image_thumbnail_url AS image_thumbnail_url,
-                f.restaurant_id AS restaurant_id,
-                r.name AS restaurant_name
+        `SELECT f.id AS "id",
+                f.name AS "name",
+                f.price AS "price",
+                f.image_url AS "image_url",
+                f.image_thumbnail_url AS "image_thumbnail_url",
+                f.restaurant_id AS "restaurant_id",
+                r.name AS "restaurant_name"
            FROM foods f
            JOIN restaurants r ON r.id = f.restaurant_id
            JOIN food_visibility fv ON fv.food_id = f.id
@@ -112,14 +112,14 @@ async function searchFoodsAndRestaurants({ q, limit } = {}) {
         { ...LIVE_FOOD_BINDS, pattern, resultLimit: boundedLimit }
       ),
       connection.execute(
-        `SELECT r.id AS id,
-                r.name AS name,
-                r.cover_url AS cover_url,
-                r.cover_thumbnail_url AS cover_thumbnail_url,
-                r.logo_url AS logo_url,
-                r.logo_thumbnail_url AS logo_thumbnail_url,
-                r.location_text AS location_text,
-                r.is_open AS is_open
+        `SELECT r.id AS "id",
+                r.name AS "name",
+                r.cover_url AS "cover_url",
+                r.cover_thumbnail_url AS "cover_thumbnail_url",
+                r.logo_url AS "logo_url",
+                r.logo_thumbnail_url AS "logo_thumbnail_url",
+                r.location_text AS "location_text",
+                r.is_open AS "is_open"
            FROM restaurants r
           WHERE r.live_status = :liveStatus
             AND r.is_suspended = :isSuspended
