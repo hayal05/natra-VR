@@ -24,13 +24,6 @@ export function markCustomerHistoryEntry(type) {
 export function logoutToRoleLogin(navigate, role) {
   tokenStorage.clear();
 
-  if (role === 'owner') {
-    try {
-      sessionStorage.removeItem('natraOwnerOrderBadgeCount');
-    } catch {
-      // Ignore storage cleanup failures; logout still proceeds.
-    }
-  }
 
   const roleSelectionIndex = Number(sessionStorage.getItem(ROLE_SELECTION_INDEX_KEY));
   const currentIndex = window.history.state?.idx;
