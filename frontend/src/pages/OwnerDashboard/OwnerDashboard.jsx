@@ -414,13 +414,10 @@ export default function OwnerDashboard() {
         {/* Task 10.3d-v — the single Quick Actions row, replacing the old
             Quick actions card's toggle row + Add Food/View orders
             buttons and the temporary standalone tiles 10.3d-i..iv added.
-            Tiles, in the reference's order: Open/Closed (10.3d-i, wraps
-            the real `ToggleSwitch` with `handleOpenToggle`/
-            `openToggleSaving`, Task 5.19; caption reuses the old hint
-            copy verbatim), Add Food (10.3d-ii → `/owner/restaurant/menu/
-            new`), View Orders (10.3d-iii → `/owner/orders`), Check Live
-            Status (10.3d-iv → `/owner/live-status`). No other captions/
-            icons: no existing copy/asset, and no invented text.
+            Tiles: Open/Closed, Add Food, Request to go Live, View Orders, and Check
+            Live Status. The Request to go Live shortcut replaces the former
+            standalone "Get your restaurant Live" card. No descriptive
+            captions are shown under the actions.
 
             The card keeps the restaurant fetch's own messaging that the
             old card owned: "Loading…", an inline error + Retry for a real
@@ -455,11 +452,6 @@ export default function OwnerDashboard() {
               <>
                 <QuickActionTile
                   label={restaurantData.restaurant.is_open ? 'Open' : 'Closed'}
-                  caption={
-                    restaurantData.restaurant.is_open
-                      ? 'Customers can order from you right now.'
-                      : "Customers can't place new orders while you're closed."
-                  }
                   toggle={{
                     checked: restaurantData.restaurant.is_open === 1,
                     onChange: handleOpenToggle,
@@ -470,23 +462,27 @@ export default function OwnerDashboard() {
                 <QuickActionTile
                   label="Add Food"
                   to="/owner/restaurant/menu/new"
-                  className={styles.quickActionTile}
+                  className={[styles.quickActionTile, styles.addFoodAction].join(' ')}
+                />
+                <QuickActionTile
+                  label="Request to go Live"
+                  to="/owner/request-live"
+                  className={[styles.quickActionTile, styles.requestLiveAction].join(' ')}
                 />
                 <QuickActionTile
                   label="View Orders"
                   to="/owner/orders"
-                  className={styles.quickActionTile}
+                  className={[styles.quickActionTile, styles.viewOrdersAction].join(' ')}
                 />
               </>
             )}
             <QuickActionTile
               label="Check Live Status"
               to="/owner/live-status"
-              className={styles.quickActionTile}
+              className={[styles.quickActionTile, styles.checkLiveAction].join(' ')}
             />
           </div>
-
-        )}
+        </div>
 
         {/* Task 5.20b, un-gated from `noRestaurantYet` as of Task 7.5c —
             see this file's header comment: the alert polling this card
@@ -677,17 +673,6 @@ export default function OwnerDashboard() {
 
         </div>
 
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Get your restaurant Live</h2>
-          <p className={styles.cardBody}>
-            Pay the one-time registration fee and upload your payment screenshot to request
-            approval, or check the status of a request you've already submitted.
-          </p>
-          <div className={styles.actionRow}>
-            <Link to="/owner/request-live" className={styles.primaryButton}>
-              Request to go Live
-            </Link>
-          </div>
         </div>
       </div>
     </RoleShell>
