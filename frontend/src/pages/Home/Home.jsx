@@ -48,6 +48,15 @@ const FALLBACK_IMAGE =
 
 const RESTAURANTS_ROW_LIMIT = 12;
 
+function formatServiceAreas(serviceAreas) {
+  if (!Array.isArray(serviceAreas) || serviceAreas.length === 0) return '';
+  return serviceAreas
+    .map((area) => String(area?.area_name || '').trim())
+    .filter(Boolean)
+    .map((area) => area.replace(/\s*:\s*/g, ' · '))
+    .join(' • ');
+}
+
 // Reinstated per project-owner request: the Restaurants row goes back to
 // a horizontally swipeable `HorizontalScroller` row (its original
 // pre-10.2b-i shape — see that task's own doc comment below, still kept
@@ -493,7 +502,16 @@ export default function Home() {
                           logoSizes={LOGO_SIZES}
                           className={styles.restaurantCard}
                           mediaAspectRatio="2 / 1"
-                          title={restaurant.name}
+                          title={
+                            <span className={styles.restaurantTitle}>
+                              <span className={styles.restaurantName}>{restaurant.name}</span>
+                              {formatServiceAreas(restaurant.service_areas) && (
+                                <span className={styles.serviceAreas}>
+                                  {formatServiceAreas(restaurant.service_areas)}
+                                </span>
+                              )}
+                            </span>
+                          }
                           badge={
                             <StatusBadge
                               status={restaurant.is_open ? 'Open' : 'Closed'}
@@ -589,7 +607,16 @@ export default function Home() {
                       logoSizes={LOGO_SIZES}
                       className={styles.restaurantCard}
                       mediaAspectRatio="2 / 1"
-                      title={restaurant.name}
+                      title={
+                            <span className={styles.restaurantTitle}>
+                              <span className={styles.restaurantName}>{restaurant.name}</span>
+                              {formatServiceAreas(restaurant.service_areas) && (
+                                <span className={styles.serviceAreas}>
+                                  {formatServiceAreas(restaurant.service_areas)}
+                                </span>
+                              )}
+                            </span>
+                          }
                       badge={
                         <StatusBadge
                           status={restaurant.is_open ? 'Open' : 'Closed'}
