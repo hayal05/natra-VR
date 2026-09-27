@@ -61,6 +61,7 @@ const serviceAreasCrud = require('../models/serviceAreas');
 const paymentMethodsCrud = require('../models/paymentMethods');
 const { paginate } = require('../utils/paginate');
 const { badRequest, notFound } = require('../utils/errors');
+const { withConnection } = require('../config/db');
 const { listRestaurantMenu } = require('../services/restaurantMenu');
 
 const LIVE_FILTER = { live_status: 'approved', is_suspended: 0 };
@@ -163,6 +164,43 @@ async function list(req, res, next) {
       orderBy: 'name',
       orderDir: 'ASC',
     });
+
+    // The Home screen needs each restaurant's micro service-area list.
+    // Fetch the areas for only the restaurants on the current page in one
+    // query, rather than making one database request per restaurant.
+    if (rows.length > 0) {
+      const binds = {};
+      const placeholders = rows.map((restaurant, index) => {
+        const bindName = `restaurantId${index}`;
+        binds[bindName] = restaurant.id;
+        return `:${bindName}`;
+      });
+
+      const sql = `
+        SELECT restaurant_id, area_name
+        FROM service_areas
+        WHERE restaurant_id IN (${placeholders.join(', ')})
+        ORDER BY restaurant_id ASC, area_name ASC
+      `;
+
+      const serviceAreaRows = await withConnection(async (connection) => {
+        const result = await connection.execute(sql, binds);
+        return result.rows;
+      });
+
+      const serviceAreasByRestaurant = new Map();
+      for (const area of serviceAreaRows) {
+        const existing = serviceAreasByRestaurant.get(area.RESTAURANT_ID) || [];
+        existing.push({ area_name: area.AREA_NAME });
+        serviceAreasByRestaurant.set(area.RESTAURANT_ID, existing);
+      }
+
+      for (const restaurant of rows) {
+        restaurant.service_areas =
+          serviceAreasByRestaurant.get(restaurant.id) || [];
+      }
+    }
+
     res.status(200).json({ restaurants: rows, meta });
   } catch (err) {
     next(err);
