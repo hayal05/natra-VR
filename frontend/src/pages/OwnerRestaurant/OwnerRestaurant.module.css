@@ -265,6 +265,15 @@
   flex: 0 0 auto;
 }
 
+/* Reserved slot for the QR function. The current Open/Closed switch used
+   this position before relocation; leave the space structurally available
+   so the QR control can replace it later without moving the identity row. */
+.qrSlot {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+}
+
 .restaurantName {
   margin: 0;
   font-family: var(--font-family);
