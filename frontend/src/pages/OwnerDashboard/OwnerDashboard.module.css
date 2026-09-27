@@ -148,10 +148,24 @@
   gap: var(--space-md);
 }
 
-@media (min-width: 640px) {
-  .quickActionsRow {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+/* Keep the requested action layout: Open/Closed + Add Food on row 1,
+   Request to go Live on row 2, then View Orders + Check Live Status on row 3. */
+.addFoodAction {
+  grid-column: 2;
+}
+
+.requestLiveAction {
+  grid-column: 1;
+  min-height: 40px;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.viewOrdersAction {
+  grid-column: 1;
+}
+
+.checkLiveAction {
+  grid-column: 2;
 }
 
 /* Each tile: the shared `QuickActionTile` has only a white surface, so
