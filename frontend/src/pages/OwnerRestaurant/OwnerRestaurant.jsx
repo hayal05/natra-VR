@@ -382,7 +382,6 @@ export default function OwnerRestaurant() {
                 <div className={styles.identityText}>
                   <div className={styles.nameRow}>
                     <h2 className={styles.restaurantName}>{data.restaurant.name}</h2>
-                    {data.restaurant.live_status === 'approved' && <VerifiedBadge />}
                     <ToggleSwitch
                       checked={data.restaurant.is_open === 1}
                       onChange={handleOpenToggle}
@@ -390,7 +389,9 @@ export default function OwnerRestaurant() {
                       label={data.restaurant.is_open ? 'Open' : 'Closed'}
                       className={styles.statusToggle}
                     />
-                  </div>div>
+                    {data.restaurant.live_status === 'approved' && <VerifiedBadge />}
+                    <div className={styles.qrSlot} aria-hidden="true" />
+                  </div>
 
                   {restaurantDescription ? (
                     <p className={styles.descriptionPreview}>{restaurantDescription}</p>
