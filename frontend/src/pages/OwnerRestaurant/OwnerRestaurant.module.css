@@ -1,7 +1,8 @@
 .page {
   padding: var(--space-xl) var(--space-lg);
-  max-width: 640px;
+  max-width: 760px;
   margin: 0 auto;
+  background: transparent;
 }
 
 /* Task 10.5h-v — new wrapper so `accountLink` (10.5h-iv) can sit at the
@@ -155,11 +156,13 @@
 .subheading {
   font-family: var(--font-family);
   font-size: var(--font-size-body);
+  line-height: 1.5;
   color: var(--color-text-secondary);
-  margin: var(--space-xl) 0 0;
+  margin: var(--space-lg) 0 0;
   padding: var(--space-md) var(--space-lg);
   border-radius: var(--radius-lg);
   background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
 }
 
 /* Task 8.2d-i built `.openToggleRow` (the standalone card this row used
@@ -204,7 +207,7 @@
    would. Inset by `space-lg` from the cover's left edge, like the
    reference (~16px). */
 .identityRow {
-  --logo-badge-size: clamp(72px, 17%, 96px);
+  --logo-badge-size: clamp(72px, 17%, 104px);
   display: flex;
   align-items: flex-start;
   gap: var(--space-lg);
@@ -245,6 +248,7 @@
 .identityText {
   flex: 1 1 auto;
   min-width: 0;
+  padding-top: var(--space-xs);
 }
 
 /* Task 10.5a-iv-i — name heading + `StatusBadge`, side by side. `gap:
@@ -297,7 +301,9 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  margin-top: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
 }
 
 .statusHint {
@@ -309,18 +315,10 @@
 .restaurantName {
   margin: 0;
   font-family: var(--font-family);
-  font-size: var(--font-size-heading);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
   font-weight: var(--font-weight-bold);
+  line-height: 1.2;
   color: var(--color-text-primary);
-  /* Long restaurant names still get one line here too, same reasoning as
-     `.descriptionPreview` below — this column is only ever as wide as
-     the row minus the badge, and a wrapped second line of the name would
-     push the description down unevenly from one card to the next.
-     `flex: 1 1 auto` + `min-width: 0` (added for 10.5a-iv-i, `.nameRow`
-     being a flex row now) is what lets this ellipsis actually engage —
-     without them the heading would keep its intrinsic width and push
-     `StatusBadge` off toward the row's edge instead of sitting right
-     next to the (possibly truncated) name. */
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -337,6 +335,7 @@
   margin: var(--space-xs) 0 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
+  line-height: 1.5;
   color: var(--color-text-secondary);
   overflow: hidden;
   white-space: nowrap;
@@ -352,6 +351,7 @@
   margin: var(--space-xs) 0 0;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
+  line-height: 1.5;
   color: var(--color-text-secondary);
   overflow: hidden;
   white-space: nowrap;
@@ -567,14 +567,12 @@
    inside the `.page` column at 320px and let a long category name
    shrink/wrap instead of holding the card open. */
 .sectionCard {
-  margin-top: var(--space-xl);
-  box-sizing: border-box;
-  min-width: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
   padding: var(--space-lg);
+  margin-top: var(--space-lg);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
 }
 
 /* Task 8.2d-ii — verified at all 4 `ResponsiveGrid` breakpoints (Task
@@ -623,7 +621,9 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* Task 10.5c-i-b — heading typography only (no icon: see the split note
@@ -653,11 +653,12 @@
    look (border-top divider, `.addButton`'s outline-square button) until
    their own tasks — only the heading font changes early. */
 .sectionHeading {
+  margin: 0;
   font-family: var(--font-family);
   font-size: var(--font-size-title);
-  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0;
 }
 
 /* Task 10.5c-i-c — the outlined orange pill the reference draws for
@@ -683,20 +684,17 @@
    `:active` uses `--color-primary-pressed`, same press cue `.saveButton`
    has. */
 .addPill {
+  min-height: 40px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
   font-family: var(--font-family);
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  background: none;
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-pill);
-  min-height: 44px;
-  padding: var(--space-sm) var(--space-lg);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .addPill:active {
@@ -741,18 +739,15 @@
    own task, not this one. */
 .categoryChip {
   display: inline-flex;
-  box-sizing: border-box;
-  max-width: 100%;
-  min-width: 0;
-  font-family: var(--font-family);
-  font-size: var(--font-size-body);
+  align-items: center;
+  min-height: 38px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-primary-pressed);
-  background: var(--color-page-glow);
-  border-radius: var(--radius-pill);
-  padding: var(--space-xs) var(--space-md);
-  overflow-wrap: anywhere;
-  white-space: normal;
 }
 
 /* Task 10.5c-ii-b — Categories' Edit/Delete as their own scoped link
@@ -998,18 +993,15 @@
    below" row layout is 10.5e-ii-c's own task, not this one. */
 .areaChip {
   display: inline-flex;
-  box-sizing: border-box;
-  max-width: 100%;
-  min-width: 0;
-  font-family: var(--font-family);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
+  align-items: center;
+  min-height: 38px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
   background: var(--color-surface-muted);
-  border-radius: var(--radius-pill);
-  padding: var(--space-xs) var(--space-md);
-  overflow-wrap: anywhere;
-  white-space: normal;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Task 10.5e-ii-b — Service areas' Edit/Delete as their own scoped link
@@ -1199,7 +1191,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--space-lg);
+  gap: var(--space-md);
   padding: var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
