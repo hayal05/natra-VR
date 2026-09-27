@@ -1,5 +1,6 @@
 import { tokenStorage } from '../api/tokenStorage';
 
+const CUSTOMER_HOME_INDEX_KEY = 'natraCustomerHomeHistoryIndex';
 const ROLE_SELECTION_INDEX_KEY = 'natraRoleSelectionHistoryIndex';
 
 export function markCustomerHistoryEntry(type) {
@@ -16,8 +17,16 @@ export function markCustomerHistoryEntry(type) {
     window.location.href
   );
 
-  if (type === 'role-selection') {
+  if (type === 'home') {
+    sessionStorage.setItem(CUSTOMER_HOME_INDEX_KEY, String(index));
+    return;
+  }
+
+  const customerHomeIndex = Number(sessionStorage.getItem(CUSTOMER_HOME_INDEX_KEY));
+  if (Number.isInteger(customerHomeIndex) && index === customerHomeIndex + 1) {
     sessionStorage.setItem(ROLE_SELECTION_INDEX_KEY, String(index));
+  } else {
+    sessionStorage.removeItem(ROLE_SELECTION_INDEX_KEY);
   }
 }
 
