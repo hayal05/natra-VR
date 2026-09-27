@@ -101,7 +101,7 @@ export default function AdminLogin() {
           return;
         }
         tokenStorage.set(data.token);
-        navigate('/admin/dashboard');
+        navigate('/admin/dashboard', { replace: true });
       })
       .catch(() => {
         // Surfaced via `error` state below; nothing further to do here.
