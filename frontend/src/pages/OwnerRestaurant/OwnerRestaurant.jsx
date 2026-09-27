@@ -382,22 +382,15 @@ export default function OwnerRestaurant() {
                 <div className={styles.identityText}>
                   <div className={styles.nameRow}>
                     <h2 className={styles.restaurantName}>{data.restaurant.name}</h2>
-                    {data.restaurant.live_status === 'approved' && <VerifiedBadge />}
-                    <div className={styles.qrSlot} aria-hidden="true" />
-                  </div>
-
-                  <div className={styles.statusRow}>
-                    <span className={styles.statusHint}>
-                      {data.restaurant.is_open
-                        ? 'Customers can order from you right now.'
-                        : "Customers can't place new orders while you're closed."}
-                    </span>
                     <ToggleSwitch
                       checked={data.restaurant.is_open === 1}
                       onChange={handleOpenToggle}
                       disabled={saving}
                       label={data.restaurant.is_open ? 'Open' : 'Closed'}
+                      className={styles.statusToggle}
                     />
+                    {data.restaurant.live_status === 'approved' && <VerifiedBadge />}
+                    <div className={styles.qrSlot} aria-hidden="true" />
                   </div>
 
                   {restaurantDescription ? (
