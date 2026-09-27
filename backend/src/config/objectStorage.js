@@ -48,7 +48,15 @@ function buildAuthHeader({ method, path, headers }) {
 
   const headerNames =
     method === 'PUT'
-      ? ['(request-target)', 'host', 'date', 'content-length', 'content-type', 'x-content-sha256']
+      ? [
+          '(request-target)',
+          'host',
+          'date',
+          'content-length',
+          'content-type',
+          'x-content-sha256',
+          ...(headers['cache-control'] ? ['cache-control'] : []),
+        ]
       : ['(request-target)', 'host', 'date'];
 
   const signingString = headerNames
@@ -106,7 +114,7 @@ function request({ method, path, headers, body }) {
 /**
  * Upload a buffer to Object Storage under `objectName`.
  */
-async function putObject(objectName, buffer, contentType = 'application/octet-stream') {
+async function putObject(objectName, buffer, contentType = 'application/octet-stream', cacheControl) {
   const path = objectPath(objectName);
   const dateHeader = new Date().toUTCString();
   const contentSha256 = crypto.createHash('sha256').update(buffer).digest('base64');
@@ -118,6 +126,7 @@ async function putObject(objectName, buffer, contentType = 'application/octet-st
     'content-type': contentType,
     'x-content-sha256': contentSha256,
   };
+  if (cacheControl) headers['cache-control'] = cacheControl;
   headers.authorization = buildAuthHeader({ method: 'PUT', path, headers });
 
   return request({ method: 'PUT', path, headers, body: buffer });
