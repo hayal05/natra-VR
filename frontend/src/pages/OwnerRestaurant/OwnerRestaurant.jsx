@@ -388,6 +388,7 @@ export default function OwnerRestaurant() {
                       onChange={handleOpenToggle}
                       disabled={saving}
                       label={data.restaurant.is_open ? 'Open' : 'Closed'}
+                      className={styles.statusToggle}
                     />
                   </div>div>
 
