@@ -98,7 +98,15 @@ async function searchFoodsAndRestaurants({ q, limit } = {}) {
           WHERE r.live_status = :liveStatus
             AND r.is_suspended = :isSuspended
             AND fv.is_hidden = :isHidden
-            AND UPPER(f.name) LIKE UPPER(:pattern) ESCAPE '\\'
+            AND (
+              UPPER(f.name) LIKE UPPER(:pattern) ESCAPE '\\'
+              OR EXISTS (
+                SELECT 1
+                  FROM service_areas sa
+                 WHERE sa.restaurant_id = r.id
+                   AND UPPER(sa.area_name) LIKE UPPER(:pattern) ESCAPE '\\'
+              )
+            )
           ORDER BY f.name ASC
           FETCH FIRST :resultLimit ROWS ONLY`,
         { ...LIVE_FOOD_BINDS, pattern, resultLimit: boundedLimit }
@@ -115,7 +123,15 @@ async function searchFoodsAndRestaurants({ q, limit } = {}) {
            FROM restaurants r
           WHERE r.live_status = :liveStatus
             AND r.is_suspended = :isSuspended
-            AND UPPER(r.name) LIKE UPPER(:pattern) ESCAPE '\\'
+            AND (
+              UPPER(r.name) LIKE UPPER(:pattern) ESCAPE '\\'
+              OR EXISTS (
+                SELECT 1
+                  FROM service_areas sa
+                 WHERE sa.restaurant_id = r.id
+                   AND UPPER(sa.area_name) LIKE UPPER(:pattern) ESCAPE '\\'
+              )
+            )
           ORDER BY r.name ASC
           FETCH FIRST :resultLimit ROWS ONLY`,
         { ...LIVE_RESTAURANT_BINDS, pattern, resultLimit: boundedLimit }
