@@ -50,11 +50,8 @@ const RESTAURANTS_ROW_LIMIT = 12;
 
 function formatServiceAreas(serviceAreas) {
   if (!Array.isArray(serviceAreas) || serviceAreas.length === 0) return '';
-  return serviceAreas
-    .map((area) => String(area?.area_name || '').trim())
-    .filter(Boolean)
-    .map((area) => area.replace(/\s*:\s*/g, ' · '))
-    .join(' • ');
+  const firstArea = String(serviceAreas[0]?.area_name || '').trim();
+  return firstArea.replace(/\s*:\s*/g, ' · ');
 }
 
 // Reinstated per project-owner request: the Restaurants row goes back to
