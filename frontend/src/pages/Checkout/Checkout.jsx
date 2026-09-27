@@ -338,7 +338,7 @@ export default function Checkout() {
   const location = useLocation();
   const {
     cart,
-    addItem,
+    replaceCart,
     setItemQuantity,
     removeItem,
     setPaymentMethod,
@@ -363,6 +363,17 @@ export default function Checkout() {
   // its own the way a fresh ref, allocated once for this component
   // instance and persisting across both invocations, can.
   const buyNowHandledRef = useRef(false);
+  const checkoutCompletedRef = useRef(false);
+
+  // Clear an unfinished checkout whenever this page is actually left.
+  // Successful order submission marks the checkout as completed first.
+  useEffect(() => {
+    return () => {
+      if (!checkoutCompletedRef.current) {
+        clearCart();
+      }
+    };
+  }, [clearCart]);
 
   // Task 11.2's own Buy Now hand-off restoration — see this file's own
   // doc comment above for the full reasoning on why this is here rather
@@ -372,7 +383,7 @@ export default function Checkout() {
     buyNowHandledRef.current = true;
     const incoming = location.state;
     if (incoming && incoming.foodId != null && incoming.restaurantId != null) {
-      addItem(incoming.restaurantId, incoming.foodId, incoming.quantity || 1);
+      replaceCart(incoming.restaurantId, incoming.foodId, incoming.quantity || 1);
       navigate('/order/builder', { replace: true, state: null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -782,7 +793,10 @@ export default function Checkout() {
   // cart underneath it doesn't affect what the modal shows.
   const handlePlaceOrder = () => {
     placeOrderMutate()
-      .then(() => clearCart())
+      .then(() => {
+        checkoutCompletedRef.current = true;
+        clearCart();
+      })
       .catch(() => {
         // Surfaced via `placeOrderError` state below; nothing further to
         // do here — same "swallow at the call site, read reactively"

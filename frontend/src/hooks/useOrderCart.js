@@ -210,6 +210,18 @@ export function useOrderCart() {
     setCart(next);
   }, [cart]);
 
+  const replaceCart = useCallback((restaurantId, foodId, quantity = 1) => {
+    const next = {
+      restaurantId,
+      items: [{ foodId, quantity }],
+      customerInfo: null,
+      paymentMethodId: null,
+      paymentScreenshotUrl: null,
+    };
+    writeCart(next);
+    setCart(next);
+  }, []);
+
   const clearCart = useCallback(() => {
     writeCart(EMPTY_CART);
     setCart(EMPTY_CART);
@@ -218,6 +230,7 @@ export function useOrderCart() {
   return {
     cart,
     addItem,
+    replaceCart,
     setItemQuantity,
     removeItem,
     setCustomerInfo,

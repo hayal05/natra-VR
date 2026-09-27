@@ -118,17 +118,6 @@ export default function FoodDetails() {
   const notFound = error instanceof ApiError && error.status === 404;
 
   const handleBuyNow = () => {
-    const addingToOrder = Boolean(location.state?.addingToOrder);
-    const cartHasOtherRestaurant =
-      cart.items.length > 0 && cart.restaurantId !== food.restaurant_id;
-
-    if (!addingToOrder && cartHasOtherRestaurant) {
-      const confirmed = window.confirm(
-        'You already have items in your order from a different restaurant. Starting this order will clear it. Continue?'
-      );
-      if (!confirmed) return;
-    }
-
     navigate('/order/builder', {
       state: { foodId: food.id, restaurantId: food.restaurant_id, quantity },
     });
