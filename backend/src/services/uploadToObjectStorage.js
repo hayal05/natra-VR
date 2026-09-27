@@ -286,7 +286,8 @@ async function uploadToObjectStorage(file, folder, options = {}) {
   // millisecond must not collide).
   const objectName = `${folder}/${Date.now()}-${randomSuffix()}.${extension}`;
 
-  await putObject(objectName, uploadBuffer, file.mimetype);
+  const imageCacheControl = 'public, max-age=2592000, immutable';
+  await putObject(objectName, uploadBuffer, file.mimetype, imageCacheControl);
 
   let thumbnailUrl = null;
   let thumbnailObjectName = null;
@@ -309,7 +310,7 @@ async function uploadToObjectStorage(file, folder, options = {}) {
     }
 
     thumbnailObjectName = thumbnailObjectNameFor(objectName);
-    await putObject(thumbnailObjectName, thumbnailBuffer, file.mimetype);
+    await putObject(thumbnailObjectName, thumbnailBuffer, file.mimetype, imageCacheControl);
     thumbnailUrl = getObjectUrl(thumbnailObjectName);
   }
 
