@@ -98,7 +98,7 @@ export default function OwnerLogin() {
     mutate(values)
       .then((data) => {
         tokenStorage.set(data.token);
-        navigate('/owner/dashboard');
+        navigate('/owner/dashboard', { replace: true });
       })
       .catch(() => {
         // Surfaced via `error` state below; nothing further to do here.
