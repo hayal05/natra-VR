@@ -122,3 +122,55 @@ body {
   color: var(--color-text-primary);
   background: var(--color-background);
 }
+
+
+/* Page loading state — centered NATRA wordmark with a horizontal
+   orange opacity/focus flow inspired by the restrained feel of cloud
+   service loading screens. The existing Astra brand font is reused. */
+.natra-page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--color-background);
+}
+
+.natra-page-loader__wordmark {
+  font-family: var(--font-family-brand);
+  font-size: clamp(38px, 9vw, 64px);
+  font-weight: 400;
+  letter-spacing: 0.035em;
+  line-height: 1;
+  color: transparent;
+  background-image: linear-gradient(
+    90deg,
+    rgba(242, 105, 12, 0.22) 0%,
+    rgba(242, 105, 12, 0.32) 25%,
+    rgba(242, 105, 12, 1) 50%,
+    rgba(242, 105, 12, 0.32) 75%,
+    rgba(242, 105, 12, 0.22) 100%
+  );
+  background-size: 220% 100%;
+  background-position: 100% 50%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: natra-loader-focus-flow 1.25s ease-in-out infinite;
+}
+
+@keyframes natra-loader-focus-flow {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -120% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .natra-page-loader__wordmark {
+    animation: none;
+    color: var(--color-primary);
+    background: none;
+  }
+}
