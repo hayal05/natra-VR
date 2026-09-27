@@ -829,8 +829,8 @@ export default function Checkout() {
             <button
               type="button"
               className={styles.backButton}
-              onClick={() => navigate('/')}
-              aria-label="Back to home"
+              onClick={() => navigate(-1)}
+              aria-label="Back"
             >
               <BackArrowIcon className={styles.backIcon} />
             </button>
