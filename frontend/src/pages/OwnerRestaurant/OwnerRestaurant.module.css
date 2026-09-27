@@ -251,15 +251,9 @@
   padding-top: var(--space-xs);
 }
 
-/* Task 10.5a-iv-i — name heading + `StatusBadge`, side by side. `gap:
-   var(--space-sm)` matches the spacing `StatusBadge` already keeps from
-   adjacent text everywhere else it's used (e.g. `OwnerDashboard`'s own
-   open/closed row). `min-width: 0` on the row itself, same reasoning as
-   `.identityText` above: without it, flexbox would let `.restaurantName`
-   refuse to shrink below its own longest unbroken run and push the row
-   wider than the column. `align-items: center` keeps the pill vertically
-   centered against the heading's cap-height rather than its line-box
-   top. */
+/* Restaurant identity row: the verified badge and Open/Closed switch
+   occupy the status space directly beside the restaurant name. The name
+   remains the flexible item so the controls stay visible on narrow screens. */
 .nameRow {
   display: flex;
   align-items: center;
@@ -267,49 +261,8 @@
   min-width: 0;
 }
 
-/* `StatusBadge` is `display: inline-flex` internally, which — now that
-   it's itself a flex item inside `.nameRow` — would default to
-   `flex-shrink: 1` and get squeezed once the row runs out of room next
-   to a long name. `flex: 0 0 auto` keeps the pill at its own natural
-   size always, so it's `.restaurantName`'s ellipsis (not the badge)
-   that absorbs a narrow column. */
-.nameBadge {
+.statusToggle {
   flex: 0 0 auto;
-}
-
-/* Task 10.5a-iv-ii — `ToggleSwitch` + its hint sentence, moved here from
-   the now-removed `.openToggleRow` card above the hero. `justify-content:
-   space-between` + `flex-wrap: wrap` is the same pairing `.openToggleRow`
-   used (hint text has no natural break-point-friendly max-width, toggle
-   is a fixed ~95px min-content per 8.2d-i's own math) — carried over
-   unchanged since the failure mode (long hint text + fixed-size control
-   on one line) is identical here, just in a narrower column (this row's
-   width is `.identityText`'s share of the hero, not the page's full
-   content width `.openToggleRow` had). `margin-top` gives it the same
-   breathing room from `.nameRow` that `.descriptionPreview`'s own
-   `--space-xs` gives from whatever precedes it, one step up
-   (`--space-sm`) since this row holds a real interactive control, not
-   just text. No border/background/padding card treatment carried over —
-   unlike the old standalone `.openToggleRow`, this row now lives inside
-   the hero's own `.identityText` column, which isn't a bordered card
-   itself, so wrapping this one row in its own card border would look
-   like a second, unrelated box floating inside the hero rather than
-   part of the same identity block as the name and description. */
-.statusRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  margin-top: var(--space-md);
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--color-border);
-}
-
-.statusHint {
-  font-family: var(--font-family);
-  font-size: var(--font-size-caption);
-  color: var(--color-text-secondary);
 }
 
 .restaurantName {
