@@ -32,6 +32,7 @@ import RequestLive from './pages/RequestLive';
 import RestaurantProfile from './pages/RestaurantProfile';
 import TrackOrder from './pages/TrackOrder';
 import PageLoader from './components/PageLoader';
+import { markCustomerHistoryEntry } from './utils/authNavigation';
 
 // Task 8.7d replaced the `*` route's own element (see the `<Route
 // path="*">` below) with a real `NotFound` screen (`src/pages/NotFound`)
@@ -98,6 +99,20 @@ export default function App() {
     window.addEventListener('popstate', handleRoleRootBack);
     return () => window.removeEventListener('popstate', handleRoleRootBack);
   }, [location.pathname]);
+
+  // Preserve the customer-entry history used by owner/admin logout.
+  // The intended public flow is Customer Home -> Role Selection ->
+  // Owner/Admin Login. Logout later walks back to the Role Selection
+  // entry, then pushes the role login on top so Back returns to Role
+  // Selection and then Customer Home instead of exposing authenticated
+  // dashboard/account pages.
+  useEffect(() => {
+    if (location.pathname === '/') {
+      markCustomerHistoryEntry('home');
+    } else if (location.pathname === '/login') {
+      markCustomerHistoryEntry('role-selection');
+    }
+  }, [location.pathname, location.key]);
 
   useEffect(() => {
     setIsPageLoading(true);
