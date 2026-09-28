@@ -1019,34 +1019,6 @@ export default function OwnerRestaurant() {
                     <div className={styles.qrSlot} aria-hidden="true" />
                   </div>
 
-                  {/* Task 10.5a-iv-ii — `ToggleSwitch` + its hint sentence,
-                      moved here from the now-removed `.openToggleRow`
-                      card above the hero. Same `handleOpenToggle`/
-                      `data.restaurant.is_open`/`saving` as before — no
-                      new state, no new confirmation step, still commits
-                      the instant the switch flips (see this file's
-                      header comment on why Open/Closed shares the
-                      profile form's save state rather than getting its
-                      own). Sits directly under `.nameRow` so it reads as
-                      "name + status pill, then the control that changes
-                      that status" — the closest a linear DOM/visual
-                      order gets to "next to the badge" once the hint
-                      sentence (too long to sit on `.nameRow`'s own line
-                      next to a possibly-long name) is accounted for. */}
-                  <div className={styles.statusRow}>
-                    <span className={styles.statusHint}>
-                      {data.restaurant.is_open
-                        ? 'Customers can order from you right now.'
-                        : "Customers can't place new orders while you're closed."}
-                    </span>
-                    <ToggleSwitch
-                      checked={data.restaurant.is_open === 1}
-                      onChange={handleOpenToggle}
-                      disabled={saving}
-                      label={data.restaurant.is_open ? 'Open' : 'Closed'}
-                    />
-                  </div>
-
                   {restaurantDescription ? (
                     <p className={styles.descriptionPreview}>{restaurantDescription}</p>
                   ) : (
@@ -1113,9 +1085,19 @@ export default function OwnerRestaurant() {
                 </p>
               )}
 
-              <button type="submit" className={styles.saveButton} disabled={saving}>
-                {saving ? 'Saving…' : 'Save changes'}
-              </button>
+              <div className={styles.saveRow}>
+                <button type="submit" className={styles.saveButton} disabled={saving}>
+                  {saving ? 'Saving…' : 'Save changes'}
+                </button>
+
+                <ToggleSwitch
+                  checked={data.restaurant.is_open === 1}
+                  onChange={handleOpenToggle}
+                  disabled={saving}
+                  label={data.restaurant.is_open ? 'Open' : 'Closed'}
+                  className={styles.statusToggle}
+                />
+              </div>
             </form>
 
             {/* Task 10.5c-i-a — Categories is the first section on the new

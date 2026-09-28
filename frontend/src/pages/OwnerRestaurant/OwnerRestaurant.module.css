@@ -261,8 +261,17 @@
   min-width: 0;
 }
 
+.saveRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+}
+
 .statusToggle {
   flex: 0 0 auto;
+  margin-left: auto;
 }
 
 /* Reserved slot for the QR function. The current Open/Closed switch used
