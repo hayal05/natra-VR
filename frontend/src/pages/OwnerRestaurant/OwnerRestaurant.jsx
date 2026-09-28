@@ -902,18 +902,19 @@ export default function OwnerRestaurant() {
 
                       {data.restaurant.live_status === 'approved' && <VerifiedBadge />}
                     </div>
-
-                    <div className={styles.qrSlot} aria-hidden="true" />
                   </div>
 
                   {restaurantDescription ? (
                     <p className={styles.descriptionPreview}>{restaurantDescription}</p>
-                  ) : (
-                    <p className={styles.descriptionPreviewEmpty}>
-                      Add a description below to tell customers about your restaurant.
-                    </p>
-                  )}
+                  ) : null}
                 </div>
+              </div>
+
+              <div className={styles.menuQrSection}>
+                <MenuQrCard
+                  restaurantId={data.restaurant.id}
+                  restaurantName={data.restaurant.name}
+                />
               </div>
 
               {(coverMessage || logoMessage) && (

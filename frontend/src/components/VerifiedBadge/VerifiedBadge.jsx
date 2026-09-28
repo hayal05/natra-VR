@@ -13,13 +13,15 @@ export default function VerifiedBadge({ className = '' }) {
         aria-hidden="true"
         focusable="false"
       >
-        <path
+        <circle
           className={styles.badgeShape}
-          d="M12 1.5l1.55 1.28 1.99-.27.93 1.78 1.85.79-.27 1.99 1.28 1.55-1.28 1.55.27 1.99-1.85.79-.93 1.78-1.99-.27L12 22.5l-1.55-1.28-1.99.27-.93-1.78-1.85-.79.27-1.99-1.28-1.55 1.28-1.55-.27-1.99 1.85-.79.93-1.78 1.99.27L12 1.5z"
+          cx="12"
+          cy="12"
+          r="10.5"
         />
         <path
           className={styles.check}
-          d="M8.25 12.25l2.35 2.35 5.15-5.2"
+          d="M7.2 12.2l3.1 3.1 6.5-6.6"
         />
       </svg>
     </span>

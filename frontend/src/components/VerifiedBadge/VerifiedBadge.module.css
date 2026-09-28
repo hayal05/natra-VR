@@ -9,7 +9,7 @@
   width: var(--badge-size);
   height: var(--badge-size);
 
-  flex: 0 0 auto;
+  flex: 0 0 var(--badge-size);
   margin: 0;
 
   vertical-align: middle;
@@ -30,7 +30,7 @@
 .check {
   fill: none;
   stroke: #fff;
-  stroke-width: 2.35;
+  stroke-width: 2.25;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

@@ -1450,3 +1450,19 @@
   color: var(--color-text-primary);
   margin: 0 0 var(--space-md);
 }
+.menuQrSection {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+  margin-top: var(--space-lg);
+}
+
+.menuQrSection > * {
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
