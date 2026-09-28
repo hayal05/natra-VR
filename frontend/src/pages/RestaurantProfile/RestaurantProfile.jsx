@@ -6,6 +6,7 @@ import EmptyState from '../../components/EmptyState';
 import EntityCard from '../../components/EntityCard';
 import RoleShell from '../../components/RoleShell';
 import StatusBadge from '../../components/StatusBadge';
+import VerifiedBadge from '../../components/VerifiedBadge/VerifiedBadge';
 import { useApiQuery } from '../../hooks';
 import { buildImageSrcSet, MENU_LIST_CARD_SIZES } from '../../utils/entityCardImages';
 import styles from './RestaurantProfile.module.css';
@@ -268,7 +269,12 @@ function RestaurantHeader({ restaurant, serviceAreas }) {
 
       <div className={styles.info}>
         <div className={styles.nameRow}>
-          <h1 className={styles.name}>{restaurant.name}</h1>
+          <div className={styles.nameGroup}>
+            <h1 className={styles.name}>{restaurant.name}</h1>
+
+            {restaurant.live_status === 'approved' && <VerifiedBadge />}
+          </div>
+
           <StatusBadge status={restaurant.is_open ? 'Open' : 'Closed'} />
         </div>
 

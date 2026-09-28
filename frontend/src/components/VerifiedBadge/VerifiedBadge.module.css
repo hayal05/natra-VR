@@ -1,17 +1,36 @@
-.verified-badge {
+.badge {
+  --badge-size: 1.2rem;
+  --badge-color: #f97316;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.15rem;
-  height: 1.15rem;
+
+  width: var(--badge-size);
+  height: var(--badge-size);
+
   flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--color-primary);
-  color: #fff;
-  font-family: var(--font-family);
-  font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 1;
-  margin-left: 6px;
+  margin: 0;
+
   vertical-align: middle;
+  line-height: 0;
+}
+
+.icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.badgeShape {
+  fill: var(--badge-color);
+}
+
+.check {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

@@ -108,12 +108,24 @@
   gap: var(--space-md);
 }
 
+.nameGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .name {
   font-family: var(--font-family);
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .detailLine {

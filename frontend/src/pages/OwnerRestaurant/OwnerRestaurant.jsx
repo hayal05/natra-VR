@@ -895,8 +895,14 @@ export default function OwnerRestaurant() {
 
                 <div className={styles.identityText}>
                   <div className={styles.nameRow}>
-                    <h2 className={styles.restaurantName}>{data.restaurant.name}</h2>
-                    {data.restaurant.live_status === 'approved' && <VerifiedBadge />}
+                    <div className={styles.restaurantNameGroup}>
+                      <h2 className={styles.restaurantName}>
+                        {data.restaurant.name}
+                      </h2>
+
+                      {data.restaurant.live_status === 'approved' && <VerifiedBadge />}
+                    </div>
+
                     <div className={styles.qrSlot} aria-hidden="true" />
                   </div>
 
