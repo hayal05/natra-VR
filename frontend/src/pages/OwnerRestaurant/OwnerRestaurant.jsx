@@ -69,51 +69,6 @@ function updateMyRestaurant(data) {
   return api.patch('/restaurants/me', data);
 }
 
-// Task 10.5h-ii — the header avatar's data source. Same local
-// `fetchMe(signal)` shape `OwnerAccount.jsx`/`AdminAccount.jsx` already
-// each define for themselves (not a shared import — same "duplicate,
-// don't share" convention this file's other `fetch*` functions and
-// `.paymentMethodEditLink`-style CSS classes both follow), returning
-// `data.user` rather than the raw `{ user }` envelope so the hook's
-// `data` is the user row directly, matching `fetchMyRestaurant`'s own
-// "hand back exactly what the page will render" shape above. Wired to
-// its own `useApiQuery` call below rather than reusing `fetchMyRestaurant`'s
-// — this endpoint backs one small header element, not the page's main
-// content, so a failure here shouldn't block or blank the rest of the
-// screen the way `data`'s own loading/error states do (10.5h-ii's own
-// scope: add the query, no render yet — 10.5h-iii/iv decide what a
-// failure looks like on screen).
-function fetchMe(signal) {
-  return api.get('/auth/me', { signal }).then((data) => data.user);
-}
-
-// Task 10.5h-iii — initial derivation, with a real fallback.
-//
-// Governing rule (this task's own description): "name → email → a plain
-// 'Account' text link (never a fake letter)". Reads as a fallback
-// *chain*, not a single rule — so this returns `null` (never a made-up
-// character) whenever there's nothing real to derive one from, and
-// 10.5h-iv's render is the thing that turns a `null` here into the
-// plain "Account" text link the task calls for; this function's own job
-// stops at "is there a real letter, or not."
-//
-// Order matches the task's own wording exactly: `full_name` first (the
-// more human-facing of the two — `users.full_name`, `NOT NULL` per
-// `docs/DB_SCHEMA.md`/the 0006 migration, same column `OwnerAccount.jsx`'s
-// profile form edits), `email` second (also `NOT NULL`, so this branch
-// only matters if the same account theoretically has a blank/whitespace-
-// only stored name — otherwise unreachable in practice, but "never a
-// fake letter" is about correctness under every actual data shape, not
-// just the common one). `me` itself (this task's own `useApiQuery`
-// caller, 10.5h-ii) is `null` while loading or on error — both handled
-// the same as "no usable name/email", the same "don't invent a
-// placeholder while real data hasn't arrived yet" instinct
-// `OwnerAccount.jsx`'s own `values` (starts `null`, not a blank-field
-// placeholder object) already follows.
-function deriveAccountInitial(user) {
-  const source = (user?.full_name || user?.email || '').trim();
-  return source ? source[0].toUpperCase() : null;
-}
 
 function fetchCategories({ page }, signal) {
   return api
@@ -325,51 +280,6 @@ export default function OwnerRestaurant() {
     loading: saving,
     reset: resetSave,
   } = useMutation(updateMyRestaurant);
-
-  // Task 10.5h-ii — independent of `data`/`loading`/`error` above by
-  // design: this screen's main content (the restaurant profile form)
-  // must still load and render even if this one call fails, so it gets
-  // its own `useApiQuery` rather than being folded into the query above.
-  // Not destructured beyond `data` yet — no render uses this value
-  // until 10.5h-iii (real-fallback derivation) and 10.5h-iv (the actual
-  // `<Link>`); this task's own scope is adding the query, not using it.
-  const { data: me } = useApiQuery(fetchMe, []);
-
-  // Task 10.5h-iii — computed once per render from `me`, cheap enough
-  // (one `.trim()`/one character read) not to need `useMemo`. `null`
-  // means "no real letter available" (still loading, errored, or —
-  // unreachable today given both columns are `NOT NULL`, but handled
-  // anyway — a blank name and email); 10.5h-iv's render is what turns
-  // that into the fallback plain "Account" text link instead of an
-  // avatar circle. Not read in JSX yet — that's 10.5h-iv's own scope.
-  const accountInitial = deriveAccountInitial(me);
-
-  // Task 10.5h-iv — the account link/avatar itself, built as a local
-  // element here rather than inserted into the return tree yet — same
-  // "compute/build now, place later" split 10.5h-ii's query and
-  // 10.5h-iii's derivation already followed. `10.5h-v` decides *where*
-  // this renders (assumed to be the right end of the `<h1>Restaurant</h1>`
-  // row, not yet confirmed by this task); `10.5h-vi` gives
-  // `.accountAvatar`/`.accountFallbackLink` their actual look (orange
-  // circle/white letter, tap-target floor) — neither class has any CSS
-  // yet as of this task, so both render unstyled (plain text) until
-  // `10.5h-vi` lands. This task's own scope is just the two possible
-  // shapes the markup can take: a lettered circle when `accountInitial`
-  // is a real letter (10.5h-iii), or the plain "Account" text link the
-  // task's own wording falls back to when it's `null` — never inventing
-  // a placeholder letter for the circle case. `aria-label="Account"` on
-  // the circle so a single letter isn't a screen reader's only signal
-  // of what the link does; the fallback link already says "Account" as
-  // its visible text, so it needs no separate label.
-  const accountLink = accountInitial ? (
-    <Link to="/owner/account" className={styles.accountAvatar} aria-label="Account">
-      {accountInitial}
-    </Link>
-  ) : (
-    <Link to="/owner/account" className={styles.accountFallbackLink}>
-      Account
-    </Link>
-  );
 
   const [values, setValues] = useState(null);
   const [touched, setTouched] = useState({});
@@ -895,35 +805,6 @@ export default function OwnerRestaurant() {
   return (
     <RoleShell role="owner">
       <div className={styles.page}>
-        {/* Task 10.5h-v — `accountLink` (10.5h-iv) placed at the right
-            end of this row. Placement was the task's own stated
-            assumption, not a reference-image measurement: the
-            reference (`docs/reference_ui/phase10_owner_restaurant_
-            reference.jpg`) shows the avatar inside a full search+bell+
-            avatar top bar sitting *above* the hero, not next to a
-            "Restaurant" heading — but this page has never had that top
-            bar (confirmed by grep: no `SearchBar`/bell/topbar markup
-            anywhere in this file, matching this task's own parent note
-            that none of the three has real backing behavior here). With
-            no existing top-bar row to attach to, and the parent task's
-            decision already dropping search/bell/chevron and keeping
-            only the avatar, the `<h1>Restaurant</h1>` row is this page's
-            only existing header-level row — the most reasonable real
-            anchor available, not an invented one. Confirmed, not just
-            assumed: this is a plain content decision (where does a
-            page-level nav link belong when there's no dedicated top bar
-            for it), not a pixel measurement the reference could settle
-            either way. New `.headingRow` wraps both; `.heading`'s
-            former `margin: 0 0 var(--space-lg)` moved onto the row
-            (single call site, confirmed by grep, so edited in place —
-            same convention `.subheading` followed at 10.5g-i) so the
-            spacing below stays the same regardless of which of the two
-            children ends up taller. */}
-        <div className={styles.headingRow}>
-          <h1 className={styles.heading}>Restaurant</h1>
-          {accountLink}
-        </div>
-
         {noRestaurantYet ? (
           <EmptyState
             title="No restaurant set up yet"
