@@ -338,6 +338,7 @@ export default function Checkout() {
   const location = useLocation();
   const {
     cart,
+    addItem,
     replaceCart,
     setItemQuantity,
     removeItem,
@@ -345,6 +346,11 @@ export default function Checkout() {
     setPaymentScreenshotUrl,
     clearCart,
   } = useOrderCart();
+
+  // When leaving checkout specifically to add another item, the existing
+  // cart must survive the navigation to the restaurant menu.
+  // Other unfinished exits still clear the cart as before.
+  const addingAnotherItemRef = useRef(false);
 
   // Task 11.10e — a `useRef` guard so this hand-off is idempotent per
   // real mount, not reliant on `React.StrictMode`'s dev-only behavior
@@ -369,7 +375,7 @@ export default function Checkout() {
   // Successful order submission marks the checkout as completed first.
   useEffect(() => {
     return () => {
-      if (!checkoutCompletedRef.current) {
+      if (!checkoutCompletedRef.current && !addingAnotherItemRef.current) {
         clearCart();
       }
     };
@@ -383,11 +389,23 @@ export default function Checkout() {
     buyNowHandledRef.current = true;
     const incoming = location.state;
     if (incoming && incoming.foodId != null && incoming.restaurantId != null) {
-      replaceCart(incoming.restaurantId, incoming.foodId, incoming.quantity || 1);
+      const quantity = incoming.quantity || 1;
+      const sameRestaurant =
+        cart.restaurantId == null || cart.restaurantId === incoming.restaurantId;
+
+      if (sameRestaurant) {
+        addItem(incoming.restaurantId, incoming.foodId, quantity);
+      } else {
+        // A normal Buy Now from another restaurant intentionally starts a
+        // new order. The Add another item flow can never reach this branch
+        // because it is routed to the current cart.restaurantId.
+        replaceCart(incoming.restaurantId, incoming.foodId, quantity);
+      }
+
       navigate('/order/builder', { replace: true, state: null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [addItem, cart.restaurantId, navigate, replaceCart]);
 
   const foodIds = useMemo(() => cart.items.map((item) => item.foodId), [cart.items]);
   const foodIdsKey = foodIds.join(',');
@@ -571,7 +589,14 @@ export default function Checkout() {
   };
 
   const goAddAnotherItem = () => {
-    navigate(`/restaurant/${cart.restaurantId}`, { state: { addingToOrder: true } });
+    if (!cart.restaurantId) return;
+
+    // Preserve the current cart while visiting this restaurant's menu.
+    addingAnotherItemRef.current = true;
+
+    navigate(`/restaurant/${cart.restaurantId}`, {
+      state: { addingToOrder: true },
+    });
   };
 
   // Task 11.3 — "Your details" section's own draft state. See this

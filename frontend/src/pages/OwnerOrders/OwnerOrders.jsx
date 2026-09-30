@@ -44,6 +44,12 @@ function formatDate(isoString) {
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+function formatTime(isoString) {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 // `GET /api/orders` (Task 5.12a) returns `{ orders, meta }` — reshaped to
 // the `{ rows, meta }` shape `usePaginatedQuery` (Task 3.1) expects,
 // same "controller renames `rows` to its own resource key, screen renames
@@ -177,7 +183,7 @@ export default function OwnerOrders() {
                 </div>
                 <div className={styles.customerName}>{order.customer_name}</div>
                 <div className={styles.rowMeta}>
-                  <span>{formatDate(order.created_at)}</span>
+                  <span>{formatDate(order.created_at)} {formatTime(order.created_at)}</span>
                   <span className={styles.rowTotal}>{formatPrice(order.total)}</span>
                 </div>
               </div>

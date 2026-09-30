@@ -18,6 +18,7 @@ require('./services/orderExpiryJob');
 // above, for the second job sharing the same scheduler singleton (see
 // notifyBeforeExpiryJob.js's own header comment).
 require('./services/notifyBeforeExpiryJob');
+require('./services/endOfDayJob');
 
 const PORT = process.env.PORT || 4000;
 const app = createApp();

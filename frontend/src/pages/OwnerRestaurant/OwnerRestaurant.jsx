@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 import { api, ApiError } from '../../api/client';
 import EmptyState from '../../components/EmptyState';
@@ -273,6 +273,7 @@ function fetchPaymentMethods({ page }, signal) {
  * retrying changes nothing until that gap is resolved.
  */
 export default function OwnerRestaurant() {
+  const navigate = useNavigate();
   const { data, loading, error, refetch } = useApiQuery(fetchMyRestaurant, []);
   const {
     mutate,
@@ -917,6 +918,14 @@ export default function OwnerRestaurant() {
                 />
               </div>
 
+              <button
+                type="button"
+                className={styles.manageFoodsButton}
+                onClick={() => navigate('/owner/restaurant/menu')}
+              >
+                Manage menu
+              </button>
+
               {(coverMessage || logoMessage) && (
                 <div className={styles.heroMessages}>
                   {coverMessage && (
@@ -941,7 +950,7 @@ export default function OwnerRestaurant() {
               )}
             </div>
 
-            <form className={styles.form} onSubmit={handleSubmit} noValidate>
+            <form id="restaurant-profile-form" className={styles.form} onSubmit={handleSubmit} noValidate>
               <FormField
                 label="Restaurant name"
                 required
@@ -974,10 +983,6 @@ export default function OwnerRestaurant() {
               )}
 
               <div className={styles.saveRow}>
-                <button type="submit" className={styles.saveButton} disabled={saving}>
-                  {saving ? 'Saving…' : 'Save changes'}
-                </button>
-
                 <ToggleSwitch
                   checked={data.restaurant.is_open === 1}
                   onChange={handleOpenToggle}
@@ -999,7 +1004,7 @@ export default function OwnerRestaurant() {
                     Payment methods keep `.addButton` until 10.5e-i-c /
                     10.5f-i-c. */}
                 <button type="button" className={styles.addPill} onClick={openAddCategory}>
-                  Add category
+                  +
                 </button>
               </div>
 
@@ -1212,7 +1217,7 @@ export default function OwnerRestaurant() {
                     "Add category" (10.5c-i-c). Payment methods' "Add payment
                     method" keeps `.addButton` until 10.5f-i-c. */}
                 <button type="button" className={styles.addPill} onClick={openAddServiceArea}>
-                  Add area
+                  +
                 </button>
               </div>
 
@@ -1301,7 +1306,7 @@ export default function OwnerRestaurant() {
                     fourth and last "Add..." button to move, so
                     `.addButton` is now unused (10.5f-iii's cleanup job). */}
                 <button type="button" className={styles.addPill} onClick={openAddPaymentMethod}>
-                  Add payment method
+                  +
                 </button>
               </div>
 
@@ -1470,13 +1475,7 @@ export default function OwnerRestaurant() {
               )}
             </section>
 
-            <p className={styles.subheading}>
-              Menu management —{' '}
-              <Link to="/owner/restaurant/menu" className={styles.menuManagementLink}>
-                manage your foods
-              </Link>{' '}
-              (adding/editing a food lands here in a later task).
-            </p>
+
           </>
         )}
       </div>
@@ -1698,6 +1697,15 @@ export default function OwnerRestaurant() {
           )}
         </form>
       </Modal>
+    <button
+      type="submit"
+      form="restaurant-profile-form"
+      className={styles.bottomSaveButton}
+      disabled={saving}
+    >
+      {saving ? 'Saving…' : 'Save changes'}
+    </button>
+
     </RoleShell>
   );
 }

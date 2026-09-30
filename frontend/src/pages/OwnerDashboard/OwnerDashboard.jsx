@@ -460,8 +460,8 @@ export default function OwnerDashboard() {
                   className={styles.quickActionTile}
                 />
                 <QuickActionTile
-                  label="Add Food"
-                  to="/owner/restaurant/menu/new"
+                  label="Manage Menu"
+                  to="/owner/restaurant/menu"
                   className={[styles.quickActionTile, styles.addFoodAction].join(' ')}
                 />
                 <QuickActionTile
