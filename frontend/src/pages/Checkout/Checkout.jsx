@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { api, ApiError } from '../../api/client';
@@ -842,6 +843,27 @@ export default function Checkout() {
   // the modal, leaving the customer looking at this same page's own
   // already-built empty-cart `EmptyState` (Task 11.2) underneath, since
   // `cart.items` is already empty by this point.
+  const successCardRef = useRef(null);
+
+  const handleSaveOrderScreenshot = async () => {
+    if (!successCardRef.current || !placedOrder?.order_code) return;
+
+    try {
+      const canvas = await html2canvas(successCardRef.current, {
+        backgroundColor: '#ffffff',
+        scale: Math.min(window.devicePixelRatio || 1, 2),
+        useCORS: true,
+      });
+
+      const link = document.createElement('a');
+      link.download = `NATRA-Order-${placedOrder.order_code}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error('Failed to save order screenshot:', error);
+    }
+  };
+
   const handleCloseSuccessModal = () => {
     resetPlaceOrder();
   };
@@ -1282,7 +1304,7 @@ export default function Checkout() {
         size="sm"
       >
         {placedOrder && (
-          <div className={styles.successModalContent}>
+          <div ref={successCardRef} className={styles.successModalContent}>
             <p className={styles.successIcon} aria-hidden="true">
               ✓
             </p>
@@ -1302,6 +1324,14 @@ export default function Checkout() {
                 lingering in this component's own `useMutation` state
                 should the router ever keep this component alive across
                 that navigation (e.g. a future shared-layout route). */}
+            <button
+              type="button"
+              className={styles.successPrimaryButton}
+              onClick={handleSaveOrderScreenshot}
+            >
+              Save screenshot
+            </button>
+
             <button
               type="button"
               className={styles.successPrimaryButton}

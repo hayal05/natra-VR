@@ -87,6 +87,7 @@ const BASE_FROM = `
     FROM foods f
     JOIN restaurants r ON r.id = f.restaurant_id
     JOIN food_visibility fv ON fv.food_id = f.id
+    LEFT JOIN categories c ON c.id = f.category_id
     LEFT JOIN popularity_stats ps ON ps.food_id = f.id
    WHERE r.live_status = :liveStatus
      AND r.is_suspended = :isSuspended
@@ -148,7 +149,9 @@ async function listPopularFoods(rawParams = {}) {
                 f.image_url AS "image_url",
                 f.image_thumbnail_url AS "image_thumbnail_url",
                 f.restaurant_id AS "restaurant_id",
-                r.name AS "restaurant_name"
+                r.name AS "restaurant_name",
+                c.id AS "category_id",
+                c.name AS "category_name"
            ${BASE_FROM}
           ORDER BY COALESCE(ps.quantity_sold, 0) DESC, f.name ASC
           OFFSET :pagingOffset ROWS FETCH NEXT :pagingLimit ROWS ONLY`,

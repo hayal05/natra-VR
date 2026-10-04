@@ -69,6 +69,7 @@ export default function EntityCard({
   badge,
   metaLine,
   cta,
+  favoriteButton,
   onClick,
   className,
   mediaAspectRatio,
@@ -114,6 +115,15 @@ export default function EntityCard({
           />
         )}
         {badge && <div className={styles.badgeSlot}>{badge}</div>}
+        {favoriteButton && (
+          <div
+            className={styles.favoriteSlot}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            {favoriteButton}
+          </div>
+        )}
       </div>
 
       <div className={styles.body}>

@@ -11,10 +11,11 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.1",
-    "qrcode": "^1.5.4"
+    "react-router-dom": "^6.26.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

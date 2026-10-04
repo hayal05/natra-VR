@@ -379,7 +379,7 @@ export default function AddFood() {
                 categoriesLoading
                   ? 'Loading categories…'
                   : categoryOptions.length === 1
-                    ? 'No categories yet — you can add some from the Restaurant tab.'
+                    ? 'No categories yet — ask the Master Admin to add one from Admin → Settings.'
                     : 'Optional.'
               }
               disabled={isSubmitting || categoriesLoading}

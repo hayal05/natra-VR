@@ -30,6 +30,8 @@ async function list(req, res, next) {
       image_url: row.image_url,
       restaurant_id: row.restaurant_id,
       restaurant_name: row.restaurant_name,
+      category_id: row.category_id,
+      category_name: row.category_name,
     }));
     res.status(200).json({ foods, meta });
   } catch (err) {

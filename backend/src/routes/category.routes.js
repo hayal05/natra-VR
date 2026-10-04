@@ -1,30 +1,68 @@
-// category.routes — Task 1.16a
+// category.routes — global platform categories.
 //
-// Mirrors food.routes.js's (1.15d) chain exactly — see that file's
-// header comment for the full reasoning behind the middleware order and
-// why GET/POST / don't chain ownershipMiddleware:
-//   authMiddleware        (1.14) — who is this
-//   attachOwnerRestaurant (1.15a) — resolves req.user.restaurant_id
-//   ownershipMiddleware(categoriesCrud) (1.4) — on :id routes only,
-//     fetches+confirms the row, attaches it as req.resource
+// Categories are shared across the platform.
+// Authenticated users may read them.
+// Only the Master Admin (role: admin) may create, update, or delete them.
 
 const express = require('express');
 
 const categoryController = require('../controllers/categoryController');
 const { authMiddleware } = require('../middleware/authMiddleware');
-const attachOwnerRestaurant = require('../middleware/attachOwnerRestaurant');
-const ownershipMiddleware = require('../middleware/ownershipMiddleware');
+const { requireAdmin } = require('../middleware/requireAdmin');
 const categoriesCrud = require('../models/categories');
 
 const router = express.Router();
 
-const requireOwnedCategory = ownershipMiddleware(categoriesCrud);
+async function requireExistingCategory(req, res, next) {
+  try {
+    const rawId = req.params.id;
+    const id = Number(rawId);
 
-router.get('/', authMiddleware, attachOwnerRestaurant, categoryController.list);
-router.post('/', authMiddleware, attachOwnerRestaurant, categoryController.create);
+    if (rawId === undefined || !Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Invalid or missing "id" route parameter' });
+    }
 
-router.get('/:id', authMiddleware, attachOwnerRestaurant, requireOwnedCategory, categoryController.getOne);
-router.patch('/:id', authMiddleware, attachOwnerRestaurant, requireOwnedCategory, categoryController.update);
-router.delete('/:id', authMiddleware, attachOwnerRestaurant, requireOwnedCategory, categoryController.remove);
+    req.resource = await categoriesCrud.getOrThrow(id);
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+router.get(
+  '/',
+  authMiddleware,
+  categoryController.list
+);
+
+router.post(
+  '/',
+  authMiddleware,
+  requireAdmin,
+  categoryController.create
+);
+
+router.get(
+  '/:id',
+  authMiddleware,
+  requireExistingCategory,
+  categoryController.getOne
+);
+
+router.patch(
+  '/:id',
+  authMiddleware,
+  requireAdmin,
+  requireExistingCategory,
+  categoryController.update
+);
+
+router.delete(
+  '/:id',
+  authMiddleware,
+  requireAdmin,
+  requireExistingCategory,
+  categoryController.remove
+);
 
 module.exports = router;

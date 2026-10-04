@@ -17,6 +17,10 @@ import {
   RESTAURANTS_GRID_SIZES,
   LOGO_SIZES,
 } from '../../utils/entityCardImages';
+import {
+  getFavoriteFoodIds,
+  toggleFavoriteFood,
+} from '../../utils/favorites';
 import styles from './Home.module.css';
 
 // Task 3.6's own debounce window — see useDebouncedValue's doc comment
@@ -293,6 +297,9 @@ export default function Home() {
   const trimmedSearch = debouncedSearch.trim();
   const isSearching = trimmedSearch.length > 0;
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES_VALUE);
+  const [favoriteFoodIds, setFavoriteFoodIds] = useState(() =>
+    getFavoriteFoodIds()
+  );
 
   const fetchLiveCategories = useCallback(
     (signal) =>
@@ -335,6 +342,27 @@ export default function Home() {
     error: popularFoodsError,
     refetch: refetchPopularFoods,
   } = useApiQuery(fetchPopularFoods, []);
+
+  const filteredPopularFoods =
+    selectedCategory === ALL_CATEGORIES_VALUE
+      ? popularFoods
+      : popularFoods.filter(
+          (food) => food.category_name === selectedCategory
+        );
+
+  const handleToggleFavorite = useCallback((foodId) => {
+    const isNowFavorite = toggleFavoriteFood(foodId);
+
+    setFavoriteFoodIds((current) => {
+      if (isNowFavorite) {
+        return current.includes(foodId)
+          ? current
+          : [...current, foodId];
+      }
+
+      return current.filter((id) => String(id) !== String(foodId));
+    });
+  }, []);
 
   // Only actually hits the network once there's a non-blank debounced
   // query — resolving with `null` otherwise (rather than skipping the
@@ -693,7 +721,7 @@ export default function Home() {
                   className={styles.popularFoodsGrid}
                   columns={POPULAR_FOODS_GRID_COLUMNS}
                 >
-                  {popularFoods.map((food) => (
+                  {filteredPopularFoods.map((food) => (
                     <EntityCard
                       key={food.id}
                       image={food.image_url || FALLBACK_IMAGE}
@@ -705,6 +733,29 @@ export default function Home() {
                       subtitle={food.restaurant_name}
                       metaLine={formatPrice(food.price)}
                       cta={<span className={styles.addCta} aria-hidden="true">+</span>}
+                      favoriteButton={
+                        <button
+                          type="button"
+                          className={styles.favoriteButton}
+                          aria-label={
+                            favoriteFoodIds.some(
+                              (id) => String(id) === String(food.id)
+                            )
+                              ? `Remove ${food.name} from favorites`
+                              : `Add ${food.name} to favorites`
+                          }
+                          aria-pressed={favoriteFoodIds.some(
+                            (id) => String(id) === String(food.id)
+                          )}
+                          onClick={() => handleToggleFavorite(food.id)}
+                        >
+                          {favoriteFoodIds.some(
+                            (id) => String(id) === String(food.id)
+                          )
+                            ? '♥'
+                            : '♡'}
+                        </button>
+                      }
                       onClick={() => goToFood(food.id)}
                     />
                   ))}

@@ -114,7 +114,7 @@ import styles from './RoleShell.module.css';
 const NAV_ITEMS_BY_ROLE = {
   customer: [
     { key: 'home', label: 'Home', to: '/', icon: HomeIcon, end: true },
-    { key: 'categories', label: 'Categories', to: '/categories', icon: CategoriesIcon },
+    { key: 'favorites', label: 'Favorites', to: '/favorites', icon: FavoritesIcon },
     { key: 'orders', label: 'Orders', to: '/track', icon: OrdersIcon },
     { key: 'login', label: 'Login', to: '/login', icon: LoginIcon },
   ],
@@ -334,6 +334,14 @@ function CategoriesIcon(props) {
       <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
       <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
       <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
+function FavoritesIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M20.8 8.8c0 5.1-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.8A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z" />
     </svg>
   );
 }

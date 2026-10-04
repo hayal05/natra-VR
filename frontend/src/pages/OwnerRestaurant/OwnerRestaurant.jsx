@@ -29,11 +29,6 @@ const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Fri
 // NAME_MAX_LENGTH).
 const NAME_MAX_LENGTH = 120;
 
-// docs/DB_SCHEMA.md: categories.name is VARCHAR2(80) — same cap
-// categoryController.js's own `nameSchema` (Task 1.16a) enforces
-// server-side.
-const CATEGORY_NAME_MAX_LENGTH = 80;
-
 // docs/DB_SCHEMA.md: service_areas.area_name is VARCHAR2(120) — same cap
 // serviceAreaController.js's own `areaNameSchema` (Task 1.16b) enforces
 // server-side.
@@ -69,12 +64,6 @@ function updateMyRestaurant(data) {
   return api.patch('/restaurants/me', data);
 }
 
-
-function fetchCategories({ page }, signal) {
-  return api
-    .get(`/categories?page=${page}`, { signal })
-    .then(({ categories, meta }) => ({ rows: categories, meta }));
-}
 
 function fetchOpeningHours(signal) {
   return api.get('/opening-hours', { signal });
@@ -485,90 +474,6 @@ export default function OwnerRestaurant() {
       }));
     } finally {
       setSavingDayId(null);
-    }
-  }
-
-  // --- Categories (Task 5.4) ---
-
-  const {
-    items: categories,
-    meta: categoriesMeta,
-    loading: categoriesLoading,
-    error: categoriesError,
-    setPage: setCategoriesPage,
-    refetch: refetchCategories,
-  } = usePaginatedQuery(fetchCategories, []);
-
-  // `null` (closed) | `{ mode: 'add' }` | `{ mode: 'edit', category }`
-  const [categoryModal, setCategoryModal] = useState(null);
-  const [categoryName, setCategoryName] = useState('');
-  const [categoryNameTouched, setCategoryNameTouched] = useState(false);
-
-  function saveCategory(payload) {
-    return categoryModal.mode === 'edit'
-      ? api.patch(`/categories/${categoryModal.category.id}`, payload)
-      : api.post('/categories', payload);
-  }
-
-  const {
-    mutate: submitCategory,
-    error: categorySaveError,
-    loading: savingCategory,
-    reset: resetCategorySave,
-  } = useMutation(saveCategory);
-
-  const [categoryToDelete, setCategoryToDelete] = useState(null);
-  const [deletingCategory, setDeletingCategory] = useState(false);
-  const [categoryDeleteError, setCategoryDeleteError] = useState(null);
-
-  const categoryNameError = !categoryName.trim() ? 'Enter a category name.' : undefined;
-
-  function openAddCategory() {
-    setCategoryModal({ mode: 'add' });
-    setCategoryName('');
-    setCategoryNameTouched(false);
-    resetCategorySave();
-  }
-
-  function openEditCategory(category) {
-    setCategoryModal({ mode: 'edit', category });
-    setCategoryName(category.name);
-    setCategoryNameTouched(false);
-    resetCategorySave();
-  }
-
-  function closeCategoryModal() {
-    setCategoryModal(null);
-  }
-
-  function handleCategorySubmit(event) {
-    event.preventDefault();
-    setCategoryNameTouched(true);
-    if (categoryNameError) return;
-
-    submitCategory({ name: categoryName.trim() })
-      .then(() => {
-        closeCategoryModal();
-        refetchCategories();
-      })
-      .catch(() => {
-        // Surfaced via `categorySaveError` state below.
-      });
-  }
-
-  async function confirmDeleteCategory() {
-    setCategoryDeleteError(null);
-    setDeletingCategory(true);
-    try {
-      await api.delete(`/categories/${categoryToDelete.id}`);
-      setCategoryToDelete(null);
-      refetchCategories();
-    } catch (err) {
-      setCategoryDeleteError(
-        err.message || 'Could not delete this category. Please try again.'
-      );
-    } finally {
-      setDeletingCategory(false);
     }
   }
 
@@ -993,97 +898,6 @@ export default function OwnerRestaurant() {
               </div>
             </form>
 
-            {/* Task 10.5c-i-a — Categories is the first section on the new
-                `.sectionCard` shell (a card, not the old divider-line
-                `.section`). The other three sections keep `.section` until
-                their own tasks (10.5d-i-a / 10.5e-i-a / 10.5f-i-a). */}
-            <section className={styles.sectionCard}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionHeading}>Categories</h2>
-                {/* Task 10.5c-i-c — `.addPill` here only; Service areas /
-                    Payment methods keep `.addButton` until 10.5e-i-c /
-                    10.5f-i-c. */}
-                <button type="button" className={styles.addPill} onClick={openAddCategory}>
-                  +
-                </button>
-              </div>
-
-              {categoriesError ? (
-                /* Task 10.5c-ii-d — `.categoryLoadError`, not the bare
-                   `.formError` (that class still serves the profile form
-                   above and Opening hours' own `.openingHoursError` below
-                   until their tasks); copy unchanged. */
-                <p className={styles.categoryLoadError} role="alert">
-                  Couldn't load categories. Check your connection and try again.
-                </p>
-              ) : (
-                <ListWithPagination
-                  items={categories}
-                  getItemKey={(category) => category.id}
-                  isLoading={categoriesLoading}
-                  loadingLabel="Loading categories…"
-                  meta={categoriesMeta}
-                  onPageChange={setCategoriesPage}
-                  ariaLabel="Categories"
-                  emptyState={
-                    /* Task 10.5c-ii-e — `.categoriesEmpty`, same
-                       `.card .notificationsEmpty`-style padding trim
-                       `OwnerDashboard.jsx`'s Task 10.3f-ii already used
-                       (EmptyState's own whole-screen padding would
-                       double up inside `.sectionCard`'s own padding);
-                       copy unchanged. */
-                    <EmptyState
-                      title="No categories yet"
-                      description="Add a category to help customers browse your menu."
-                      className={styles.categoriesEmpty}
-                    />
-                  }
-                  renderItem={(category) => (
-                    /* Task 10.5c-ii-c — `.categoryRow`, not `.listRow`
-                       (that class still lays out Service areas'/Payment
-                       methods' rows until their own tasks). Adds
-                       `flex-wrap` so `.categoryRowActions` drops to its
-                       own line when the row is too narrow to hold the
-                       chip and actions side by side. */
-                    <div className={styles.categoryRow}>
-                      {/* Task 10.5c-ii-a — `.categoryChip`, not
-                          `.listRowName` (that class still serves Service
-                          areas/Payment methods below until their own
-                          tasks). Also carries the long-unbreakable-word
-                          wrap fix — see the CSS comment. */}
-                      <span className={styles.categoryChip}>{category.name}</span>
-                      {/* Task 10.5c-ii-c — `.categoryRowActions`, not
-                          `.listRowActions` (same scoping as the row
-                          itself above). */}
-                      <div className={styles.categoryRowActions}>
-                        {/* Task 10.5c-ii-b — `.categoryEditLink`/
-                            `.categoryDeleteLink`, not `.linkButton`/
-                            `.linkButtonDanger` (those still serve Opening
-                            hours' Save link, Payment methods' Edit link,
-                            and the menu link below — untouched). Same
-                            underlined-text/44px-hit-area look, scoped to
-                            Categories only. */}
-                        <button
-                          type="button"
-                          className={styles.categoryEditLink}
-                          onClick={() => openEditCategory(category)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.categoryDeleteLink}
-                          onClick={() => setCategoryToDelete(category)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                />
-              )}
-            </section>
-
             {/* Task 10.5d-i-a — Opening hours moves to `.sectionCard`,
                 same shell Categories adopted in 10.5c-i-a. Service areas
                 / Payment methods keep `.section` until 10.5e-i-a /
@@ -1479,81 +1293,6 @@ export default function OwnerRestaurant() {
           </>
         )}
       </div>
-
-      <Modal
-        isOpen={categoryModal !== null}
-        onClose={closeCategoryModal}
-        title={categoryModal?.mode === 'edit' ? 'Edit category' : 'Add category'}
-        size="sm"
-        footer={
-          <>
-            <button type="button" className={styles.secondaryButton} onClick={closeCategoryModal}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              form="category-form"
-              className={styles.submitButton}
-              disabled={savingCategory}
-            >
-              {savingCategory ? 'Saving…' : 'Save'}
-            </button>
-          </>
-        }
-      >
-        <form id="category-form" onSubmit={handleCategorySubmit} noValidate>
-          <FormField
-            label="Category name"
-            required
-            value={categoryName}
-            onChange={(event) => setCategoryName(event.target.value)}
-            maxLength={CATEGORY_NAME_MAX_LENGTH}
-            error={categoryNameTouched ? categoryNameError : undefined}
-          />
-
-          {categorySaveError && (
-            <p className={styles.formError} role="alert">
-              Couldn't save this category. Check your connection and try again.
-            </p>
-          )}
-        </form>
-      </Modal>
-
-      <Modal
-        isOpen={categoryToDelete !== null}
-        onClose={() => setCategoryToDelete(null)}
-        title="Delete category?"
-        size="sm"
-        footer={
-          <>
-            <button
-              type="button"
-              className={styles.secondaryButton}
-              onClick={() => setCategoryToDelete(null)}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className={styles.dangerButton}
-              onClick={confirmDeleteCategory}
-              disabled={deletingCategory}
-            >
-              {deletingCategory ? 'Deleting…' : 'Delete'}
-            </button>
-          </>
-        }
-      >
-        <p className={styles.modalText}>
-          Delete &ldquo;{categoryToDelete?.name}&rdquo;? This can&rsquo;t be undone.
-        </p>
-
-        {categoryDeleteError && (
-          <p className={styles.formError} role="alert">
-            {categoryDeleteError}
-          </p>
-        )}
-      </Modal>
 
       <Modal
         isOpen={serviceAreaModal !== null}

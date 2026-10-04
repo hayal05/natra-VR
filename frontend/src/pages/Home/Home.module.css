@@ -535,3 +535,49 @@
     padding-inline: var(--space-2xl);
   }
 }
+
+/* Customer food-card favorite button */
+.favoriteButton {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+  background: transparent !important;
+  color: #ffffff;
+  font-size: 29px;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none !important;
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.75),
+    0 2px 8px rgba(0, 0, 0, 0.45);
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+.favoriteButton:hover,
+.favoriteButton:focus,
+.favoriteButton:active {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.favoriteButton:hover {
+  transform: scale(1.08);
+}
+
+.favoriteButton:active {
+  transform: scale(0.94);
+}
+
+.favoriteButton:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}

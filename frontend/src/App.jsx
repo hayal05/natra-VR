@@ -15,6 +15,7 @@ import AdminSettings from './pages/AdminSettings';
 import Checkout from './pages/Checkout';
 import ComponentSandbox from './pages/ComponentSandbox';
 import FoodDetails from './pages/FoodDetails';
+import Favorites from './pages/Favorites';
 import Home from './pages/Home';
 import LiveStatus from './pages/LiveStatus';
 import Login from './pages/Login';
@@ -146,6 +147,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/restaurant/:id" element={<RestaurantProfile />} />
       <Route path="/food/:id" element={<FoodDetails />} />
+      <Route path="/favorites" element={<Favorites />} />
       {/* Checkout (Task 11.0a) — replaces the former OrderBuilder screen
           at this same route, the start of Phase 11's merge of the 5
           Phase-3 order screens (OrderBuilder, CustomerInfo,

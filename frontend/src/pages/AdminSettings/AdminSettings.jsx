@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api/client';
 import EmptyState from '../../components/EmptyState';
 import FormField from '../../components/FormField';
+import Modal from '../../components/Modal';
 import RoleShell from '../../components/RoleShell';
 import ToggleSwitch from '../../components/ToggleSwitch';
 import { useApiQuery, useMutation } from '../../hooks';
@@ -46,6 +47,10 @@ function fetchSettings(signal) {
 
 function updateSettings(payload) {
   return api.patch('/admin/settings', payload).then((data) => data.settings);
+}
+
+function fetchCategories(signal) {
+  return api.get('/categories?limit=100', { signal }).then((data) => data.categories);
 }
 
 // A registration fee of exactly 0 is accepted server-side (6.12a's own
@@ -159,11 +164,94 @@ function validate(values) {
 export default function AdminSettings() {
   const { data, loading, error, refetch } = useApiQuery(fetchSettings, []);
   const { mutate, error: saveError, loading: saving, reset: resetSave } = useMutation(updateSettings);
+  const {
+    data: categories,
+    loading: categoriesLoading,
+    error: categoriesError,
+    refetch: refetchCategories,
+  } = useApiQuery(fetchCategories, []);
 
   const [values, setValues] = useState(null);
   const [touched, setTouched] = useState({});
   const [saved, setSaved] = useState(false);
   const seededRef = useRef(false);
+
+  const [categoryModal, setCategoryModal] = useState(null);
+  const [categoryName, setCategoryName] = useState('');
+  const [categoryNameTouched, setCategoryNameTouched] = useState(false);
+  const [categorySaveError, setCategorySaveError] = useState(null);
+  const [savingCategory, setSavingCategory] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(false);
+  const [categoryDeleteError, setCategoryDeleteError] = useState(null);
+
+  function openAddCategory() {
+    setCategoryModal({ mode: 'add' });
+    setCategoryName('');
+    setCategoryNameTouched(false);
+    setCategorySaveError(null);
+  }
+
+  function openEditCategory(category) {
+    setCategoryModal({ mode: 'edit', category });
+    setCategoryName(category.name);
+    setCategoryNameTouched(false);
+    setCategorySaveError(null);
+  }
+
+  function closeCategoryModal() {
+    if (savingCategory) return;
+    setCategoryModal(null);
+    setCategorySaveError(null);
+  }
+
+  async function handleCategorySubmit(event) {
+    event.preventDefault();
+    setCategoryNameTouched(true);
+
+    const name = categoryName.trim();
+    if (!name) return;
+
+    setSavingCategory(true);
+    setCategorySaveError(null);
+
+    try {
+      if (categoryModal?.mode === 'edit') {
+        await api.patch(`/categories/${categoryModal.category.id}`, { name });
+      } else {
+        await api.post('/categories', { name });
+      }
+
+      setCategoryModal(null);
+      setCategoryName('');
+      await refetchCategories();
+    } catch (err) {
+      setCategorySaveError(
+        err.message || 'Could not save this category. Please try again.'
+      );
+    } finally {
+      setSavingCategory(false);
+    }
+  }
+
+  async function confirmDeleteCategory() {
+    if (!categoryToDelete) return;
+
+    setDeletingCategory(true);
+    setCategoryDeleteError(null);
+
+    try {
+      await api.delete(`/categories/${categoryToDelete.id}`);
+      setCategoryToDelete(null);
+      await refetchCategories();
+    } catch (err) {
+      setCategoryDeleteError(
+        err.message || 'Could not delete this category. Please try again.'
+      );
+    } finally {
+      setDeletingCategory(false);
+    }
+  }
 
   useEffect(() => {
     if (!seededRef.current && data) {
@@ -405,9 +493,172 @@ export default function AdminSettings() {
                 {saving ? 'Saving…' : 'Save changes'}
               </button>
             </form>
+
+            <hr className={styles.sectionDivider} />
+
+            <section className={styles.categoriesSection}>
+              <div className={styles.categoriesHeader}>
+                <div>
+                  <h2 className={styles.sectionHeading}>Categories</h2>
+                  <p className={styles.sectionBody}>
+                    Manage platform-wide categories that can be used by all restaurants.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.addCategoryButton}
+                  onClick={openAddCategory}
+                >
+                  + Add category
+                </button>
+              </div>
+
+              {categoriesError ? (
+                <div className={styles.categoryError} role="alert">
+                  <p>Couldn&apos;t load categories. Check your connection and try again.</p>
+                  <button
+                    type="button"
+                    className={styles.retryButton}
+                    onClick={refetchCategories}
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : categoriesLoading ? (
+                <p className={styles.status}>Loading categories…</p>
+              ) : categories.length === 0 ? (
+                <p className={styles.categoryEmpty}>
+                  No categories yet. Add a category for restaurants to use.
+                </p>
+              ) : (
+                <div className={styles.categoryList}>
+                  {categories.map((category) => (
+                    <div key={category.id} className={styles.categoryRow}>
+                      <span className={styles.categoryName}>{category.name}</span>
+
+                      <div className={styles.categoryActions}>
+                        <button
+                          type="button"
+                          className={styles.categoryEditButton}
+                          onClick={() => openEditCategory(category)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className={styles.categoryDeleteButton}
+                          onClick={() => {
+                            setCategoryToDelete(category);
+                            setCategoryDeleteError(null);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </section>
         )}
       </div>
+
+      <Modal
+        isOpen={categoryModal !== null}
+        onClose={closeCategoryModal}
+        title={categoryModal?.mode === 'edit' ? 'Edit category' : 'Add category'}
+        size="sm"
+        footer={
+          <>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={closeCategoryModal}
+              disabled={savingCategory}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="admin-category-form"
+              className={styles.submitButton}
+              disabled={savingCategory}
+            >
+              {savingCategory ? 'Saving…' : 'Save'}
+            </button>
+          </>
+        }
+      >
+        <form id="admin-category-form" onSubmit={handleCategorySubmit} noValidate>
+          <FormField
+            label="Category name"
+            required
+            value={categoryName}
+            onChange={(event) => setCategoryName(event.target.value)}
+            maxLength={80}
+            error={
+              categoryNameTouched && !categoryName.trim()
+                ? 'Enter a category name.'
+                : undefined
+            }
+            disabled={savingCategory}
+          />
+
+          {categorySaveError && (
+            <p className={styles.formError} role="alert">
+              {categorySaveError}
+            </p>
+          )}
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={categoryToDelete !== null}
+        onClose={() => {
+          if (!deletingCategory) {
+            setCategoryToDelete(null);
+            setCategoryDeleteError(null);
+          }
+        }}
+        title="Delete category?"
+        size="sm"
+        footer={
+          <>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => {
+                setCategoryToDelete(null);
+                setCategoryDeleteError(null);
+              }}
+              disabled={deletingCategory}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.dangerButton}
+              onClick={confirmDeleteCategory}
+              disabled={deletingCategory}
+            >
+              {deletingCategory ? 'Deleting…' : 'Delete'}
+            </button>
+          </>
+        }
+      >
+        <p className={styles.modalText}>
+          Delete &ldquo;{categoryToDelete?.name}&rdquo;? This cannot be undone.
+        </p>
+
+        {categoryDeleteError && (
+          <p className={styles.formError} role="alert">
+            {categoryDeleteError}
+          </p>
+        )}
+      </Modal>
     </RoleShell>
   );
 }
